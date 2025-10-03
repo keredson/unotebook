@@ -6,6 +6,9 @@ import { route } from 'preact-router';
 
 const html = htm.bind(h);
 
+function random_id() {
+  return Math.random().toString(36).slice(2);
+}
 
 export function Notebook(props) {
   const [doc, set_doc] = useState({});
@@ -26,7 +29,7 @@ export function Notebook(props) {
   useEffect(() => {
     fetch('/_notebook/'+props['fn']).then(r=>r.json()).then(n=>{
       set_doc(n)
-      set_cells(n['cells'].map((cell) => ({cell_type:'code', id:crypto.randomUUID(), ...cell})))
+      set_cells(n['cells'].map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
       set_metadata(n['metadata'])
       document.title = props['fn'] + ' - µNotebook';
     });

@@ -37,6 +37,16 @@ export function Manager() {
     }
   }
 
+  async function upload_notebook() {
+    const input = document.getElementById('upload_notebook');
+    const file = input.files[0];
+    const resp = await fetch("/_save/"+file.name, {
+      method: "POST",
+      body: file
+    });
+    set_reload(reload+1)
+  }
+
   return html`<div>
     <h1>µNotebook</h1>
     <table style='margin-left:1em;'>
@@ -49,7 +59,11 @@ export function Manager() {
           ${f.running ? html`<span title='stop ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>stop_notebook(f.fn)}>◼</span>` : null}
         </td>
       </tr>`)}
-      <tr><td><button style='margin-top:.5em' onClick=${()=>new_notebook()}>New Notebook...</button></td></tr>
+      <tr><td style='display:inline-flex; gap:.5rem; margin-top:.5em'>
+        <button onClick=${()=>new_notebook()}>New Notebook</button>
+        <input id='upload_notebook' type="file" accept=".unb" style='display:none;' onChange=${()=>upload_notebook()} />
+        <button onClick=${()=>document.getElementById('upload_notebook').click()}>Upload Notebook...</button>
+      </td></tr>
     </table>
   </div>`;
 }

@@ -41,6 +41,7 @@ function Home() {
 
 
 function App() {
+  console.log('window.__unotebook_version__', window.__unotebook_version__)
   return html`
     <div>
       <style>${css}</style>
@@ -48,7 +49,7 @@ function App() {
         <${Home} path="/" />
         <${Notebook} path="/notebook/:fn" />
       <//>
-      <div style='margin-top:2em; color: #444; font-size:smaller;'>µNotebook v0.1 - © 2025 Derek Anderson</div>
+      <div style='margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${window.__unotebook_version__} - © 2025 Derek Anderson</div>
     </div>
   `;
 }

@@ -211,3 +211,4 @@ node_modules/
 
 # Notebook files
 *.unb
+/unotebook.js*

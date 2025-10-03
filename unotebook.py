@@ -3,6 +3,8 @@ import os, socket, json, sys, builtins, uio
 try: import ubinascii as _b64
 except ImportError: import binascii as _b64
 
+__version__ = '0.1'
+
 globals_ = {}
 locals_ = {}
 
@@ -23,7 +25,7 @@ INDEX_HTML = '''
     display: block;
   }
 </style>
-<script src="/unotebook.js"></script>
+<script type="module" src="/unotebook.js"></script>
 '''
 
 def stream_b64(buf, s):
@@ -124,10 +126,8 @@ def handle_request(s):
       print(action, path, headers)
       if action=='GET' and (path=="/" or path.startswith('/notebook/')):
         s.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n")
+        s.send('<script>window.__unotebook_version__ = %s</script>' % repr(__version__))
         s.send(INDEX_HTML)
-        #with open('unotebook.html', 'rb') as f:
-        #  while line := f.readline():
-        #    s.send(line)
       elif action=='GET' and path=="/unotebook.js":
         s.send("HTTP/1.1 200 OK\r\nContent-Type: text/javascript\r\n\r\n")
         with open('unotebook.js', 'rb') as f:

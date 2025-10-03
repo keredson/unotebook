@@ -126,16 +126,24 @@ def handle_request(s):
           break
         k, v = header.split(': ',1)
         headers[k] = v.strip()
-      print(action, path, headers)
+      print(action, path)
       if action=='GET' and (path=="/" or path.startswith('/notebook/')):
         s.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n")
         s.send('<script>window.__unotebook_version__ = %s</script>' % repr(__version__))
         s.send(INDEX_HTML)
       elif action=='GET' and path=="/unotebook.js":
-        s.send("HTTP/1.1 200 OK\r\nContent-Type: text/javascript\r\n\r\n")
-        with open('unotebook.js', 'rb') as f:
-          while line := f.readline():
-            s.send(line)
+        if _file_exists('unotebook.js.gz'):
+          s.send("HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/javascript\r\n\r\n")
+          with open('unotebook.js.gz', 'rb') as f:
+            while bytes := f.read(512):
+              s.send(bytes)
+        elif _file_exists('unotebook.js'):
+          s.send("HTTP/1.1 200 OK\r\nContent-Type: text/javascript\r\n\r\n")
+          with open('unotebook.js', 'rb') as f:
+            while line := f.readline():
+              s.send(line)
+        else:
+          s.send("HTTP/1.1 404 Not Found\r\n\r\n")
       elif action=='POST' and path=="/_delete":
         fn = json.loads(s.read(int(headers['Content-Length'])))
         assert fn.endswith('.unb')
@@ -184,6 +192,14 @@ def handle_request(s):
 def _sanitize_and_decode(fn):
   return re.sub(r"[^\w+.\- ]", "_", fn.replace('%20',' ').replace('+',' '))
 
+def _file_exists(path):
+  try:
+    os.stat(path)
+    return True
+  except OSError:
+    return False
+
+
 def run(port=80):
   addr = socket.getaddrinfo("0.0.0.0", port)[0][-1]
   s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -202,5 +218,6 @@ def run(port=80):
     finally:
       cl.close()
 
-run(12345)
+if __name__=='__main__':
+  run(12345)
 

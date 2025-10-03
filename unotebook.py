@@ -202,6 +202,9 @@ def _file_exists(path):
 
 
 def run(port=80):
+  if _file_exists('/lib/Getting_Started.unb') and not _file_exists('/Getting_Started.unb'):
+    print('creating: /Getting_Started.unb')
+    os.rename('/lib/Getting_Started.unb', '/Getting_Started.unb')
   addr = socket.getaddrinfo("0.0.0.0", port)[0][-1]
   s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
   s.bind(addr)

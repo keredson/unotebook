@@ -88,6 +88,7 @@ export const Cell = forwardRef((props, ref) => {
     set_jpeg(null)
     set_png(null)
     set_html(null)
+    set_show_source(true)
   }
 
   function run() {

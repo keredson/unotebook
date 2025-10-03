@@ -80,7 +80,6 @@ export function Notebook(props) {
   }
 
   async function run_all() {
-    console.log('run_all')
     // Run sequentially
     for (const c of cells) {
       const api = refs.current.get(c.id)?.current;
@@ -93,10 +92,26 @@ export function Notebook(props) {
     }
   }
 
+  async function restart() {
+    if (confirm("Restart notebook?")) {
+      const resp = await fetch('/_stop', {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(props.fn)
+      })
+
+      for (const c of cells) {
+        const api = refs.current.get(c.id)?.current;
+        api.getValue().clear();
+      }
+    }
+  }
+
   return html`<div>
     <h1>${doc?.metadata?.name || props.fn}</h1>
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
       <button onClick=${e=>run_all()}>Run All</button>
+      <button onClick=${e=>restart()}>Restart</button>
       <button onClick=${e=>save()}>${props['fn']=='__new__.unb' ? 'Save as...' : 'Save'}</button>
     </div>
     ${cells.map((cell, i) => html`<${Cell} 

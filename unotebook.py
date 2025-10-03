@@ -144,7 +144,8 @@ def handle_request(s):
       elif action=='POST' and path=="/_stop":
         fn = json.loads(s.read(int(headers['Content-Length'])))
         assert fn.endswith('.unb')
-        del _notebook_globals_[fn]
+        try: del _notebook_globals_[fn]
+        except KeyError: pass
         s.send("HTTP/1.1 200 OK\r\n")
       elif action=='POST' and path=="/run_cell":
         body = json.loads(s.read(int(headers['Content-Length'])))

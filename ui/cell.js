@@ -67,12 +67,19 @@ export const Cell = forwardRef((props, ref) => {
   const [focused, set_focused] = useState(false);
 
   useImperativeHandle(ref, () => ({
-    getValue: () => ({run, source})
+    getValue: () => ({run, source, clear})
   }));
 
   function placeholder() {
     if (props.cell.cell_type=='code') return 'print("Hello world!")'
     if (props.cell.cell_type=='markdown') return '# Hello world!'
+  }
+
+  function clear() {
+    set_stdout(null)
+    set_jpeg(null)
+    set_png(null)
+    set_html(null)
   }
 
   function run() {

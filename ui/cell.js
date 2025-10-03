@@ -72,7 +72,7 @@ export const Cell = forwardRef((props, ref) => {
   }));
 
     useEffect(() => {
-      if (props.cell?.cell_type=='markdown') {
+      if (props.cell?.cell_type=='markdown' && source.join('\n').length) {
         set_html(snarkdown(source.join('\n')))
         set_show_source(false)
       }
@@ -97,8 +97,9 @@ export const Cell = forwardRef((props, ref) => {
     set_html(null)
     console.log('props.cell?.cell_type', props.cell?.cell_type)
     if (props.cell?.cell_type=='markdown') {
-      set_html(snarkdown(source.join('\n')))
-      set_show_source(false)
+      const html_ = snarkdown(source.join('\n'));
+      set_html(html_)
+      set_show_source(html_.length == 0)
     }
     if (props.cell?.cell_type=='code') {
       set_running(true)

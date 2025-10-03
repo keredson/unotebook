@@ -67,8 +67,8 @@ export function Notebook(props) {
       const source = api.getValue().source;
       cells_.push({id:c.id, cell_type:c.cell_type, source})
     }
-    const payload = {cells:cells_, metadata}
-    const resp = await fetch('/_save/'+encodeURI(fn), {
+    const payload = {cells:cells_, metadata, fn}
+    const resp = await fetch('/_save/'+encode_fn(fn), {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(payload)
@@ -109,4 +109,12 @@ export function Notebook(props) {
       <button onClick=${e=>add_cell()}>Add Cell</button>
     </div>
   </div>`;
+}
+
+function encode_fn(fn) {
+  return fn
+    .trim()
+    .replace(/\s+/g, "+")        // spaces -> +
+    .replace(/\//g, "_")         // forbid slash
+    .replace(/[^A-Za-z0-9+._-]/g, "_"); // all else -> _
 }

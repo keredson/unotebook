@@ -1,5 +1,5 @@
 # unotebook.py
-import os, socket, json, sys, builtins, uio
+import os, socket, json, sys, builtins, uio, re
 try: import ubinascii as _b64
 except ImportError: import binascii as _b64
 
@@ -138,7 +138,7 @@ def handle_request(s):
         s.send("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
         run_cell(s, '\n'.join(cmds))
       elif action=='POST' and path.startswith("/_save/"):
-        fn = path[len("/_save/"):]
+        fn = re.sub(r"[^A-Za-z0-9+._-]", "_", path[len("/_save/"):]).replace('+',' ')
         assert fn.endswith('.unb')
         nbytes = int(headers['Content-Length'])
         with open(fn, 'wb') as f:
@@ -181,3 +181,4 @@ def run(port=80):
       cl.close()
 
 run(12345)
+

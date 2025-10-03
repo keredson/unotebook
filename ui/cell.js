@@ -61,6 +61,7 @@ export const Cell = forwardRef((props, ref) => {
   const [source, set_source] = useState(props.cell.source || []);
   const [stdout, set_stdout] = useState(null);
   const [running, set_running] = useState(false);
+  const [show_source, set_show_source] = useState(true);
   const [jpeg, set_jpeg] = useState(null);
   const [png, set_png] = useState(null);
   const [html_, set_html] = useState(null);
@@ -69,6 +70,13 @@ export const Cell = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     getValue: () => ({run, source, clear})
   }));
+
+    useEffect(() => {
+      if (props.cell?.cell_type=='markdown') {
+        set_html(snarkdown(source.join('\n')))
+        set_show_source(false)
+      }
+    }, []);
 
   function placeholder() {
     if (props.cell.cell_type=='code') return 'print("Hello world!")'
@@ -90,6 +98,7 @@ export const Cell = forwardRef((props, ref) => {
     console.log('props.cell?.cell_type', props.cell?.cell_type)
     if (props.cell?.cell_type=='markdown') {
       set_html(snarkdown(source.join('\n')))
+      set_show_source(false)
     }
     if (props.cell?.cell_type=='code') {
       set_running(true)
@@ -112,7 +121,7 @@ export const Cell = forwardRef((props, ref) => {
       <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+markdown</span>
     </div>
     <div style="border-radius: 3px; border-left: 5px solid #ded2ba !important; padding: .5em;">
-      <textarea 
+      ${show_source ? html`<textarea 
         style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1;"
         placeholder=${props.idx==0 ? placeholder() : null}
         cols=80 
@@ -126,15 +135,18 @@ export const Cell = forwardRef((props, ref) => {
         }}
         onFocus=${()=>set_focused(true)}
         onBlur=${()=>set_focused(false)}
-      >${source.join('\n')}</textarea>
-      <div style='display:inline-flex; gap:.5rem; vertical-align:top; opacity:${focused ? 1 : 0}'>
+      >${source.join('\n')}</textarea>` : null }
+      ${show_source ? html`<div style='display:inline-flex; gap:.5rem; vertical-align:top; opacity:${focused ? 1 : 0}'>
         <button style="margin-left:.1em;" title="Run (Ctrl-Enter)" onClick=${e=>run()}>${running ? '◼' : '▶'}</button>
         <span style='cursor:pointer; color:#888;' onClick=${()=>props.delete_cell()}>❌</span>
-      </div>
+      </div>` : null }
       ${stdout ? html`<pre class='output' style='margin:0'><code>${stdout}</code></pre>` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}
-      ${html_ ? html`<div dangerouslySetInnerHTML=${{ __html: html_ }} />` : null}
+      ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>
+        <div style='display:inline-block;' dangerouslySetInnerHTML=${{ __html: html_ }} />
+        <span style='margin-left:1em; cursor:pointer;' onClick=${()=>set_show_source(true)}>📝</span>
+      </div>` : null}
     </div>
   </div>`;
 })

@@ -15,6 +15,9 @@ const css = `
   .add-cell:hover {
     opacity: 1;
   }
+  .markdown h1 {
+    margin-top: 0;
+  }
 `;
 
 

@@ -67,7 +67,7 @@ export function Notebook(props) {
     }
     for (const c of cells) {
       const api = refs.current.get(c.id)?.current;
-      const source = api.getValue().source;
+      const source = api.getValue().source.split('\n');
       cells_.push({id:c.id, cell_type:c.cell_type, source})
     }
     const payload = {cells:cells_, metadata}

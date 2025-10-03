@@ -58,7 +58,7 @@ async function postAndStream(url, payload, onItem) {
 }
 
 export const Cell = forwardRef((props, ref) => {
-  const [source, set_source] = useState(props.cell.source || []);
+  const [source, set_source] = useState(props.cell?.source?.join('\n') || '');
   const [stdout, set_stdout] = useState(null);
   const [running, set_running] = useState(false);
   const [show_source, set_show_source] = useState(true);
@@ -72,8 +72,8 @@ export const Cell = forwardRef((props, ref) => {
   }));
 
     useEffect(() => {
-      if (props.cell?.cell_type=='markdown' && source.join('\n').length) {
-        set_html(snarkdown(source.join('\n')))
+      if (props.cell?.cell_type=='markdown' && source.length) {
+        set_html(snarkdown(source))
         set_show_source(false)
       }
     }, []);
@@ -98,11 +98,11 @@ export const Cell = forwardRef((props, ref) => {
     set_html(null)
     console.log('props.cell?.cell_type', props.cell?.cell_type)
     if (props.cell?.cell_type=='markdown') {
-      const html_ = snarkdown(source.join('\n'));
+      const html_ = snarkdown(source);
       set_html(html_)
       set_show_source(html_.length == 0)
     }
-    if (props.cell?.cell_type=='code') {
+    else if (props.cell?.cell_type=='code') {
       set_running(true)
       postAndStream('/run_cell', {source, fn:props.fn}, resp => {
         if (typeof resp === "string") {
@@ -128,7 +128,7 @@ export const Cell = forwardRef((props, ref) => {
         placeholder=${props.idx==0 ? placeholder() : null}
         cols=80 
         rows=${source.length || 1}
-        onInput=${e => set_source(e.target.value.split('\n'))}
+        onInput=${e => set_source(e.target.value)}
         onKeyDown=${e => {
           if (e.ctrlKey && e.key === "Enter") {
             e.preventDefault();
@@ -137,7 +137,7 @@ export const Cell = forwardRef((props, ref) => {
         }}
         onFocus=${()=>set_focused(true)}
         onBlur=${()=>set_focused(false)}
-      >${source.join('\n')}</textarea>` : null }
+      >${source}</textarea>` : null }
       ${show_source ? html`<div style='display:inline-flex; gap:.5rem; vertical-align:top; opacity:${focused ? 1 : 0}'>
         <button style="margin-left:.1em;" title="Run (Ctrl-Enter)" onClick=${e=>run()}>${running ? '◼' : '▶'}</button>
         <span style='cursor:pointer; color:#888;' onClick=${()=>props.delete_cell()}>❌</span>

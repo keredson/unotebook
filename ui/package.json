@@ -9,7 +9,7 @@
     "preact": "^10.27.2"
   },
   "scripts": {
-    "dev": "esbuild main.js --bundle --format=iife --outfile=../unotebook.js && gzip -fk ../unotebook.js && ls -lh ../unotebook.js.gz",
+    "dev": "esbuild main.js --bundle --format=iife --outfile=../unotebook.js --watch",
     "build": "esbuild main.js --bundle --minify --format=iife --outfile=../unotebook.js --define:process.env.NODE_ENV='\"production\"' && gzip -fk ../unotebook.js && ls -lh ../unotebook.js.gz"
   },
   "dependencies": {

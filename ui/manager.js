@@ -37,6 +37,19 @@ export function Manager() {
     }
   }
 
+  async function download_notebook(fn) {
+    const resp = await fetch('/_notebook/'+fn)
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fn;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   async function upload_notebook() {
     const input = document.getElementById('upload_notebook');
     const file = input.files[0];
@@ -56,6 +69,7 @@ export function Manager() {
         <td style='color:#444;'>${humanize_bytes(f.size)}</td>
         <td style='padding-left:1em; display:inline-flex; gap:.5rem;'>
           <span title='delete ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌</span>
+          <span title='download ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>download_notebook(f.fn)}>📥</span>
           ${f.running ? html`<span title='stop ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>stop_notebook(f.fn)}>◼</span>` : null}
         </td>
       </tr>`)}

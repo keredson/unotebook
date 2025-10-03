@@ -2,6 +2,7 @@
 import os, socket, json, sys, builtins, uio, re
 try: import ubinascii as _b64
 except ImportError: import binascii as _b64
+import _thread
 
 __version__ = '0.1'
 
@@ -221,6 +222,9 @@ def run(port=80):
       except: pass
     finally:
       cl.close()
+
+def start(port=80):
+  _thread.start_new_thread(run, (port,))
 
 if __name__=='__main__':
   run(12345)

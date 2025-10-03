@@ -2,6 +2,6 @@
   "urls": [
     ["unotebook.py", "unotebook.py"],
     ["unotebook.js.gz", "unotebook.js.gz"],
-    ["Getting_Started.unb", "Getting_Started.unb"]
+    ["Getting_Started.unb", "../Getting_Started.unb"]
   ]
 }

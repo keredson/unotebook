@@ -133,26 +133,34 @@ def handle_request(s):
         with open('unotebook.js', 'rb') as f:
           while line := f.readline():
             s.send(line)
+      elif action=='POST' and path=="/_delete":
+        fn = json.loads(s.read(int(headers['Content-Length'])))
+        assert fn.endswith('.unb')
+        os.remove(fn)
+        s.send("HTTP/1.1 200 OK\r\n")
       elif action=='POST' and path=="/run_cell":
         cmds = json.loads(s.read(int(headers['Content-Length'])))
         s.send("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
         run_cell(s, '\n'.join(cmds))
       elif action=='POST' and path.startswith("/_save/"):
-        fn = re.sub(r"[^A-Za-z0-9+._-]", "_", path[len("/_save/"):]).replace('+',' ')
+        fn = _sanitize_and_decode(path[len("/_save/"):])
         assert fn.endswith('.unb')
         nbytes = int(headers['Content-Length'])
         with open(fn, 'wb') as f:
           for i in range(0, nbytes, 1024):
             f.write(s.read(min(1024, nbytes-i)))
         s.send("HTTP/1.1 200 OK\r\n")
-      elif action=='GET' and path=="/files":
-        files = [f for f in os.listdir() if f.endswith(".unb")]
+      elif action=='GET' and path=="/_files":
+        files = sorted(
+          [{'fn':f, 'size':os.stat(f)[6]} for f in os.listdir() if f.endswith(".unb")],
+          key=lambda x: x['fn']
+        )
         body = json.dumps(files)
         s.send("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
         s.send(body)
       elif action=='GET' and path.startswith('/_notebook/') and path.endswith('.unb'):
         s.send("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
-        fn = path.split('/')[-1]
+        fn = _sanitize_and_decode(path.split('/')[-1])
         if fn == '__new__.unb':
           s.send(json.dumps({'cells':[{'cell_type':'code','source':[]}]}))
         else:
@@ -161,6 +169,10 @@ def handle_request(s):
               s.send(line)
       else:
         s.send("HTTP/1.1 404 Not Found\r\n\r\n")
+
+
+def _sanitize_and_decode(fn):
+  return re.sub(r"[^\w+.\- ]", "_", fn.replace('%20',' ').replace('+',' '))
 
 def run(port=80):
   addr = socket.getaddrinfo("0.0.0.0", port)[0][-1]

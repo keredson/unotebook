@@ -132,14 +132,15 @@ def handle_request(s):
         s.send('<script>window.__unotebook_version__ = %s</script>' % repr(__version__))
         s.send(INDEX_HTML)
       elif action=='GET' and path=="/unotebook.js":
-        if _file_exists('unotebook.js.gz'):
+        fn = __file__.replace('.py', '.js')
+        if _file_exists(fn+'.gz'):
           s.send("HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/javascript\r\n\r\n")
-          with open('unotebook.js.gz', 'rb') as f:
+          with open(fn+'.gz', 'rb') as f:
             while bytes := f.read(512):
               s.send(bytes)
         elif _file_exists('unotebook.js'):
           s.send("HTTP/1.1 200 OK\r\nContent-Type: text/javascript\r\n\r\n")
-          with open('unotebook.js', 'rb') as f:
+          with open(fn, 'rb') as f:
             while line := f.readline():
               s.send(line)
         else:

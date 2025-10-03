@@ -26,6 +26,17 @@ export function Manager() {
     }
   }
 
+  async function stop_notebook(fn) {
+    if (confirm('Stop notebook '+fn+'?')) {
+      const resp = await fetch('/_stop', {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(fn)
+      })
+      set_reload(reload+1)
+    }
+  }
+
   return html`<div>
     <h1>µNotebook</h1>
     <table style='margin-left:1em;'>
@@ -33,8 +44,9 @@ export function Manager() {
       ${files.map(f => html`<tr>
         <td><a target=${'_'+f.fn} href='/notebook/${f.fn}'>${rstrip(f.fn, '.unb')}</a></td>
         <td style='color:#444;'>${humanize_bytes(f.size)}</td>
-        <td style='padding-left:1em;'>
-          <span style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌</span>
+        <td style='padding-left:1em; display:inline-flex; gap:.5rem;'>
+          <span title='delete ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌</span>
+          ${f.running ? html`<span title='stop ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>stop_notebook(f.fn)}>◼</span>` : null}
         </td>
       </tr>`)}
       <tr><td><button style='margin-top:.5em' onClick=${()=>new_notebook()}>New Notebook...</button></td></tr>

@@ -86,7 +86,7 @@ export const Cell = forwardRef((props, ref) => {
     }
     if (props.cell?.cell_type=='code') {
       set_running(true)
-      postAndStream('/run_cell', source, resp => {
+      postAndStream('/run_cell', {source, fn:props.fn}, resp => {
         if (typeof resp === "string") {
           set_stdout(prev => (prev || "") + resp)
         }

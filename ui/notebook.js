@@ -100,7 +100,7 @@ export function Notebook(props) {
       <button onClick=${e=>save()}>${props['fn']=='__new__.unb' ? 'Save as...' : 'Save'}</button>
     </div>
     ${cells.map((cell, i) => html`<${Cell} 
-        key=${cell.id} cell=${cell} idx=${i} 
+        key=${cell.id} cell=${cell} idx=${i} fn=${props.fn}
         ref=${getRef(cell.id)} 
         insert_before=${(cell_type) => insert_before(i, cell_type)}
         delete_cell=${() => delete_cell(i)}

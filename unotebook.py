@@ -5,7 +5,7 @@ except ImportError: import binascii as _b64
 
 __version__ = '0.1'
 
-globals_ = {}
+_notebook_globals_ = {}
 locals_ = {}
 
 INDEX_HTML = '''
@@ -73,10 +73,13 @@ def send_repr(o, s):
   json.dump(ret, s)
 
 
-def run_cell(s, cmd):
-  global globals_
-  global locals_
-  print('run_cell', repr(cmd))
+def run_cell(s, fn, cmd):
+  global _notebook_globals_
+  globals_ = _notebook_globals_.get(fn)
+  if globals_ is None:
+    globals_ = {}
+    _notebook_globals_[fn] = globals_
+  print('run_cell', fn, repr(cmd))
   lines = cmd.rstrip().splitlines()
   if not lines: return
   real_print = builtins.print
@@ -92,13 +95,13 @@ def run_cell(s, cmd):
       body.append(last)
       last = None
     if body:
-      exec('\n'.join(body), globals_, locals_)
+      exec('\n'.join(body), globals_, globals_)
     if last:
       try:
-        result = eval(last, globals_, locals_)
+        result = eval(last, globals_, globals_)
         send_repr(result, s)
       except SyntaxError:
-        exec(last, globals_, locals_)
+        exec(last, globals_, globals_)
   finally:
     builtins.print = real_print
 
@@ -138,10 +141,16 @@ def handle_request(s):
         assert fn.endswith('.unb')
         os.remove(fn)
         s.send("HTTP/1.1 200 OK\r\n")
+      elif action=='POST' and path=="/_stop":
+        fn = json.loads(s.read(int(headers['Content-Length'])))
+        assert fn.endswith('.unb')
+        del _notebook_globals_[fn]
+        s.send("HTTP/1.1 200 OK\r\n")
       elif action=='POST' and path=="/run_cell":
-        cmds = json.loads(s.read(int(headers['Content-Length'])))
+        body = json.loads(s.read(int(headers['Content-Length'])))
+        cmds = body.get('source', [])
         s.send("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
-        run_cell(s, '\n'.join(cmds))
+        run_cell(s, body['fn'], '\n'.join(cmds))
       elif action=='POST' and path.startswith("/_save/"):
         fn = _sanitize_and_decode(path[len("/_save/"):])
         assert fn.endswith('.unb')
@@ -152,7 +161,7 @@ def handle_request(s):
         s.send("HTTP/1.1 200 OK\r\n")
       elif action=='GET' and path=="/_files":
         files = sorted(
-          [{'fn':f, 'size':os.stat(f)[6]} for f in os.listdir() if f.endswith(".unb")],
+          [{'fn':f, 'running':f in _notebook_globals_, 'size':os.stat(f)[6]} for f in os.listdir() if f.endswith(".unb")],
           key=lambda x: x['fn']
         )
         body = json.dumps(files)

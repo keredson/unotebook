@@ -70,11 +70,11 @@ export function Notebook(props) {
       const source = api.getValue().source;
       cells_.push({id:c.id, cell_type:c.cell_type, source})
     }
-    const payload = {cells:cells_, metadata, fn}
+    const payload = {cells:cells_, metadata}
     const resp = await fetch('/_save/'+encode_fn(fn), {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload, null, 2)
     })
     set_saving(false)
     if (props['fn']=='__new__.unb') {

@@ -96,6 +96,143 @@ export const Cell = forwardRef((props, ref) => {
     set_error('Aborted')
   }
 
+  function setSourceAndRestoreSelection(nextValue, el, start, end = start) {
+    set_source(nextValue);
+    // wait for React to paint, then restore
+    requestAnimationFrame(() => {
+      try { el.setSelectionRange(start, end); } catch (_) {}
+    });
+  }
+
+  function handleKeyDown(e) {
+    const el = e.target;
+
+    // === TAB / SHIFT+TAB ===
+    if (e.key === "Tab") {
+      e.preventDefault();
+
+      const val   = el.value;
+      const start = el.selectionStart;
+      const end   = el.selectionEnd;
+
+      if (start === end) {
+        // single caret: insert two spaces and move caret after them
+        el.setRangeText("  ", start, end, "end");
+        const caret = start + 2;
+        return setSourceAndRestoreSelection(el.value, el, caret);
+      }
+
+      // Compute full-line selection bounds
+      const lineStart = val.lastIndexOf("\n", start - 1) + 1;
+      const nextNl    = val.indexOf("\n", end);
+      const lineEnd   = (nextNl === -1 ? val.length : nextNl);
+
+      const block = val.slice(lineStart, lineEnd);
+      const lines = block.split("\n");
+
+      // Precompute absolute start index of each selected line
+      const lineStartsAbs = [];
+      {
+        let idx = lineStart;
+        for (let i = 0; i < lines.length; i++) {
+          lineStartsAbs.push(idx);
+          idx += lines[i].length + 1; // +1 for '\n' (except last line; harmless)
+        }
+      }
+
+      // Build per-line deltas (how many chars we add/remove at each line start)
+      const deltas = new Array(lines.length).fill(0);
+
+      let newBlock;
+      if (e.shiftKey) {
+        // OUTDENT: remove up to two leading spaces per line
+        newBlock = lines.map((ln, i) => {
+          const m = ln.match(/^ {1,2}/);
+          const remove = m ? m[0].length : 0;
+          deltas[i] = -remove;
+          return ln.slice(remove);
+        }).join("\n");
+      } else {
+        // INDENT: add two spaces to each line
+        newBlock = lines.map((ln, i) => {
+          deltas[i] = 2;
+          return "  " + ln;
+        }).join("\n");
+      }
+
+      // Replace the block
+      el.setSelectionRange(lineStart, lineEnd);
+      el.setRangeText(newBlock, lineStart, lineEnd, "preserve"); // keep caret anchors
+
+      // Adjust original start/end by sum of deltas for all lines whose start precedes the anchor
+      const sumDeltasUpTo = (pos) => {
+        let sum = 0;
+        for (let i = 0; i < lineStartsAbs.length; i++) {
+          if (pos > lineStartsAbs[i]) sum += deltas[i];
+        }
+        return sum;
+      };
+
+      const newStart = start + sumDeltasUpTo(start);
+      const newEnd   = end   + sumDeltasUpTo(end);
+
+      el.setSelectionRange(newStart, newEnd);
+
+      // update your state if you’re controlling the textarea
+      set_source?.(el.value);
+      return;
+    }
+
+    // --- ENTER: keep indent; +2 spaces if previous line ends with ":" ---
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const start = el.selectionStart;
+      const end   = el.selectionEnd;
+      const val   = el.value;
+
+      const lineStart = val.lastIndexOf("\n", start - 1) + 1;
+      const before    = val.slice(lineStart, start);
+      const baseIndent = (before.match(/^[ ]*/) || [""])[0];
+
+      // Python block? last non-space before caret is ":" (ignore trailing spaces/comments)
+      const beforeTrim = before.replace(/\s+$/, "");
+      const blockLine  = /:\s*(#.*)?$/.test(beforeTrim);
+
+      const extra = blockLine ? "  " : "";     // +2 spaces
+      el.setRangeText("\n" + baseIndent + extra, start, end, "end");
+      set_source?.(el.value);
+      return;
+    }
+
+    // --- BACKSPACE at start-of-indent: remove 2 spaces (soft outdent) ---
+    if (e.key === "Backspace") {
+      const start = el.selectionStart;
+      const end   = el.selectionEnd;
+      if (start === end) {
+        const val   = el.value;
+        const lineStart = val.lastIndexOf("\n", start - 1) + 1;
+        // caret is within leading spaces?
+        const leading = (val.slice(lineStart, start).match(/^[ ]*$/) || [""])[0];
+        if (leading.length > 0) {
+          e.preventDefault();
+          // delete 2 spaces if available, else delete whatever is there
+          const remove = Math.min(2, leading.length);
+          el.setRangeText("", start - remove, start, "end");
+          set_source?.(el.value);
+          return;
+        }
+      }
+    }
+
+    // Ctrl+Enter run (as you had)
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+      run();
+    }
+  }
+
+
+
   function run() {
     set_stdout(null)
     set_jpeg(null)
@@ -127,7 +264,7 @@ export const Cell = forwardRef((props, ref) => {
   return html`<div>
     <div class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
       <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('code')}>+code</span>
-      <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+markdown</span>
+      <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+doc</span>
     </div>
     <div style="border-radius: 3px; border-left: 5px solid #ded2ba !important; padding: .5em; background-color:#f0ebe1;">
       ${show_source ? html`
@@ -139,12 +276,7 @@ export const Cell = forwardRef((props, ref) => {
                 placeholder=${props.idx==0 ? placeholder() : null}
                 rows=${source.split('\n').length || 1}
                 onInput=${e => set_source(e.target.value)}
-                onKeyDown=${e => {
-                  if (e.ctrlKey && e.key === "Enter") {
-                    e.preventDefault();
-                    run()
-                  }
-                }}
+                onKeyDown=${handleKeyDown}
                 onFocus=${()=>set_focused(true)}
                 onBlur=${()=>set_focused(false)}
               >${source}</textarea>

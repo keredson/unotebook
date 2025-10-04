@@ -224,10 +224,16 @@ export const Cell = forwardRef((props, ref) => {
       }
     }
 
-    // Ctrl+Enter run (as you had)
+    // Ctrl+Enter run
     if (e.ctrlKey && e.key === "Enter") {
       e.preventDefault();
       run();
+    }
+
+    // Ctrl+S (save)
+    if (e.ctrlKey && e.key === "s") {
+      e.preventDefault();
+      props.save()
     }
   }
 
@@ -275,7 +281,7 @@ export const Cell = forwardRef((props, ref) => {
                 style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:100%"
                 placeholder=${props.idx==0 ? placeholder() : null}
                 rows=${source.split('\n').length || 1}
-                onInput=${e => set_source(e.target.value)}
+                onInput=${e => {set_source(e.target.value); props.changed()}}
                 onKeyDown=${handleKeyDown}
                 onFocus=${()=>set_focused(true)}
                 onBlur=${()=>set_focused(false)}

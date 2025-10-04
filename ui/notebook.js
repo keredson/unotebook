@@ -15,6 +15,9 @@ export function Notebook(props) {
   const [cells, set_cells] = useState([]);
   const [metadata, set_metadata] = useState([]);
   const [saving, set_saving] = useState(false);
+  const [changes, set_changes] = useState(false);
+
+
   
   const refs = useRef(new Map());
   const getRef = id => {
@@ -77,6 +80,7 @@ export function Notebook(props) {
       body: JSON.stringify(payload, null, 2)
     })
     set_saving(false)
+    set_changes(false)
     if (props['fn']=='__new__.unb') {
       route('/notebook/'+fn)
     }
@@ -115,13 +119,15 @@ export function Notebook(props) {
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
       <button onClick=${e=>run_all()}>Run All</button>
       <button onClick=${e=>restart()}>Restart</button>
-      <button onClick=${e=>save()}>${props['fn']=='__new__.unb' ? 'Save as...' : 'Save'}</button>
+      <button disabled=${props['fn']!='__new__.unb' && !changes} onClick=${e=>save()}>${props['fn']=='__new__.unb' ? 'Save as...' : 'Save'}</button>
     </div>
     ${cells.map((cell, i) => html`<${Cell} 
         key=${cell.id} cell=${cell} idx=${i} fn=${props.fn}
         ref=${getRef(cell.id)} 
         insert_before=${(cell_type) => insert_before(i, cell_type)}
         delete_cell=${() => delete_cell(i)}
+        save=${save}
+        changed=${()=>set_changes(true)}
     />`)}
     <div style='display:flex; gap:.5rem; margin-top:.5em;'>
       <button onClick=${e=>add_cell()}>Add Cell</button>

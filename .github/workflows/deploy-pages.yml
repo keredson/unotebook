@@ -28,10 +28,14 @@ jobs:
           cache: "yarn"
 
       - name: Install deps
-        run: cd ui && yarn install --frozen-lockfile
+        run: |
+          cd ui
+          yarn install --frozen-lockfile
 
       - name: Build
-        run: cd ui && yarn build
+        run: |
+          cd ui
+          yarn build
 
       # Package the site for Pages.
       # Assumes `yarn build` writes ./unotebook.js at repo root,

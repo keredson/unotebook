@@ -69,6 +69,13 @@ def send_repr(o, s):
 class StopExec(Exception):
   pass
 
+_thread_local_print_functions = {}
+_real_print = builtins.print
+def _capture_thread_print(*args, **kwargs):
+  _print = _thread_local_print_functions.get(_thread.get_ident(), _real_print)
+  return _print(*args, **kwargs)
+builtins.print = _capture_thread_print
+
 def run_cell(s, fn, cmd):
   global _notebook_globals_
   globals_ = _notebook_globals_.get(fn)
@@ -78,17 +85,17 @@ def run_cell(s, fn, cmd):
   print('run_cell', fn, repr(cmd))
   lines = cmd.rstrip().splitlines()
   if not lines: return
-  real_print = builtins.print
+  
   def capture_print(*args, **kwargs):
     try:
       buf = uio.StringIO()
-      real_print(*args, **kwargs, file=buf)
+      _real_print(*args, **kwargs, file=buf)
       s.send(json.dumps(buf.getvalue()))
       s.send('\n')
     except:
       raise StopExec
+  _thread_local_print_functions[_thread.get_ident()] = capture_print
 
-  builtins.print = capture_print
   try:
     *body, last = lines
     if last.startswith(' ') or last.startswith('\t'):
@@ -104,7 +111,7 @@ def run_cell(s, fn, cmd):
         exec(last, globals_, globals_)
   except StopExec: pass
   finally:
-    builtins.print = real_print
+    del _thread_local_print_functions[_thread.get_ident()]
 
 
 class StdoutStreamer:

@@ -84,6 +84,7 @@ export const Cell = forwardRef((props, ref) => {
   function clear() {
     set_stdout(null)
     set_jpeg(null)
+    set_error(null)
     set_png(null)
     set_html(null)
     set_show_source(true)
@@ -100,6 +101,7 @@ export const Cell = forwardRef((props, ref) => {
     set_jpeg(null)
     set_png(null)
     set_html(null)
+    set_error(null)
     console.log('props.cell?.cell_type', props.cell?.cell_type)
     if (props.cell?.cell_type=='markdown') {
       const html_ = snarkdown(source);

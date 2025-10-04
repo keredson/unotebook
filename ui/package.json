@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "esbuild main.js --bundle --format=iife --outfile=../unotebook.js --watch",
-    "build": "esbuild main.js --bundle --minify --format=iife --outfile=../unotebook.js --define:process.env.NODE_ENV='\"production\"' && gzip -fk ../unotebook.js && ls -lh ../unotebook.js.gz"
+    "build": "mkdir -p ../dist && esbuild main.js --bundle --minify --format=iife --outfile=../dist/unotebook.js --define:process.env.NODE_ENV='\"production\"' && gzip -fk ../dist/unotebook.js && ls -lh ../dist/unotebook.js.gz"
   },
   "dependencies": {
     "preact-hooks": "^0.0.0-0.0.0",

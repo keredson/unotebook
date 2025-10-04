@@ -18,6 +18,30 @@ const css = `
   .markdown h1 {
     margin-top: 0;
   }
+  body {
+    font-size: 16px;
+    line-height: 1.65;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+    min-height: 0;
+    height: auto;
+    font-family: system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  }
+  body > #app {
+    margin-top: 1em;
+    background-color: #f4f0e8;
+    padding:2em;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.3);
+    margin: 1em;
+  }
+  html {
+    background-color: #ddd;
+  }
+  .output {
+    padding: 8px;
+    display: block;
+  }
 `;
 
 
@@ -31,7 +55,7 @@ function App() {
         <${Manager} path="/" />
         <${Notebook} path="/notebook/:fn" />
       <//>
-      <div style='margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${window.__unotebook_version__} - © 2025 Derek Anderson</div>
+      <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${window.__unotebook_version__} - © 2025 Derek Anderson</div>
     </div>
   `;
 }

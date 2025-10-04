@@ -12,21 +12,14 @@ locals_ = {}
 INDEX_HTML = '''
 <!doctype html>
 <meta charset="utf-8">
+<html>
+<head>
 <title>µNotebook</title>
-<body style='background-color: #f4f0e8; font-family: system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;' id="app">Loading...</body>
-<style>
-  body {
-    
-    font-size: 16px;
-    line-height: 1.65;
-    
-  }
-  .output {
-    padding: 8px;
-    display: block;
-  }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body><div id="app">Loading...</div></body>
 <script type="module" src="/unotebook.js"></script>
+</html>
 '''
 
 def stream_b64(buf, s):

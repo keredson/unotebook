@@ -53,7 +53,7 @@ export function Notebook(props) {
 
   function add_cell() {
     const next = cells.slice()
-    next.push({source:[]})
+    next.push({source:[], cell_type:'code'})
     set_cells(next)
   }
 
@@ -111,7 +111,7 @@ export function Notebook(props) {
   }
 
   return html`<div>
-    <h1>${doc?.metadata?.name || props.fn}</h1>
+    <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn}</h1>
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
       <button onClick=${e=>run_all()}>Run All</button>
       <button onClick=${e=>restart()}>Restart</button>

@@ -17,7 +17,18 @@ export function Notebook(props) {
   const [saving, set_saving] = useState(false);
   const [changes, set_changes] = useState(false);
 
-
+  const changesRef = useRef(changes);
+  useEffect(() => { changesRef.current = changes }, [changes]);
+  useEffect(() => {
+    const handler = (e) => {
+      if (changesRef.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
   
   const refs = useRef(new Map());
   const getRef = id => {

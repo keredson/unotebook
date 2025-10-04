@@ -41,6 +41,7 @@ const css = `
   .output {
     padding: 8px;
     display: block;
+    font-size:smaller;
   }
 `;
 

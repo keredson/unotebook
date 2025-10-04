@@ -66,6 +66,8 @@ def send_repr(o, s):
     ret = repr(o)
   json.dump(ret, s)
 
+class StopExec(Exception):
+  pass
 
 def run_cell(s, fn, cmd):
   global _notebook_globals_
@@ -78,10 +80,14 @@ def run_cell(s, fn, cmd):
   if not lines: return
   real_print = builtins.print
   def capture_print(*args, **kwargs):
-    buf = uio.StringIO()
-    real_print(*args, **kwargs, file=buf)
-    s.send(json.dumps(buf.getvalue()))
-    s.send('\n')
+    try:
+      buf = uio.StringIO()
+      real_print(*args, **kwargs, file=buf)
+      s.send(json.dumps(buf.getvalue()))
+      s.send('\n')
+    except:
+      raise StopExec
+
   builtins.print = capture_print
   try:
     *body, last = lines
@@ -96,6 +102,7 @@ def run_cell(s, fn, cmd):
         send_repr(result, s)
       except SyntaxError:
         exec(last, globals_, globals_)
+  except StopExec: pass
   finally:
     builtins.print = real_print
 
@@ -206,15 +213,18 @@ def run(port=80):
   print("Serving on", addr)
   while True:
     cl, _ = s.accept()
-    try:
-      handle_request(cl)
-    except Exception as e:
-      print(e)
-      sys.print_exception(e)
-      try: s.send("HTTP/1.1 500 Internal Server Error\r\n\r\nError")
-      except: pass
-    finally:
-      cl.close()
+    def _handle_request(http_sock):
+      try:
+        handle_request(http_sock)
+      except Exception as e:
+        print(e)
+        sys.print_exception(e)
+        try: s.send("HTTP/1.1 500 Internal Server Error\r\n\r\nError")
+        except: pass
+      finally:
+        http_sock.close()
+    #_handle_request()
+    _thread.start_new_thread(_handle_request, (cl,))
 
 def start(port=80):
   _thread.start_new_thread(run, (port,))

@@ -183,6 +183,13 @@ export const Cell = forwardRef((props, ref) => {
       return;
     }
 
+    // Ctrl+Enter run
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+      run();
+      return;
+    }
+
     // --- ENTER: keep indent; +2 spaces if previous line ends with ":" ---
     if (e.key === "Enter") {
       e.preventDefault();
@@ -222,12 +229,6 @@ export const Cell = forwardRef((props, ref) => {
           return;
         }
       }
-    }
-
-    // Ctrl+Enter run
-    if (e.ctrlKey && e.key === "Enter") {
-      e.preventDefault();
-      run();
     }
 
     // Ctrl+S (save)

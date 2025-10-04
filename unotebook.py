@@ -4,7 +4,7 @@ try: import ubinascii as _b64
 except ImportError: import binascii as _b64
 import _thread
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 _notebook_globals_ = {}
 locals_ = {}

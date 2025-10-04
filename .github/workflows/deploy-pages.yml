@@ -28,14 +28,12 @@ jobs:
           cache: "yarn"
 
       - name: Install deps
-        run: |
-          cd ui
-          yarn install --frozen-lockfile
+        working-directory: ui
+        run: yarn install --frozen-lockfile
 
       - name: Build
-        run: |
-          cd ui
-          yarn build
+        working-directory: ui
+        run: yarn build
 
       # Package the site for Pages.
       # Assumes `yarn build` writes ./unotebook.js at repo root,
@@ -44,7 +42,6 @@ jobs:
         run: |
           mkdir -p dist
           cp ui/index.html dist/index.html
-          cp unotebook.js dist/unotebook.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

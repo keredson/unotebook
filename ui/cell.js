@@ -124,27 +124,33 @@ export const Cell = forwardRef((props, ref) => {
     </div>
     <div style="border-radius: 3px; border-left: 5px solid #ded2ba !important; padding: .5em; background-color:#f0ebe1;">
       ${show_source ? html`
-        <div style='display:inline-flex; gap:.5rem; vertical-align:top;'>
-          <textarea 
-            style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1;"
-            placeholder=${props.idx==0 ? placeholder() : null}
-            cols=80 
-            rows=${source.split('\n').length || 1}
-            onInput=${e => set_source(e.target.value)}
-            onKeyDown=${e => {
-              if (e.ctrlKey && e.key === "Enter") {
-                e.preventDefault();
-                run()
-              }
-            }}
-            onFocus=${()=>set_focused(true)}
-            onBlur=${()=>set_focused(false)}
-          >${source}</textarea>
-          <div style='display:inline-flex; gap:.5rem; opacity:${focused ? 1 : 0}'>
-            <span style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>run()}>${running ? '◼' : '▶'}</span>
-            <span style='cursor:pointer; color:#888;' onClick=${()=>props.delete_cell()}>❌</span>
-          </div>
-        </div>` : null }
+        <table style='width: 100%;'>
+          <tr>
+            <td>
+              <textarea 
+                style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:100%"
+                placeholder=${props.idx==0 ? placeholder() : null}
+                rows=${source.split('\n').length || 1}
+                onInput=${e => set_source(e.target.value)}
+                onKeyDown=${e => {
+                  if (e.ctrlKey && e.key === "Enter") {
+                    e.preventDefault();
+                    run()
+                  }
+                }}
+                onFocus=${()=>set_focused(true)}
+                onBlur=${()=>set_focused(false)}
+              >${source}</textarea>
+            </td>
+            <td width='4em' valign='top'>
+              <div style='margin-left:.1em; opacity:${focused ? 1 : 0}'>
+                <span style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>run()}>${running ? '◼' : '▶'}</span>
+                <br/>
+                <span style='cursor:pointer; color:#888;' onClick=${()=>props.delete_cell()}>❌</span>
+              </div>
+            </td>
+          </tr>
+        </table>` : null }
       ${stdout ? html`<pre class='output' style='margin:0'><code>${stdout}</code></pre>` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}

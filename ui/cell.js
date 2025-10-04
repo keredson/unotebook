@@ -259,11 +259,17 @@ export const Cell = forwardRef((props, ref) => {
         if (typeof resp === "string") {
           set_stdout(prev => (prev || "") + resp)
         }
-        if (resp['image/jpeg']) {
+        else if (resp['image/jpeg']) {
           set_jpeg('data:image/jpeg;base64,'+resp['image/jpeg'])
         }
-        if (resp['image/png']) {
+        else if (resp['image/png']) {
           set_png('data:image/png;base64,'+resp['image/png'])
+        }
+        else if (resp['image/png']) {
+          set_png('data:image/png;base64,'+resp['image/png'])
+        }
+        else if (resp.exception) {
+          set_error(resp.traceback)
         }
       }, ac).then(() => set_running(false))
     }

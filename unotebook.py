@@ -110,6 +110,13 @@ def run_cell(s, fn, cmd):
       except SyntaxError:
         exec(last, globals_, globals_)
   except StopExec: pass
+  except Exception as e:
+    buf = uio.StringIO()
+    sys.print_exception(e, buf)
+    tb = buf.getvalue()
+    tb = '\n'.join([line for line in tb.split('\n') if not line.startswith('  File "unotebook.py"')])
+    json.dump({'exception':repr(e), 'traceback':tb}, s)
+
   finally:
     del _thread_local_print_functions[_thread.get_ident()]
 

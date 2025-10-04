@@ -42,6 +42,7 @@ const css = `
     padding: 8px;
     display: block;
     font-size:smaller;
+    line-height: 1.1em;
   }
 `;
 

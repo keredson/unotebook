@@ -155,7 +155,7 @@ export function Notebook(props) {
   }
 
   async function reset() {
-    if (confirm("Reset notebook?\nThis Clears all variables on the device.")) {
+    if (confirm("Clear all output and reset all variables/code on the device?")) {
       sinkRef.current = { id: null, cb: null };
       await props.backend.reset()
       for (const c of cells) {

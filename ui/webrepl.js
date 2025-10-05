@@ -88,6 +88,11 @@ export class WebRepl extends EventTarget {
     this.dispatchEvent(new Event('connect'));
   }
 
+  async reset() {
+    console.log('resetting webrepl')
+    await this.send('import sys, gc; sys.modules.clear(); gc.collect(); locals().clear()')
+  }
+
   async send(code, finished=null) {
     if (!this.connected || !this.ws || this.ws.readyState !== 1) {
       throw new Error('Not connected (WebREPL)');

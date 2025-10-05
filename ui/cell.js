@@ -320,7 +320,7 @@ export const Cell = forwardRef((props, ref) => {
             <td width='4em' valign='top'>
               <div style='opacity:${focused ? 1 : 0}; line-height:1.1'>
                 <div style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>running ? stop() : run()}>${running ? '◼' : '▶'}</div>
-                <div style='cursor:pointer; color:#888;' onClick=${()=>props.delete_cell()}>❌</div>
+                <div style='cursor:pointer; color:#888;' onClick=${()=>props.delete_cell()}>🗙</div>
               </div>
             </td>
           </tr>

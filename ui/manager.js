@@ -59,16 +59,17 @@ export function Manager() {
   return html`<div style='text-align:center;'>
     <h1 style='margin-top:0'>µNotebook</h1>
     <table style='margin:0 auto; text-align:left;'>
-      <tr><th>Notebook</th><th>Size</th></tr>
+      <tr><th></th><th>Notebook</th><th>Size</th></tr>
       ${files.map(f => html`<tr>
+        <td style='color:#444;'>${iconForSource(f.source)}</td>
         <td style='padding:0;'>
-          ${iconForSource(f.source)}<a href='#/${f.source}/${f.fn}'><code>${f.fn}</code></a>
+          <a href='#/${f.source}/${f.fn}'><code>${f.fn}</code></a>
         </td>
         <td style='color:#444;'>${humanize_bytes(f.size)}</td>
         <td>
           <div style='padding-left:1em; display:inline-flex; gap:.5rem;'>
-            <span title='delete ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌</span>
-            <span title='download ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>download_notebook(f.fn)}>📥</span>
+            <span title='delete ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌︎</span>
+            <span title='download ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>download_notebook(f.fn)}>📥︎</span>
           </div>
         </td>
       </tr>`)}
@@ -98,9 +99,9 @@ function rstrip(str, suffix) {
 
 function iconForSource(source) {
   switch (source) {
-    case 'local':   return '🌐'; // browser-local
-    case 'device':  return '⚙️'; // esp32 / pybricks
-    case 'cloud':   return '☁️';
-    default:        return '📄';
+    case 'local':   return '🌐︎'; // browser-local or 🌐
+    case 'device':  return '⚙︎'; // esp32 / pybricks or ⚙️
+    case 'cloud':   return '☁︎'; // or ☁️
+    default:        return '';
   }
 }

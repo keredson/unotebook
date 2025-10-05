@@ -48,6 +48,12 @@ export function Notebook(props) {
       set_cells(n['cells'].map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
       set_metadata(n['metadata'])
       document.title = props['fn'] + ' - µNotebook';
+    }).catch(error => {
+      console.log({error})
+      const n = {cells:[{cell_type:'code'}]}
+      set_doc(n)
+      set_cells(n['cells'].map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
+      set_metadata(n['metadata'])
     });
   }, []);
 
@@ -67,9 +73,9 @@ export function Notebook(props) {
     }
   }
 
-  function add_cell() {
+  function add_cell(cell_type='code') {
     const next = cells.slice()
-    next.push({source:[], cell_type:'code'})
+    next.push({source:[], cell_type})
     set_cells(next)
   }
 
@@ -185,7 +191,8 @@ export function Notebook(props) {
         run_cell=${run_cell}
     />`)}
     <div style='display:flex; gap:.5rem; margin-top:.5em;'>
-      <button onClick=${e=>add_cell()}>Add Cell</button>
+      <button onClick=${e=>add_cell()}>Add Code</button>
+      <button onClick=${e=>add_cell('markdown')} style='border: 0; background-color: transparent; color: #444;'>Add Doc</button>
     </div>
   </div>`;
 }

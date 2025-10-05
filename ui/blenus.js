@@ -91,6 +91,13 @@ export class BleNus extends EventTarget {
     await this.sendCmd(0x06, new Uint8Array([0x04]));
   }
 
+  async reset() {
+    console.log('resetting ble')
+    await this.sendCmd(0x00);
+    await sleep(150)
+    await this.sendCmd(0x02);
+  }
+
   disconnect() {
     if (this.device?.gatt.connected) this.device.gatt.disconnect();
   }
@@ -132,4 +139,8 @@ function parsePybricksStatus(v) {
   }
 
   return result;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

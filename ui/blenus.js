@@ -78,7 +78,7 @@ export class BleNus extends EventTarget {
     const {head, tail} = cleaveLastStatement(code)
     this.finished = finished
     console.log({head, tail})
-    code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : tail)
+    code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : (tail?.length ? '\n'+tail : ''))
     console.log({code})
     const bytes = enc.encode(code.endsWith('\n') ? code : code + '\n');
     this.ignore_bytes = bytes.length + 'paste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== '.length + 5

@@ -309,7 +309,7 @@ export const Cell = forwardRef((props, ref) => {
             <td>
               <textarea 
                 style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:calc(100% - 1.5em)"
-                placeholder=${props.idx==0 ? placeholder() : null}
+                placeholder=${placeholder()}
                 rows=${source.split('\n').length || 1}
                 onInput=${e => {set_source(e.target.value); props.changed()}}
                 onKeyDown=${handleKeyDown}

@@ -7,52 +7,6 @@ import snarkdown from 'snarkdown';
 
 const html = htm.bind(h);
 
-async function postAndStream(url, payload, onItem, ac) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(payload),
-    signal: ac.signal
-  });
-
-  if (!res.ok || !res.body) {
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-
-      // NDJSON parse: split at newlines; keep the last partial line
-      let nl;
-      while ((nl = buffer.indexOf("\n")) !== -1) {
-        const line = buffer.slice(0, nl).trim();
-        buffer = buffer.slice(nl + 1);
-        if (!line) continue;
-        try {
-          const obj = JSON.parse(line);
-          onItem(obj);
-        } catch (e) {
-          console.warn("Bad NDJSON line:", line, e);
-        }
-      }
-    }
-
-    // flush any final buffered complete line (rare)
-    const last = buffer.trim();
-    if (last) {
-      onItem(JSON.parse(last));
-    }
-  } finally {
-    reader.releaseLock?.();
-  }
-}
 
 export const Cell = forwardRef((props, ref) => {
   const [source, set_source] = useState(props.cell?.source?.join('\n') || '');
@@ -255,26 +209,6 @@ export const Cell = forwardRef((props, ref) => {
     }
     else if (props.cell?.cell_type=='code') {
       run_code().then(()=>{return})
-      return
-      const ac = new AbortController();
-      set_running(ac)
-      postAndStream('/run_cell', {source:source.split('\n'), fn:props.fn}, resp => {
-        if (typeof resp === "string") {
-          set_stdout(prev => (prev || "") + resp)
-        }
-        else if (resp['image/jpeg']) {
-          set_jpeg('data:image/jpeg;base64,'+resp['image/jpeg'])
-        }
-        else if (resp['image/png']) {
-          set_png('data:image/png;base64,'+resp['image/png'])
-        }
-        else if (resp['image/png']) {
-          set_png('data:image/png;base64,'+resp['image/png'])
-        }
-        else if (resp.exception) {
-          set_error(resp.traceback)
-        }
-      }, ac).then(() => set_running(false))
     }
   }
 

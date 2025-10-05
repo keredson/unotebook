@@ -1,248 +1,224 @@
-# unotebook.py
-import os, socket, json, sys, builtins, uio, re
-try: import ubinascii as _b64
-except ImportError: import binascii as _b64
-import _thread
+import network, machine, ubinascii, uasyncio as asyncio, socket, struct, os, webrepl
 
-__version__ = '0.2'
-
-_notebook_globals_ = {}
-locals_ = {}
-
-INDEX_HTML = '''
-<!doctype html>
-<meta charset="utf-8">
-<html>
-<head>
-<title>µNotebook</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
-<body><div id="app">Loading...</div></body>
-<script type="module" src="/unotebook.js"></script>
-</html>
-'''
-
-def stream_b64(buf, s):
-  for i in range(0, len(buf), 57):
-    b64_s = _b64.b2a_base64(buf[i:i+57])
-    if isinstance(b64_s, bytes) and b64_s.endswith(b'\n'): b64_s = b64_s[:-1]
-    if isinstance(b64_s, str) and b64_s.endswith('\n'): b64_s = b64_s[:-1]
-    s.send(b64_s)
-
-def send_repr(o, s):
-  if o is None: return
-  try:
-    buf = memoryview(o)
-    if buf[:2] == b'\xff\xd8':
-      s.send('{"image/jpeg":"')
-      stream_b64(buf, s)
-      s.send('"}')
-      return
-    elif buf[:8] == b'\x89PNG\r\n\x1a\n':
-      s.send('{"image/png":"')
-      stream_b64(buf, s)
-      s.send('"}')
-      return
-  except TypeError:
-    pass # not a buffer
-  ret = {}
-  if hasattr(o, '_repr_mimebundle_'):
-    ret = o._repr_mimebundle_()
-  elif hasattr(o, '_repr_html_'):
-    ret['text/html'] = o._repr_html_()
-  elif hasattr(o, '_repr_markdown_'):
-    ret['text/htmarkdownml'] = o._repr_markdown_()
-  elif hasattr(o, '_repr_svg_'):
-    ret['image/svg+xml'] = o._repr_svg_()
-  elif hasattr(o, '_repr_png_'):
-    ret['image/png'] = o._repr_png_()
-  elif hasattr(o, '_repr_jpeg_'):
-    ret['image/jpeg'] = o._repr_jpeg_()
-  elif hasattr(o, '_repr_latex_'):
-    ret['text/latex'] = o._repr_latex_()
-  elif hasattr(o, '_repr_javascript_'):
-    ret['application/javascript'] = o._repr_javascript_()
-  else:
-    ret = repr(o)
-  json.dump(ret, s)
-
-class StopExec(Exception):
-  pass
-
-_thread_local_print_functions = {}
-_real_print = builtins.print
-def _capture_thread_print(*args, **kwargs):
-  _print = _thread_local_print_functions.get(_thread.get_ident(), _real_print)
-  return _print(*args, **kwargs)
-builtins.print = _capture_thread_print
-
-def run_cell(s, fn, cmd):
-  global _notebook_globals_
-  globals_ = _notebook_globals_.get(fn)
-  if globals_ is None:
-    globals_ = {}
-    _notebook_globals_[fn] = globals_
-  print('run_cell', fn, repr(cmd))
-  lines = cmd.rstrip().splitlines()
-  if not lines: return
-  
-  def capture_print(*args, **kwargs):
+__version__ = None
+try:
+    __version__ = open('unotebook_VERSION').read()
+except:
     try:
-      buf = uio.StringIO()
-      _real_print(*args, **kwargs, file=buf)
-      s.send(json.dumps(buf.getvalue()))
-      s.send('\n')
+      __version__ = open('VERSION').read()
     except:
-      raise StopExec
-  _thread_local_print_functions[_thread.get_ident()] = capture_print
+        print("could not load version")
 
+AP_PASSWORD = None
+
+# ---------- AP ----------
+def start_ap():
+    chip = ubinascii.hexlify(machine.unique_id()).decode().upper()
+    ssid = "uNotebook-" + chip[-6:]
+    ap = network.WLAN(network.AP_IF)
+    ap.active(True)
+    if AP_PASSWORD and len(AP_PASSWORD) >= 8:
+        ap.config(essid=ssid, password=AP_PASSWORD, authmode=network.AUTH_WPA_WPA2_PSK)
+    else:
+        ap.config(essid=ssid, authmode=network.AUTH_OPEN)
+    for _ in range(40):
+        if ap.ifconfig()[0] != "0.0.0.0":
+            break
+        asyncio.sleep_ms(50)
+    ip = ap.ifconfig()[0]
+    print("AP:", ssid, "IP:", ip)
+    return ap, ip
+
+# ---------- DNS (wildcard -> our IP) ----------
+class DnsServer:
+    def __init__(self, ip_bytes):
+        self.ip_bytes = ip_bytes
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        except:
+            pass
+        self.sock.bind(("0.0.0.0", 53))
+        self.sock.setblocking(False)
+
+    async def serve(self):
+        print("DNS up")
+        while True:
+            try:
+                data, addr = self.sock.recvfrom(512)
+            except OSError:
+                await asyncio.sleep_ms(2)
+                continue
+            if not data or len(data) < 12:
+                continue
+            tid = data[0:2]
+            qdcount = struct.unpack("!H", data[4:6])[0]
+            off = 12
+            for _ in range(qdcount):
+                while off < len(data) and data[off] != 0:
+                    off += 1 + data[off]
+                off += 1  # null
+                off += 4  # QTYPE,QCLASS
+
+            hdr = tid + b"\x81\x80" + data[4:6] + b"\x00\x01\x00\x00"
+            q = data[12:off]
+            ans = b"\xC0\x0C" + b"\x00\x01" + b"\x00\x01" + b"\x00\x00\x00\x3C" + b"\x00\x04" + self.ip_bytes
+            pkt = hdr + q + ans
+            try:
+                self.sock.sendto(pkt, addr)
+            except OSError:
+                pass
+
+# ---------- HTTP ----------
+CONTENT_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".htm":  "text/html; charset=utf-8",
+    ".js":   "application/javascript; charset=utf-8",
+    ".css":  "text/css; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".txt":  "text/plain; charset=utf-8",
+}
+
+def guess_type(path):
+    for ext, ctype in CONTENT_TYPES.items():
+        if path.endswith(ext):
+            return ctype
+    return "application/octet-stream"
+
+class HttpServer:
+    def __init__(self):
+        self.sock = socket.socket()
+        try:
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        except:
+            pass
+        self.sock.bind(("0.0.0.0", 80))
+        self.sock.listen(2)
+        self.sock.setblocking(False)
+
+    async def serve(self):
+        print("HTTP up")
+        while True:
+            try:
+                cl, addr = self.sock.accept()
+            except OSError:
+                await asyncio.sleep_ms(2)
+                continue
+            cl.settimeout(2)
+            asyncio.create_task(self._handle(cl, addr))
+
+    def _exists(self, path):
+        try:
+            s = os.stat(path)
+            return s[0] & 0x4000 == 0  # not a dir
+        except:
+            return False
+
+    async def _handle(self, cl, addr):
+        try:
+            req = b""
+            try:
+                req = cl.recv(1024)
+            except:
+                pass
+            # Default path
+            path = "/"
+            if req:
+                first = req.split(b"\r\n", 1)[0]
+                parts = first.split()
+                if len(parts) >= 2:
+                    path = parts[1].decode("utf-8", "ignore")
+
+            # Captive-portal probes
+            if path in ("/generate_204", "/gen_204"):
+                cl.send(b"HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n")
+                return
+            if path in ("/hotspot-detect.html", "/library/test/success.html", "/ncsi.txt"):
+                await self._send_file(cl, "/unotebook.html")
+                return
+
+            # Route mapping:
+            if path == "/" or path == "/index.html":
+                # serve unotebook.html at root
+                await self._send_file(cl, "/unotebook.html")
+            elif path == "/unotebook.js":
+                await self._send_file(cl, "/unotebook.js")
+            else:
+                # Any other path → serve index (simple SPA/captive behavior)
+                await self._send_file(cl, "/unotebook.html")
+        except Exception as e:
+            try:
+                cl.send(b"HTTP/1.1 500 Internal Server Error\r\nContent-Length:0\r\n\r\n")
+            except:
+                pass
+        finally:
+            try:
+                cl.close()
+            except:
+                pass
+
+    async def _send_file(self, cl, path):
+        if not self._exists(path):
+            cl.send(b"HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n")
+            return
+        ctype = guess_type(path)
+        try:
+            f = open(path, "rb")
+            try:
+                # compute length (os.stat)
+                length = os.stat(path)[6]
+            except:
+                length = None
+
+            hdr = "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nCache-Control: no-store\r\n".format(ctype)
+            if length is not None:
+                hdr += "Content-Length: {}\r\n".format(length)
+            hdr += "\r\n"
+            cl.send(hdr.encode())
+
+            # stream file in chunks
+            while True:
+                chunk = f.read(1024)
+                if not chunk:
+                    break
+                cl.send(chunk)
+        finally:
+            try:
+                f.close()
+            except:
+                pass
+
+
+async def _run_ap():
+    if not webrepl._webrepl: webrepl.start()
+    ap, ip = start_ap()
+    ip_bytes = bytes(int(x) for x in ip.split("."))
+    dns = DnsServer(ip_bytes)
+    http = HttpServer()
+    await asyncio.gather(dns.serve(), http.serve())
+
+
+async def _run():
+    if not webrepl._webrepl: webrepl.start()
+    http = HttpServer()
+    await http.serve()
+
+
+def run_ap():
   try:
-    *body, last = lines
-    if last.startswith(' ') or last.startswith('\t'):
-      body.append(last)
-      last = None
-    if body:
-      exec('\n'.join(body), globals_, globals_)
-    if last:
-      try:
-        result = eval(last, globals_, globals_)
-        send_repr(result, s)
-      except SyntaxError:
-        exec(last, globals_, globals_)
-  except StopExec: pass
-  except Exception as e:
-    buf = uio.StringIO()
-    sys.print_exception(e, buf)
-    tb = buf.getvalue()
-    tb = '\n'.join([line for line in tb.split('\n') if not line.startswith('  File "unotebook.py"')])
-    json.dump({'exception':repr(e), 'traceback':tb}, s)
-
+    asyncio.run(_run_ap())
   finally:
-    del _thread_local_print_functions[_thread.get_ident()]
-
-
-class StdoutStreamer:
-  def __init__(self, cl):
-    self.cl = cl
-    self.buf = bytearray()
-  def write(self, s):
-    if not isinstance(s, (bytes, bytearray)):
-      s = s.encode()
-      self.cl.send(json.dumps(s))
-  def flush(self):
+    try:
+      asyncio.new_event_loop()
+    except:
       pass
 
 
-def handle_request(s):
-      action, path, mode = s.readline().decode().strip().split()
-      headers = {}
-      while header := s.readline().decode():
-        if header == "\r\n":
-          break
-        k, v = header.split(': ',1)
-        headers[k] = v.strip()
-      print(action, path)
-      if action=='GET' and (path=="/" or path.startswith('/notebook/')):
-        s.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n")
-        s.send('<script>window.__unotebook_version__ = %s</script>' % repr(__version__))
-        s.send(INDEX_HTML)
-      elif action=='GET' and path=="/unotebook.js":
-        fn = __file__.replace('.py', '.js')
-        if _file_exists(fn+'.gz'):
-          s.send("HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/javascript\r\n\r\n")
-          with open(fn+'.gz', 'rb') as f:
-            while bytes := f.read(512):
-              s.send(bytes)
-        elif _file_exists('unotebook.js'):
-          s.send("HTTP/1.1 200 OK\r\nContent-Type: text/javascript\r\n\r\n")
-          with open(fn, 'rb') as f:
-            while line := f.readline():
-              s.send(line)
-        else:
-          s.send("HTTP/1.1 404 Not Found\r\n\r\n")
-      elif action=='POST' and path=="/_delete":
-        fn = json.loads(s.read(int(headers['Content-Length'])))
-        assert fn.endswith('.unb')
-        os.remove(fn)
-        s.send("HTTP/1.1 200 OK\r\n")
-      elif action=='POST' and path=="/_stop":
-        fn = json.loads(s.read(int(headers['Content-Length'])))
-        assert fn.endswith('.unb')
-        try: del _notebook_globals_[fn]
-        except KeyError: pass
-        s.send("HTTP/1.1 200 OK\r\n")
-      elif action=='POST' and path=="/run_cell":
-        body = json.loads(s.read(int(headers['Content-Length'])))
-        cmds = body.get('source', [])
-        s.send("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
-        run_cell(s, body['fn'], '\n'.join(cmds))
-      elif action=='POST' and path.startswith("/_save/"):
-        fn = _sanitize_and_decode(path[len("/_save/"):])
-        assert fn.endswith('.unb')
-        nbytes = int(headers['Content-Length'])
-        with open(fn, 'wb') as f:
-          for i in range(0, nbytes, 1024):
-            f.write(s.read(min(1024, nbytes-i)))
-        s.send("HTTP/1.1 200 OK\r\n")
-      elif action=='GET' and path=="/_files":
-        files = sorted(
-          [{'fn':f, 'running':f in _notebook_globals_, 'size':os.stat(f)[6]} for f in os.listdir() if f.endswith(".unb")],
-          key=lambda x: x['fn']
-        )
-        body = json.dumps(files)
-        s.send("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
-        s.send(body)
-      elif action=='GET' and path.startswith('/_notebook/') and path.endswith('.unb'):
-        s.send("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n")
-        fn = _sanitize_and_decode(path.split('/')[-1])
-        if fn == '__new__.unb':
-          s.send(json.dumps({'cells':[{'cell_type':'code','source':[]}]}))
-        else:
-          with open(fn, 'rb') as f:
-            while line := f.readline():
-              s.send(line)
-      else:
-        s.send("HTTP/1.1 404 Not Found\r\n\r\n")
-
-
-def _sanitize_and_decode(fn):
-  return re.sub(r"[^\w+.\- ]", "_", fn.replace('%20',' ').replace('+',' '))
-
-def _file_exists(path):
+def run():
   try:
-    os.stat(path)
-    return True
-  except OSError:
-    return False
-
-
-def run(port=80):
-  if _file_exists('/lib/Getting_Started.unb') and not _file_exists('/Getting_Started.unb'):
-    print('creating: /Getting_Started.unb')
-    os.rename('/lib/Getting_Started.unb', '/Getting_Started.unb')
-  addr = socket.getaddrinfo("0.0.0.0", port)[0][-1]
-  s = socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  s.bind(addr)
-  s.listen(5)
-  print("Serving on", addr)
-  while True:
-    cl, _ = s.accept()
-    def _handle_request(http_sock):
-      try:
-        handle_request(http_sock)
-      except Exception as e:
-        print(e)
-        sys.print_exception(e)
-        try: s.send("HTTP/1.1 500 Internal Server Error\r\n\r\nError")
-        except: pass
-      finally:
-        http_sock.close()
-    #_handle_request()
-    _thread.start_new_thread(_handle_request, (cl,))
-
-def start(port=80):
-  _thread.start_new_thread(run, (port,))
-
-if __name__=='__main__':
-  run(12345)
-
+    asyncio.run(_run())
+  finally:
+    try:
+      asyncio.new_event_loop()
+    except:
+      pass

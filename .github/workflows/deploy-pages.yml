@@ -42,6 +42,7 @@ jobs:
       - name: Prepare dist
         run: |
           mkdir -p dist
+          cp VERSION dist/VERSION
           cp ui/index.html dist/index.html
 
       - name: Upload artifact

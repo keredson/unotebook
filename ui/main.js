@@ -7,6 +7,9 @@ import { useState, useEffect, useMemo, useRef } from 'preact/hooks';
 import { BleNus } from './blenus';
 import { WebRepl } from './webrepl';
 
+import VERSION from '../VERSION?raw';
+
+
 const html = htm.bind(h);
 
 
@@ -135,7 +138,7 @@ function App() {
   function connect_webrepl() {
     console.log('connect_webrepl')
     set_active_backend('webrepl')
-    const connection_url = 'camerabot.local' || prompt("WebREPL ip[:port]?")
+    const connection_url = prompt("WebREPL ip[:port]?")
     set_connected_text('🔗︎ ws://'+connection_url)
     webrepl.connect(connection_url, async (ws) => {
       // ready
@@ -169,7 +172,7 @@ function App() {
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='local' path="/local/:fn" />
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" />
       <//>
-      <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${window.__unotebook_version__} - © 2025 Derek Anderson</div>
+      <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${VERSION} - © 2025 Derek Anderson</div>
     </div>
   `;
 }

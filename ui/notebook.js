@@ -65,6 +65,7 @@ export function Notebook(props) {
       const next = cells.slice()
       next.splice(i, 1)
       set_cells(next)
+      set_changes(true)
     }
   }
 
@@ -110,7 +111,11 @@ export function Notebook(props) {
   }
 
   async function run_cell(code, onData, opts = {}, finished=null) {
-    if (!backend.connected) throw new Error('Not connected');
+    console.log('run_cell', code, backend?.connected)
+    if (!backend?.connected) {
+      alert("Not Connected")
+      throw new Error('Not connected');
+    }
     const { timeoutMs = 0, newline = true } = opts;
 
     // make this the active sink

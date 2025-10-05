@@ -22,6 +22,25 @@ export function Manager() {
     }
   }
 
+  async function rename_notebook(fn) {
+    var new_fn = prompt('Enter new name of notebook?')
+    if (!new_fn) return
+    if (!new_fn.endsWith('.unb')) new_fn = new_fn+'.unb'
+    const doc = await storage.getNotebook(fn)
+    await storage.saveNotebook(new_fn, doc)
+    await storage.deleteNotebook(fn)
+    set_reload(reload+1)
+  }
+
+  async function copy_notebook(fn) {
+    var new_fn = prompt('Enter a name for the new notebook...')
+    if (!new_fn) return
+    if (!new_fn.endsWith('.unb')) new_fn = new_fn+'.unb'
+    const doc = await storage.getNotebook(fn)
+    await storage.saveNotebook(new_fn, doc)
+    set_reload(reload+1)
+  }
+
   async function download_notebook(fn) {
     const obj = await storage.getNotebook(fn);
     if (obj == null) {
@@ -62,14 +81,16 @@ export function Manager() {
       <tr><th></th><th>Notebook</th><th>Size</th></tr>
       ${files.map(f => html`<tr>
         <td style='color:#444;'>${iconForSource(f.source)}</td>
-        <td style='padding:0;'>
+        <td style='padding-right:1em;'>
           <a href='#/${f.source}/${f.fn}'><code>${f.fn}</code></a>
         </td>
         <td style='color:#444;'>${humanize_bytes(f.size)}</td>
         <td>
           <div style='padding-left:1em; display:inline-flex; gap:.5rem;'>
-            <span title='delete ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌︎</span>
-            <span title='download ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>download_notebook(f.fn)}>📥︎</span>
+            <span title='Delete ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌︎</span>
+            <span title='Rename ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>rename_notebook(f.fn)}>✎</span>
+            <span title='Copy ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>copy_notebook(f.fn)}>🗐︎</span>
+            <span title='Download ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>download_notebook(f.fn)}>📥︎</span>
           </div>
         </td>
       </tr>`)}

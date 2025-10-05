@@ -279,7 +279,10 @@ export const Cell = forwardRef((props, ref) => {
   }
 
   async function run_code() {
-    if (!props.connected) return
+    if (!props.connected) {
+      alert('Not Connected')
+      return
+    }
     // stop previous stream for this cell (if any)
     cancelRef.current?.();
     // start a new run; keep data in this cell only

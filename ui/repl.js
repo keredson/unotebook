@@ -3,15 +3,12 @@
  * Returns { head, tail }.
  */
 export function cleaveLastStatement(src) {
-  console.log('cleaveLastStatement', src)
-  const lines = src.trim().replace(/\r\n?/g, "\n").split("\n");
+  const lines = src.trimEnd().replace(/\r\n?/g, "\n").split("\n");
   if (lines.length === 0) return { head: "", tail: "" };
 
-  let text = "";
   let inStr = false, quote = "", escape = false;
   let depth = 0; // (), [], {}
 
-  // Scan all but the last line to see if context is balanced.
   const body = lines.slice(0, -1).join("\n");
   for (let i = 0; i < body.length; i++) {
     const ch = body[i];
@@ -24,22 +21,35 @@ export function cleaveLastStatement(src) {
       inStr = true; quote = ch; escape = false;
       continue;
     }
-    if (ch === "(" || ch === "[" || ch === "{") depth++;
-    if (ch === ")" || ch === "]" || ch === "}") depth = Math.max(0, depth - 1);
+    if ("([{".includes(ch)) depth++;
+    if (")]}".includes(ch)) depth = Math.max(0, depth - 1);
   }
 
   const lastLine = lines[lines.length - 1];
   const openBlock = /:\s*(#.*)?$/.test(lastLine);
   const continued = /\\\s*(#.*)?$/.test(lastLine);
 
-  // If we’re balanced and not inside string/paren, last line stands alone.
-  const canSplit = depth === 0 && !inStr && !openBlock && !continued;
+  // check indentation
+  const lastIndent = lastLine.match(/^\s*/)[0].length;
+  const prevNonEmpty = [...lines]
+    .reverse()
+    .find(l => l.trim().length > 0 && l !== lastLine);
+  const prevIndent = prevNonEmpty ? prevNonEmpty.match(/^\s*/)[0].length : 0;
 
-  //console.log({src,canSplit, depth, inStr, openBlock, continued})
+  const indented = lastIndent > prevIndent;
+
+  const canSplit =
+    depth === 0 &&
+    !inStr &&
+    !openBlock &&
+    !continued &&
+    !indented;
+
   return canSplit
     ? { head: lines.slice(0, -1).join("\n"), tail: lastLine }
     : { head: src, tail: "" };
 }
+
 
 /**
  * Return true iff `line` is a self-contained *expression* line

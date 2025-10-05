@@ -155,7 +155,7 @@ function App() {
       <style>${css}</style>
       <div style='display:flex; gap:1rem; justify-content:space-between;'>
         <span style='font-size:smaller;'>${
-          url.length > 1 ? html`<a href="#">Home</a>${url.substring(1).split('/').map((s, i) => html` » ${s}`)}` : null
+          url.length > 1 ? html`<a href="#">Home</a>${url.substring(1).split('/').map((s, i) => html` » ${decodeURIComponent(s)}`)}` : null
         }</span>
         <div style='display:flex; gap:1rem; align-items: center;'>
           ${ connected ? null : html`<button onClick=${e=>connect_ble()}>🔗︎ Pybricks</button>` }

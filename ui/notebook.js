@@ -1,8 +1,10 @@
 import { h } from 'preact';
-import { useState, useEffect, useRef } from 'preact/hooks';
+import { useState, useEffect, useRef, useMemo } from 'preact/hooks';
 import htm from 'htm';
 import { Cell } from './cell';
 import { route } from 'preact-router';
+import { BleNus } from './blenus';
+import { WebRepl } from './webrepl';
 
 const html = htm.bind(h);
 
@@ -16,6 +18,33 @@ export function Notebook(props) {
   const [metadata, set_metadata] = useState([]);
   const [saving, set_saving] = useState(false);
   const [changes, set_changes] = useState(false);
+
+  const ble = useMemo(() => new BleNus(), []);
+  const webrepl = useMemo(() => new WebRepl(), []);
+  const [connected, setConnected] = useState(false);
+  const [active_backend, set_active_backend] = useState(null);
+  const sinkRef = useRef({ id: 0, cb: null });
+
+  const backend = active_backend==='ble' ? ble : (active_backend==='webrepl' ? webrepl : null);
+
+  useEffect(() => {
+    if (backend==null) return;
+    const onConnect = () => setConnected(true);
+    const onDisconnect = () => setConnected(false);
+    const onData = (e) => {
+      const cb = sinkRef.current.cb;
+      if (cb) cb(e.detail);
+    };
+    backend.addEventListener('connect', onConnect);
+    backend.addEventListener('disconnect', onDisconnect);
+    backend.addEventListener('data', onData);
+    return () => {
+      backend.removeEventListener('connect', onConnect);
+      backend.removeEventListener('disconnect', onDisconnect);
+      backend.removeEventListener('data', onData);
+      backend.disconnect();
+    };
+  }, [backend]);
 
   const changesRef = useRef(changes);
   useEffect(() => { changesRef.current = changes }, [changes]);
@@ -110,6 +139,46 @@ export function Notebook(props) {
     }
   }
 
+  async function run_cell(code, onData, opts = {}, finished=null) {
+    if (!backend.connected) throw new Error('Not connected');
+    const { timeoutMs = 0, newline = true } = opts;
+
+    // make this the active sink
+    const myId = sinkRef.current.id + 1;
+    sinkRef.current = { id: myId, cb: onData };
+
+    // optional: auto-clear sink after a quiet timeout
+    let timer = null;
+    const armTimer = () => {
+      if (!timeoutMs) return;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        // only clear if still the active session
+        if (sinkRef.current.id === myId) sinkRef.current = { id: myId, cb: null };
+      }, timeoutMs);
+    };
+    if (timeoutMs) armTimer();
+
+    // small wrapper to keep the sink alive while chunks come in
+    const originalCb = onData;
+    sinkRef.current.cb = (chunk) => {
+      originalCb(chunk);
+      armTimer();
+    };
+
+    // send the code
+    const payload = newline && !code.endsWith('\n') ? code + '\n' : code;
+    await backend.send(payload, finished);
+
+    // return a cancel function so the Cell can stop receiving
+    return () => {
+      if (sinkRef.current.id === myId) {
+        sinkRef.current = { id: myId, cb: null };
+      }
+      clearTimeout(timer);
+    };
+  }
+
   async function restart() {
     if (confirm("Restart notebook?")) {
       const resp = await fetch('/_stop', {
@@ -125,12 +194,24 @@ export function Notebook(props) {
     }
   }
 
+  function connect_webrepl() {
+    console.log('connect_webrepl')
+    set_active_backend('webrepl')
+    webrepl.connect('camerabot.local' || prompt("WebREPL ip[:port]?"), async (ws) => {
+      // ready
+    })
+  }
+
   return html`<div>
     <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn}</h1>
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
       <button onClick=${e=>run_all()}>Run All</button>
       <button onClick=${e=>restart()}>Restart</button>
       <button disabled=${props['fn']!='__new__.unb' && !changes} onClick=${e=>save()}>${props['fn']=='__new__.unb' ? 'Save as...' : 'Save'}</button>
+      <span style='width:1em;'/>
+      ${ connected ? html`<button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='ble' ? ble.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
+      ${ connected ? null : html`<button onClick=${e=>set_active_backend('ble') && ble.connect()}>🔗 Pybricks</button>` }
+      ${ connected ? null : html`<button onClick=${e=>connect_webrepl()}>🔗 WebREPL</button>` }
     </div>
     ${cells.map((cell, i) => html`<${Cell} 
         key=${cell.id} cell=${cell} idx=${i} fn=${props.fn}
@@ -139,6 +220,8 @@ export function Notebook(props) {
         delete_cell=${() => delete_cell(i)}
         save=${save}
         changed=${()=>set_changes(true)}
+        connected=${connected}
+        run_cell=${run_cell}
     />`)}
     <div style='display:flex; gap:.5rem; margin-top:.5em;'>
       <button onClick=${e=>add_cell()}>Add Cell</button>

@@ -3,6 +3,7 @@ import htm from 'htm';
 import { Router } from 'preact-router';
 import { Notebook } from './notebook.js'
 import { Manager } from './manager.js'
+import { useState, useEffect } from 'preact/hooks';
 
 const html = htm.bind(h);
 
@@ -46,16 +47,35 @@ const css = `
   }
 `;
 
+const getHashPath = () => {
+  const p = location.hash.replace(/^#/, '');
+  return p && p.startsWith('/') ? p : '/';
+};
 
 
 function App() {
   console.log('window.__unotebook_version__', window.__unotebook_version__)
+
+  const [url, setUrl] = useState(getHashPath());
+
+  useEffect(() => {
+    const onHash = () => {
+      const next = getHashPath();
+      // avoid no-op setState (helps some reconciliation cases)
+      setUrl(u => (u === next ? u : next));
+    };
+    window.addEventListener('hashchange', onHash);
+    // ensure first paint matches current bar (important on hard reload)
+    onHash();
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+
   return html`
     <div>
       <style>${css}</style>
-      <${Router}>
+      <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>
         <${Manager} path="/" />
-        <${Notebook} path="/notebook/:fn" />
+        <${Notebook} path="/:fn" />
       <//>
       <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${window.__unotebook_version__} - © 2025 Derek Anderson</div>
     </div>

@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { useState, useEffect, useImperativeHandle } from 'preact/hooks';
+import { useState, useEffect, useImperativeHandle, useRef } from 'preact/hooks';
 import htm from 'htm';
 import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
@@ -64,6 +64,7 @@ export const Cell = forwardRef((props, ref) => {
   const [png, set_png] = useState(null);
   const [html_, set_html] = useState(null);
   const [focused, set_focused] = useState(false);
+  const cancelRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
     getValue: () => ({run, source, clear})
@@ -238,7 +239,7 @@ export const Cell = forwardRef((props, ref) => {
     }
   }
 
-
+  const append = (s) => set_stdout((prev) => (prev||'') + s);
 
   function run() {
     set_stdout(null)
@@ -253,6 +254,8 @@ export const Cell = forwardRef((props, ref) => {
       set_show_source(html_.length == 0)
     }
     else if (props.cell?.cell_type=='code') {
+      run_code().then(()=>{return})
+      return
       const ac = new AbortController();
       set_running(ac)
       postAndStream('/run_cell', {source:source.split('\n'), fn:props.fn}, resp => {
@@ -274,18 +277,38 @@ export const Cell = forwardRef((props, ref) => {
       }, ac).then(() => set_running(false))
     }
   }
+
+  async function run_code() {
+    if (!props.connected) return
+    // stop previous stream for this cell (if any)
+    cancelRef.current?.();
+    // start a new run; keep data in this cell only
+    try {
+      console.log('props.run_cell',props.run_cell)
+      const finished = () => {set_running(false)}
+      set_running(true)
+      const cancel = await props.run_cell(source, append, { timeoutMs: 10000, newline: true }, finished);
+      cancelRef.current = cancel;
+    } catch (e) {
+      append(`\n⚠️ ${e}\n`);
+    }
+  }
+
+  const stdout_without_repl_prompt = stdout?.endsWith('\r\n>>> ') ? stdout.substring(0,stdout.length-6) : stdout
+  console.log({stdout_without_repl_prompt})
+
   return html`<div>
     <div class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
       <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('code')}>+code</span>
       <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+doc</span>
     </div>
-    <div style="border-radius: 3px; border-left: 5px solid #ded2ba !important; padding: .5em; background-color:#f0ebe1;">
+    <div style="border-radius: 3px; border-left: 5px solid ${running ? '#df651eff' : '#ded2ba'} !important; padding: .5em; background-color:#f0ebe1;">
       ${show_source ? html`
         <table style='width: 100%;'>
           <tr>
             <td>
               <textarea 
-                style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:100%"
+                style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:calc(100% - 1.5em)"
                 placeholder=${props.idx==0 ? placeholder() : null}
                 rows=${source.split('\n').length || 1}
                 onInput=${e => {set_source(e.target.value); props.changed()}}
@@ -295,15 +318,14 @@ export const Cell = forwardRef((props, ref) => {
               >${source}</textarea>
             </td>
             <td width='4em' valign='top'>
-              <div style='margin-left:.1em; opacity:${focused ? 1 : 0}'>
-                <span style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>running ? stop() : run()}>${running ? '◼' : '▶'}</span>
-                <br/>
-                <span style='cursor:pointer; color:#888;' onClick=${()=>props.delete_cell()}>❌</span>
+              <div style='opacity:${focused ? 1 : 0}; line-height:1.1'>
+                <div style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>running ? stop() : run()}>${running ? '◼' : '▶'}</div>
+                <div style='cursor:pointer; color:#888;' onClick=${()=>props.delete_cell()}>❌</div>
               </div>
             </td>
           </tr>
         </table>` : null }
-      ${stdout ? html`<pre class='output' style='margin:0;'><code>${stdout}</code></pre>` : null}
+      ${stdout_without_repl_prompt ? html`<pre class='output' style='margin:0;'><code>${stdout_without_repl_prompt}</code></pre>` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}
       ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>

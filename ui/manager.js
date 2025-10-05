@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
 import htm from 'htm';
+import { route } from 'preact-router';
 const html = htm.bind(h);
 
 
@@ -12,7 +13,7 @@ export function Manager() {
   }, [reload]);
 
   function new_notebook() {
-    window.open('/notebook/__new__.unb', '_blank')
+    document.location.hash = '#/__new__.unb'
   }
 
   async function delete_notebook(fn) {
@@ -65,7 +66,9 @@ export function Manager() {
     <table style='margin:0 auto;'>
       <tr><th>Notebook</th><th>Size</th></tr>
       ${files.map(f => html`<tr>
-        <td style='padding:.5em 1em;'><a target=${'_'+f.fn} href='/notebook/${f.fn}'><pre>${f.fn}</pre></a></td>
+        <td style='padding:.5em 1em;'>
+          <a href='#/${f.fn}'><pre>${f.fn}</pre></a>
+        </td>
         <td style='color:#444;'>${humanize_bytes(f.size)}</td>
         <td>
           <div style='padding-left:1em; display:inline-flex; gap:.5rem;'>

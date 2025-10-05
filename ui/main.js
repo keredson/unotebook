@@ -109,6 +109,14 @@ function App() {
     })
   }
 
+  async function connect_ble() {
+    console.log('connect_ble')
+    set_active_backend('ble')
+    const name = await ble.connect()
+    set_connected_text('🔗 '+name)
+    ble.send('print(1)')
+  }
+
   return html`
     <div>
       <style>${css}</style>
@@ -117,7 +125,7 @@ function App() {
           url.length > 1 ? html`<a href="#">Home</a>${url.substring(1).split('/').map((s, i) => html` » ${s}`)}` : null
         }</span>
         <div style='display:flex; gap:1rem; align-items: center;'>
-          ${ connected ? null : html`<button onClick=${e=>set_active_backend('ble') && ble.connect()}>🔗 Pybricks</button>` }
+          ${ connected ? null : html`<button onClick=${e=>connect_ble()}>🔗 Pybricks</button>` }
           ${ connected ? null : html`<button onClick=${e=>connect_webrepl()}>🔗 WebREPL</button>` }
           ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='ble' ? ble.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
         </div>

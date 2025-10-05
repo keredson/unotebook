@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
 import htm from 'htm';
-import { route } from 'preact-router';
 const html = htm.bind(h);
 
 

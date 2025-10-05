@@ -3,7 +3,9 @@ import htm from 'htm';
 import { Router } from 'preact-router';
 import { Notebook } from './notebook.js'
 import { Manager } from './manager.js'
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useMemo, useRef } from 'preact/hooks';
+import { BleNus } from './blenus';
+import { WebRepl } from './webrepl';
 
 const html = htm.bind(h);
 
@@ -58,6 +60,33 @@ function App() {
 
   const [url, setUrl] = useState(getHashPath());
 
+  const ble = useMemo(() => new BleNus(), []);
+  const webrepl = useMemo(() => new WebRepl(), []);
+  const [connected, setConnected] = useState(false);
+  const [connected_text, set_connected_text] = useState(null);
+  const [active_backend, set_active_backend] = useState(null);
+  const sinkRef = useRef({ id: 0, cb: null });
+  const backend = active_backend==='ble' ? ble : (active_backend==='webrepl' ? webrepl : null);
+
+  useEffect(() => {
+    if (backend==null) return;
+    const onConnect = () => setConnected(true);
+    const onDisconnect = () => setConnected(false);
+    const onData = (e) => {
+      const cb = sinkRef.current.cb;
+      if (cb) cb(e.detail);
+    };
+    backend.addEventListener('connect', onConnect);
+    backend.addEventListener('disconnect', onDisconnect);
+    backend.addEventListener('data', onData);
+    return () => {
+      backend.removeEventListener('connect', onConnect);
+      backend.removeEventListener('disconnect', onDisconnect);
+      backend.removeEventListener('data', onData);
+      backend.disconnect();
+    };
+  }, [backend]);
+
   useEffect(() => {
     const onHash = () => {
       const next = getHashPath();
@@ -70,12 +99,32 @@ function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  function connect_webrepl() {
+    console.log('connect_webrepl')
+    set_active_backend('webrepl')
+    const connection_url = 'camerabot.local' || prompt("WebREPL ip[:port]?")
+    set_connected_text('🔗 ws://'+connection_url)
+    webrepl.connect(connection_url, async (ws) => {
+      // ready
+    })
+  }
+
   return html`
     <div>
       <style>${css}</style>
+      <div style='display:flex; gap:1rem; justify-content:space-between;'>
+        <span style='font-size:smaller;'>${
+          url.length > 1 ? html`<a href="#">Home</a>${url.substring(1).split('/').map((s, i) => html` » ${s}`)}` : null
+        }</span>
+        <div style='display:flex; gap:1rem; align-items: center;'>
+          ${ connected ? null : html`<button onClick=${e=>set_active_backend('ble') && ble.connect()}>🔗 Pybricks</button>` }
+          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()}>🔗 WebREPL</button>` }
+          ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='ble' ? ble.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
+        </div>
+      </div>
       <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>
         <${Manager} path="/" />
-        <${Notebook} path="/:fn" />
+        <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} path="/:fn" />
       <//>
       <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${window.__unotebook_version__} - © 2025 Derek Anderson</div>
     </div>

@@ -297,7 +297,7 @@ export const Cell = forwardRef((props, ref) => {
     }
   }
 
-  const stdout_without_repl_prompt = stdout?.endsWith('\r\n>>> ') ? stdout.substring(0,stdout.length-6) : stdout
+  const stdout_without_repl_prompt = stdout?.endsWith('>>> ') ? stdout.substring(0,stdout.length-4) : stdout
   console.log({stdout_without_repl_prompt})
 
   return html`<div>
@@ -332,7 +332,7 @@ export const Cell = forwardRef((props, ref) => {
             </td>
           </tr>
         </table>` : null }
-      ${stdout_without_repl_prompt ? html`<pre class='output' style='margin:0;'><code>${stdout_without_repl_prompt}</code></pre>` : null}
+      ${stdout_without_repl_prompt ? html`<pre class='output' style='margin:0;'><code>${stdout_without_repl_prompt.trim()}</code></pre>` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}
       ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>

@@ -15,6 +15,7 @@ export class BleNus extends EventTarget {
     this._decoder = new TextDecoder();
     this.finished = null
     this.ignore_bytes = 0
+    this.status = null
   }
 
   async connect() {

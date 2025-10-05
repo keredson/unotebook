@@ -32,6 +32,7 @@ const css = `
     font-family: system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   }
   body > #app {
+    border-radius: 6px;
     margin-top: 1em;
     background-color: #f4f0e8;
     padding:2em;
@@ -47,7 +48,29 @@ const css = `
     font-size:smaller;
     line-height: 1.1em;
   }
-`;
+
+  pre.warning {
+    background: #ffe5e5;              /* soft red background */
+    color: #a40000;                   /* dark red text */
+    border: 1px solid #ffb3b3;        /* subtle border */
+    border-radius: 6px;
+    padding: 0.5em 1em;
+    margin: 0.5em 0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    white-space: pre-wrap;            /* wrap long lines */
+    max-width: 280px;
+    float: right;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  pre.warning::before {
+    content: "⚠️ ";
+    font-size: 1rem;
+  }
+
+
+  `;
 
 const getHashPath = () => {
   const p = location.hash.replace(/^#/, '');
@@ -64,6 +87,7 @@ function App() {
   const webrepl = useMemo(() => new WebRepl(), []);
   const [connected, setConnected] = useState(false);
   const [connected_text, set_connected_text] = useState(null);
+  const [warning, set_warning] = useState(null);
   const [active_backend, set_active_backend] = useState(null);
   const sinkRef = useRef({ id: 0, cb: null });
   const backend = active_backend==='ble' ? ble : (active_backend==='webrepl' ? webrepl : null);
@@ -86,6 +110,15 @@ function App() {
       backend.disconnect();
     };
   }, [backend]);
+
+  useEffect(() => {
+    const warning = [
+      ble?.status?.BATTERY_LOW_VOLTAGE_WARNING && 'Low Battery',
+      ble?.status?.BATTERY_HIGH_CURRENT && 'High Current',
+      //ble?.status?.BLE_HOST_CONNECTED && 'Connected'
+    ].filter(Boolean);
+    set_warning(warning.length ? warning.join('\n') : null);
+  }, [ble?.status]);
 
   useEffect(() => {
     const onHash = () => {
@@ -130,6 +163,7 @@ function App() {
           ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='ble' ? ble.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
         </div>
       </div>
+      ${ warning ? html`<pre class='warning' ><code>${warning}</code></pre>` : null }
       <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>
         <${Manager} path="/" />
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} path="/:fn" />

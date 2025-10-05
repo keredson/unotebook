@@ -41,7 +41,7 @@ export class WebRepl extends EventTarget {
         text = this._dec.decode(new Uint8Array(ev.data));
       }
       if (this.first_msg && text=='Password: ') {
-        const password = 'steven' || prompt("Password?").trim()
+        const password = prompt("Password?").trim()
         this.waiting_auth = true
         this.ws.send(password + '\n')
       }

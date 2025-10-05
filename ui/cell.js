@@ -308,6 +308,10 @@ export const Cell = forwardRef((props, ref) => {
           <tr>
             <td>
               <textarea 
+                spellcheck=${false}
+                autocapitalize=${'off'}
+                autocorrect=${'off'}
+                autocomplete=${'off'}
                 style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:calc(100% - 1.5em)"
                 placeholder=${placeholder()}
                 rows=${source.split('\n').length || 1}

@@ -3,12 +3,13 @@ import { h } from 'preact';
 import htm from 'htm';
 const html = htm.bind(h);
 
+import * as storage from './storage';
 
 export function Manager() {
   const [files, setFiles] = useState([]);
   const [reload, set_reload] = useState(0);
   useEffect(() => {
-    fetch('/_files').then(r=>r.json()).then(setFiles);
+    storage.listNotebooks().then(files=>setFiles(files))
   }, [reload]);
 
   function new_notebook() {
@@ -17,29 +18,18 @@ export function Manager() {
 
   async function delete_notebook(fn) {
     if (confirm('Delete notebook '+fn+'?')) {
-      const resp = await fetch('/_delete', {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(fn)
-      })
-      set_reload(reload+1)
-    }
-  }
-
-  async function stop_notebook(fn) {
-    if (confirm('Stop notebook '+fn+'?')) {
-      const resp = await fetch('/_stop', {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(fn)
-      })
-      set_reload(reload+1)
+      storage.deleteNotebook(fn).then(()=>set_reload(reload+1))
     }
   }
 
   async function download_notebook(fn) {
-    const resp = await fetch('/_notebook/'+fn)
-    const blob = await resp.blob();
+    const obj = await storage.getNotebook(fn);
+    if (obj == null) {
+      throw new Error(`Notebook not found: ${fn}`);
+    }
+    // stringify (pretty) and make a JSON blob
+    const json = JSON.stringify(obj, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -53,27 +43,32 @@ export function Manager() {
   async function upload_notebook() {
     const input = document.getElementById('upload_notebook');
     const file = input.files[0];
-    const resp = await fetch("/_save/"+file.name, {
-      method: "POST",
-      body: file
-    });
-    set_reload(reload+1)
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const obj = JSON.parse(text);
+      await storage.saveNotebook(file.name, obj);
+      set_reload(reload + 1);
+    } catch (err) {
+      console.error('Failed to upload notebook:', err);
+      alert('Error uploading notebook: ' + err.message);
+    }
   }
 
   return html`<div style='text-align:center;'>
     <h1 style='margin-top:0'>µNotebook</h1>
-    <table style='margin:0 auto;'>
+    <table style='margin:0 auto; text-align:left;'>
       <tr><th>Notebook</th><th>Size</th></tr>
       ${files.map(f => html`<tr>
-        <td style='padding:.5em 1em;'>
-          <a href='#/${f.fn}'><pre>${f.fn}</pre></a>
+        <td style='padding:0;'>
+          ${iconForSource(f.source)}<a href='#/${f.source}/${f.fn}'><code>${f.fn}</code></a>
         </td>
         <td style='color:#444;'>${humanize_bytes(f.size)}</td>
         <td>
           <div style='padding-left:1em; display:inline-flex; gap:.5rem;'>
             <span title='delete ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌</span>
             <span title='download ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>download_notebook(f.fn)}>📥</span>
-            ${f.running ? html`<span title='stop ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>stop_notebook(f.fn)}>◼</span>` : null}
           </div>
         </td>
       </tr>`)}
@@ -99,4 +94,13 @@ function humanize_bytes(n) {
 
 function rstrip(str, suffix) {
   return str.endsWith(suffix) ? str.slice(0, -suffix.length) : str;
+}
+
+function iconForSource(source) {
+  switch (source) {
+    case 'local':   return '🌐'; // browser-local
+    case 'device':  return '⚙️'; // esp32 / pybricks
+    case 'cloud':   return '☁️';
+    default:        return '📄';
+  }
 }

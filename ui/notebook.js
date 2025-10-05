@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'preact/hooks';
 import htm from 'htm';
 import { Cell } from './cell';
 import { route } from 'preact-router';
+import * as storage from './storage';
 
 const html = htm.bind(h);
 
@@ -43,18 +44,12 @@ export function Notebook(props) {
   };
 
   useEffect(() => {
-    fetch('/_notebook/'+props['fn']).then(r=>r.json()).then(n=>{
-      set_doc(n)
-      set_cells(n['cells'].map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
-      set_metadata(n['metadata'])
-      document.title = props['fn'] + ' - µNotebook';
-    }).catch(error => {
-      console.log({error})
-      const n = {cells:[{cell_type:'code'}]}
-      set_doc(n)
-      set_cells(n['cells'].map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
-      set_metadata(n['metadata'])
-    });
+    storage.getNotebook(props['fn']).then(doc=>{
+      if (!doc) doc = {cells:[{cell_type:'code'}]}
+      set_doc(doc)
+      set_cells(doc.cells.map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
+      set_metadata(doc.metadata)
+    })
   }, []);
 
   function insert_before(i, cell_type) {
@@ -93,15 +88,11 @@ export function Notebook(props) {
       cells_.push({id:c.id, cell_type:c.cell_type, source})
     }
     const payload = {cells:cells_, metadata}
-    const resp = await fetch('/_save/'+encode_fn(fn), {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(payload, null, 2)
-    })
+    await storage.saveNotebook(fn, payload)
     set_saving(false)
     set_changes(false)
     if (props['fn']=='__new__.unb') {
-      route('/notebook/'+fn)
+      document.location.hash = '#/'+fn
     }
   }
 

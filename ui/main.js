@@ -166,7 +166,8 @@ function App() {
       ${ warning ? html`<pre class='warning' ><code>${warning}</code></pre>` : null }
       <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>
         <${Manager} path="/" />
-        <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} path="/:fn" />
+        <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='local' path="/local/:fn" />
+        <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" />
       <//>
       <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${window.__unotebook_version__} - © 2025 Derek Anderson</div>
     </div>

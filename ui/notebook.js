@@ -93,7 +93,7 @@ export function Notebook(props) {
     set_saving(false)
     set_changes(false)
     if (props['fn']=='__new__.unb') {
-      document.location.hash = '#/'+fn
+      document.location.hash = '#/local/'+fn
     }
   }
 

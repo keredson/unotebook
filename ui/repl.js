@@ -221,3 +221,22 @@ def __unotebook_repr__(o):
     ret = repr(o)
   json.dump(ret, s)
 `
+
+export function stripPythonComment(line) {
+  let inSingle = false;
+  let inDouble = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    // toggle quote states, ignoring escaped quotes
+    if (ch === "'" && !inDouble && line[i - 1] !== "\\") inSingle = !inSingle;
+    else if (ch === '"' && !inSingle && line[i - 1] !== "\\") inDouble = !inDouble;
+
+    // if # appears outside of strings, it's the start of a comment
+    if (ch === "#" && !inSingle && !inDouble) {
+      return line.slice(0, i).trimEnd();
+    }
+  }
+  return line.trimEnd();
+}

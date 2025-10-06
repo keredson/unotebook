@@ -1,4 +1,4 @@
-import { cleaveLastStatement, isSafeToWrapInPrint } from './repl.js'
+import { cleaveLastStatement, isSafeToWrapInPrint, stripPythonComment } from './repl.js'
 
 export class Pybricks extends EventTarget {
   static NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
@@ -46,7 +46,6 @@ export class Pybricks extends EventTarget {
           }
         }
         this.stdout += text
-        //this.dispatchEvent(new CustomEvent('data', { detail: text }));
         this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
         if (this.stdout.endsWith('>>> ')) {1
           this.running = false
@@ -82,7 +81,7 @@ export class Pybricks extends EventTarget {
     this.running = true
     this.stdout = ''
     console.log({head, tail})
-    code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : (tail?.length ? '\n'+tail : ''))
+    code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+stripPythonComment(tail)+')' : (tail?.length ? '\n'+tail : ''))
     console.log({code})
     const bytes = enc.encode(code.endsWith('\n') ? code : code + '\n');
     this.ignore_bytes = bytes.length + 'paste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== '.length + 5

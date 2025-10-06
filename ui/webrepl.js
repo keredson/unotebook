@@ -1,4 +1,5 @@
 import { cleaveLastStatement, isSafeToWrapInPrint } from './repl.js'
+import * as storage from './storage';
 
 export class WebRepl extends EventTarget {
   constructor() {
@@ -13,11 +14,12 @@ export class WebRepl extends EventTarget {
     this.wait_for_paste_mode = false;
     this.finished = null;
     this.running = false;
+    this.stdout = ''
   }
 
   async connect(url, onReady = null) {
-    if (!url.includes(':')) url = url + ':8266';
-    this.url = 'ws://'+url;             // e.g. "ws://192.168.4.1:8266/"
+    if (!url.substring(4).includes(':')) url = url + ':8266';
+    this.url = url;             // e.g. "ws://192.168.4.1:8266/"
     this.onReady = onReady;     // optional async (ws) => { ... } for handshake
     if (!this.url) throw new Error('WebReplRunner: missing url');
     this.ws = new WebSocket(this.url);
@@ -34,7 +36,7 @@ export class WebRepl extends EventTarget {
       this.connected = false;
       this.dispatchEvent(new Event('disconnect'));
     };
-    this.ws.onmessage = (ev) => {
+    this.ws.onmessage = async (ev) => {
       let text = '';
       if (typeof ev.data === 'string') {
         text = ev.data;
@@ -42,9 +44,10 @@ export class WebRepl extends EventTarget {
         text = this._dec.decode(new Uint8Array(ev.data));
       }
       if (this.first_msg && text=='Password: ') {
-        const password = prompt("Password?").trim()
+        const password = prompt("Password?", await storage.getNotebook('__webrepl_last_pass__') || '').trim()
         this.waiting_auth = true
         this.ws.send(password + '\n')
+        await storage.saveNotebook('__webrepl_last_pass__', password)
       }
       if (this.waiting_auth) {
         if (text.trim()=='Access denied') {
@@ -73,12 +76,11 @@ export class WebRepl extends EventTarget {
         }
       }
       console.log({text})
-      if (text==this.stop_bytes) {
-        if (this.finished) this.finished()
+      if (this.stdout.endsWith('>>> ')) {1
         this.running = false
-        return
       }
-      this.dispatchEvent(new CustomEvent('data', { detail: text }));
+      this.stdout += text
+      this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
     };
 
     // Optional: perform any login / REPL-mode prep
@@ -103,11 +105,11 @@ export class WebRepl extends EventTarget {
 
     code = code.replaceAll('\r\n','\n')
     const {head, tail} = cleaveLastStatement(code)
-    this.stop_bytes = 'DONE_'+Math.random().toString(36).slice(2)
     this.finished = finished
     this.running = true
+    this.stdout = ''
     console.log({head, tail})
-    code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : tail) + '\nprint("'+this.stop_bytes+'")'
+    code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : tail)
     console.log({code})
     this.ignore_bytes = code.length + 'paste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== '.length + 5
 

@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo, useRef } from 'preact/hooks';
 import { Pybricks } from './pybricks';
 import { WebRepl } from './webrepl';
 import { useGuardHashLinks } from './useGuardHashLinks.js';
+import * as storage from './storage';
 
 import VERSION from '../VERSION.txt?raw';
 
@@ -158,18 +159,20 @@ function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  function connect_webrepl() {
+  async function connect_webrepl() {
     console.log('connect_webrepl')
     if (location.protocol=='https:') {
       set_https_warning(true)
       return
     }
     set_active_backend('webrepl')
-    const connection_url = prompt("WebREPL ip[:port]?")
-    set_connected_text('🔗︎ ws://'+connection_url)
-    webrepl.connect(connection_url, async (ws) => {
-      // ready
-    })
+    var connection_url = prompt("WebREPL url? (ws://ip[:port])", await storage.getNotebook('__webrepl_last_url__') || 'ws://')
+    if (!connection_url.startsWith('ws://') && !connection_url.startsWith('wss://')) {
+      connection_url = 'ws://'+connection_url
+    }
+    set_connected_text('🔗︎ '+connection_url)
+    const ws = await webrepl.connect(connection_url)
+    await storage.saveNotebook('__webrepl_last_url__', connection_url)
   }
 
   async function connect_pybricks() {

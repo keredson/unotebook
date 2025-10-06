@@ -171,8 +171,13 @@ function App() {
       connection_url = 'ws://'+connection_url
     }
     set_connected_text('🔗︎ '+connection_url)
-    const ws = await webrepl.connect(connection_url)
-    await storage.saveNotebook('__webrepl_last_url__', connection_url)
+    try {
+      const ws = await webrepl.connect(connection_url)
+      await storage.saveNotebook('__webrepl_last_url__', connection_url)
+    } catch(e) {
+      console.log({e})
+      alert(prettyError(e))
+    }
   }
 
   async function connect_pybricks() {
@@ -232,4 +237,30 @@ async function copy_link(e) {
   const a = e.target
   await navigator.clipboard.writeText(a.href);
   alert('Copied "'+ a.href +'" to clipboard.')
+}
+
+function prettyError(e) {
+  // native Error
+  if (e instanceof Error) return e.message;
+
+  // CloseEvent from WebSocket
+  if (typeof CloseEvent !== "undefined" && e instanceof CloseEvent) {
+    const reason = e.reason ? ` ${e.reason}` : "";
+    return `WebSocket closed (${e.code})${reason}`;
+  }
+
+  // plain string
+  if (typeof e === "string") return e;
+
+  // common shapes (e.g., { message, code, reason, type })
+  if (e && typeof e === "object") {
+    if (e.message && e.code) return `${e.message} (code ${e.code})`;
+    if (e.message) return e.message;
+    if (e.reason) return `Error: ${e.reason}`;
+    if (e.type) return `${e.type}${e.error ? `: ${e.error}` : ""}`;
+    try { return JSON.stringify(e); } catch {}
+  }
+
+  // last resort
+  return String(e);
 }

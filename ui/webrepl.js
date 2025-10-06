@@ -12,6 +12,7 @@ export class WebRepl extends EventTarget {
     this.stop_bytes = null;
     this.wait_for_paste_mode = false;
     this.finished = null;
+    this.running = false;
   }
 
   async connect(url, onReady = null) {
@@ -71,8 +72,10 @@ export class WebRepl extends EventTarget {
           this.ignore_bytes = 0
         }
       }
+      console.log({text})
       if (text==this.stop_bytes) {
         if (this.finished) this.finished()
+        this.running = false
         return
       }
       this.dispatchEvent(new CustomEvent('data', { detail: text }));
@@ -90,10 +93,10 @@ export class WebRepl extends EventTarget {
 
   async reset() {
     console.log('resetting webrepl')
-    await this.send('import sys, gc; sys.modules.clear(); gc.collect(); locals().clear()')
+    await this._send('import sys, gc; sys.modules.clear(); gc.collect(); locals().clear()')
   }
 
-  async send(code, finished=null) {
+  async _send(code, finished=null) {
     if (!this.connected || !this.ws || this.ws.readyState !== 1) {
       throw new Error('Not connected (WebREPL)');
     }
@@ -102,6 +105,7 @@ export class WebRepl extends EventTarget {
     const {head, tail} = cleaveLastStatement(code)
     this.stop_bytes = 'DONE_'+Math.random().toString(36).slice(2)
     this.finished = finished
+    this.running = true
     console.log({head, tail})
     code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : tail) + '\nprint("'+this.stop_bytes+'")'
     console.log({code})
@@ -111,6 +115,11 @@ export class WebRepl extends EventTarget {
     await sleep(10);
     this.ws.send(code);
     this.ws.send('');
+  }
+
+  async run(code) {
+      await this._send(code)
+      while (this.running) await sleep(100);
   }
 
   disconnect() {

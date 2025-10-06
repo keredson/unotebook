@@ -199,7 +199,7 @@ function App() {
         <span onClick=${()=>set_http_warning(false)} style='cursor:pointer; float:right; margin-top:.1em'>❌︎</span>
       </div>` : null }
       ${ https_warning ? html`<div class='warning'>
-        WebREPL not available over HTTPS. Copy <u>http://unotebook.org</u> into the address bar.
+        WebREPL not available over HTTPS. Copy <a href='http://unotebook.org' onClick=${copy_link}>http://unotebook.org</u> into the address bar.
         <span onClick=${()=>set_https_warning(false)} style='cursor:pointer; float:right; margin-top:.1em'>❌︎</span>
       </div>` : null }
       ${ warning ? html`<pre class='warning' style='max-width: 280px; float: right;'><code>${warning}</code></pre>` : null }
@@ -220,3 +220,11 @@ function App() {
 const mount = document.getElementById('app');
 mount.textContent = '';
 render(html`<${App}/>`, mount);
+
+
+async function copy_link(e) {
+  e.preventDefault()
+  const a = e.target
+  await navigator.clipboard.writeText(a.href);
+  alert('Copied "'+ a.href +'" to clipboard.')
+}

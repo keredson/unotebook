@@ -16,6 +16,7 @@ export class Pybricks extends EventTarget {
     this.running = false
     this.ignore_bytes = 0
     this.status = null
+    this.stdout = ''
   }
 
   async connect() {
@@ -44,10 +45,12 @@ export class Pybricks extends EventTarget {
             this.ignore_bytes = 0
           }
         }
-        if (text=='>>> ') {
+        this.stdout += text
+        //this.dispatchEvent(new CustomEvent('data', { detail: text }));
+        this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
+        if (this.stdout.endsWith('>>> ')) {1
           this.running = false
         }
-        this.dispatchEvent(new CustomEvent('data', { detail: text }));
       } else if (v[0] === 0x00) { // STATUS_REPORT
         this.status = parsePybricksStatus(v)
         console.log("STATUS:", this.status);
@@ -77,6 +80,7 @@ export class Pybricks extends EventTarget {
     code = code.replaceAll('\r\n','\n')
     const {head, tail} = cleaveLastStatement(code)
     this.running = true
+    this.stdout = ''
     console.log({head, tail})
     code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : (tail?.length ? '\n'+tail : ''))
     console.log({code})

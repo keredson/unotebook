@@ -193,8 +193,6 @@ export const Cell = forwardRef((props, ref) => {
     }
   }
 
-  const append = (s) => set_stdout((prev) => (prev||'') + s);
-
   async function run() {
     set_stdout(null)
     set_jpeg(null)
@@ -223,7 +221,7 @@ export const Cell = forwardRef((props, ref) => {
     try {
       console.log('props.run_cell',props.run_cell)
       set_running(true)
-      await props.run_cell(source, append, { timeoutMs: 10000, newline: true });
+      await props.run_cell(source, set_stdout, { timeoutMs: 10000, newline: true });
     } catch (e) {
       append(`\n⚠️ ${e}\n`);
     } finally {
@@ -266,7 +264,7 @@ export const Cell = forwardRef((props, ref) => {
             </td>
           </tr>
         </table>` : null }
-      ${stdout_without_repl_prompt ? html`<pre class='output' style='margin:0;'><code>${stdout_without_repl_prompt.trim()}</code></pre>` : null}
+      ${stdout_without_repl_prompt ? html`<pre class='output' style='margin:0;'><code>${renderStdout(stdout_without_repl_prompt).trim()}</code></pre>` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}
       ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>
@@ -277,3 +275,57 @@ export const Cell = forwardRef((props, ref) => {
     </div>
   </div>`;
 })
+
+
+// Turn raw stdout (with \r, \n, etc.) into display text for a <pre>
+function renderStdout(raw) {
+  const lines = [''];
+  let col = 0; // cursor column in current line
+
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+
+    if (ch === '\n') {
+      // newline: move to next line, column 0
+      lines.push('');
+      col = 0;
+      continue;
+    }
+    if (ch === '\r') {
+      // carriage return: go to column 0 (do not clear the line)
+      col = 0;
+      continue;
+    }
+    if (ch === '\b') {
+      // backspace: delete previous char if any
+      if (col > 0) {
+        const line = lines[lines.length - 1];
+        lines[lines.length - 1] = line.slice(0, col - 1) + line.slice(col);
+        col--;
+      }
+      continue;
+    }
+    if (ch === '\t') {
+      // simple tab expansion to next 8-col stop
+      const line = lines[lines.length - 1];
+      const spaces = 8 - (col % 8) || 8;
+      lines[lines.length - 1] = line + ' '.repeat(spaces);
+      col += spaces;
+      continue;
+    }
+
+    // printable char: overwrite or append at current column
+    const line = lines[lines.length - 1];
+    if (col < line.length) {
+      lines[lines.length - 1] = line.slice(0, col) + ch + line.slice(col + 1);
+    } else if (col === line.length) {
+      lines[lines.length - 1] = line + ch;
+    } else {
+      // cursor beyond EOL: pad spaces up to col, then write
+      lines[lines.length - 1] = line + ' '.repeat(col - line.length) + ch;
+    }
+    col++;
+  }
+
+  return lines.join('\n');
+}

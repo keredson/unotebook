@@ -91,7 +91,7 @@ export function Notebook(props) {
     }
     for (const c of cells) {
       const api = refs.current.get(c.id)?.current;
-      const source = src.split('\n').map(l => l + '\n');
+      const source = api.getValue().source.split('\n').map(l => l + '\n');
       // avoid adding an extra \n if already empty at end
       if (source[source.length - 1] === '\n') source.pop();
       cells_.push({id:c.id, cell_type:c.cell_type, source})

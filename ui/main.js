@@ -129,11 +129,11 @@ function App() {
     };
     backend.addEventListener('connect', onConnect);
     backend.addEventListener('disconnect', onDisconnect);
-    backend.addEventListener('data', onData);
+    backend.addEventListener('stdout', onData);
     return () => {
       backend.removeEventListener('connect', onConnect);
       backend.removeEventListener('disconnect', onDisconnect);
-      backend.removeEventListener('data', onData);
+      backend.removeEventListener('stdout', onData);
       backend.disconnect();
     };
   }, [backend]);

@@ -13,7 +13,7 @@ export function Manager() {
   }, [reload]);
 
   function new_notebook() {
-    document.location.hash = '#/__new__.unb'
+    document.location.hash = '#/local/__new__.unb'
   }
 
   async function delete_notebook(fn) {

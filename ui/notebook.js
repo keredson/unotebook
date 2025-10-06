@@ -23,7 +23,21 @@ export function Notebook(props) {
   useEffect(() => { 
     props.onDirtyChange(changes)
   }, [changes]);
-  
+
+  // stop navigation when unsaved work
+  const changesRef = useRef(changes);
+  useEffect(() => { changesRef.current = changes }, [changes]);
+  useEffect(() => {
+    const handler = (e) => {
+      if (changesRef.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
+
   const refs = useRef(new Map());
   const getRef = id => {
     let r = refs.current.get(id);
@@ -159,7 +173,7 @@ export function Notebook(props) {
   }
 
   return html`<div>
-    <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn}</h1>
+    <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn.replace(/.unb$/, '')}</h1>
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
       <button onClick=${e=>run_all()}>Run All</button>
       <button onClick=${e=>reset()}>Reset</button>

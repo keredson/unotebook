@@ -2,7 +2,7 @@
   "urls": [
     ["unotebook.py", "unotebook.py"],
     ["ui/unotebook.html", "unotebook.html"],
-    ["VERSION", "unotebook_VERSION"],
+    ["VERSION.txt", "unotebook_VERSION.txt"],
     ["https://keredson.github.io/unotebook/unotebook.js.gz", "unotebook.js.gz"],
     ["Getting_Started.unb", "Getting_Started.unb"]
   ]

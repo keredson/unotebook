@@ -8,9 +8,7 @@ import { BleNus } from './blenus';
 import { WebRepl } from './webrepl';
 import { useGuardHashLinks } from './useGuardHashLinks.js';
 
-import VERSION from '../VERSION?raw';
-const VERSION_STR = (typeof VERSION === 'string' ? VERSION : VERSION?.default || '').trim();
-
+import VERSION from '../VERSION.txt?raw';
 
 const html = htm.bind(h);
 
@@ -195,7 +193,7 @@ function App() {
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" onDirtyChange=${setDirty} />
       </${Router}>
       <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'>
-        <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${VERSION_STR} - © 2025
+        <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${VERSION} - © 2025
       </div>
     </div>
   `;

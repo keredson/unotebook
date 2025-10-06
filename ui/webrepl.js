@@ -102,7 +102,7 @@ export class WebRepl extends EventTarget {
     if (!this.connected || !this.ws || this.ws.readyState !== 1) {
       throw new Error('Not connected (WebREPL)');
     }
-
+    check_non_ascii(code)
     code = code.replaceAll('\r\n','\n')
     const {head, tail} = cleaveLastStatement(code)
     this.finished = finished
@@ -131,3 +131,13 @@ export class WebRepl extends EventTarget {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+function check_non_ascii(text) {
+  const encoded = new TextEncoder().encode(text)
+  for (const byte of encoded) {
+    if (byte > 0x7f) {
+      throw new Error(
+        "Non-ASCII character detected. WebREPL only accepts plain ASCII text."
+      );
+    }
+  }
+}

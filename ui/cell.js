@@ -223,7 +223,7 @@ export const Cell = forwardRef((props, ref) => {
       set_running(true)
       await props.run_cell(source, set_stdout, { timeoutMs: 10000, newline: true });
     } catch (e) {
-      append(`\n⚠️ ${e}\n`);
+      set_error(`⚠️ ${e}`);
     } finally {
       set_running(false)
     }

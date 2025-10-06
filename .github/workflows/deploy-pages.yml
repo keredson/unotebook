@@ -28,11 +28,43 @@ jobs:
           cache: "yarn"
           cache-dependency-path: ui/yarn.lock
 
-      - name: Install deps
+      - name: Install pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+
+      - name: Install yarn deps
         working-directory: ui
         run: yarn install --frozen-lockfile
 
-      - name: Build
+      - name: Build HTML from README.md
+        run: |
+          mkdir -p dist
+          # Derive a page title from the first H1 in README, fallback to repo name
+          TITLE="$(grep -m1 -E '^# ' README.md | sed 's/^# //')"
+          if [ -z "$TITLE" ]; then TITLE="${GITHUB_REPOSITORY#*/}"; fi
+
+          # Optional tiny CSS
+          cat > dist/style.css <<'CSS'
+          :root { color-scheme: light dark; }
+          body { margin: 2rem auto; max-width: 800px; line-height: 1.6; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 0 1rem; }
+          pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+          pre { background: rgba(127,127,127,.08); padding: .75rem; overflow: auto; border-radius: .5rem; }
+          a { text-decoration: none; }
+          a:hover { text-decoration: underline; }
+          hr { border: 0; border-top: 1px solid rgba(127,127,127,.3); margin: 2rem 0; }
+          CSS
+
+          # Convert README.md (GitHub-Flavored Markdown) to a standalone HTML5 page
+          pandoc README.md \
+            -f gfm \
+            -t html5 \
+            --standalone \
+            --metadata pagetitle="$TITLE" \
+            --css style.css \
+            -o dist/index.html
+
+      - name: Build Webapp
         working-directory: ui
         run: yarn build
 
@@ -41,9 +73,17 @@ jobs:
       # and your HTML entry is at ./ui/index.html.
       - name: Prepare dist
         run: |
-          mkdir -p dist
+          mkdir -p dist/code
           cp VERSION.txt dist/VERSION.txt
-          cp ui/index.html dist/index.html
+          cp -R ui/dist dist/code
+
+      - name: Gzip bundle
+        run: |
+          cd dist/assets
+          FILE=$(ls index-*.js)
+          echo "Found $FILE"
+          gzip -9 -c "$FILE" > ../unotebook.js.gz
+          ls -lh ../unotebook.js.gz
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

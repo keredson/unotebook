@@ -74,8 +74,8 @@ const css = `
 
   `;
 
-const BASE = location.pathname.startsWith('/unotebook/')
-  ? '/unotebook'
+const BASE = location.pathname.startsWith('/code/')
+  ? '/code'
   : ''; // '' when hosted at /
 
 const getHashPath = () => {

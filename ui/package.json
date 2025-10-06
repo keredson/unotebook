@@ -1,16 +1,19 @@
 {
   "name": "ui",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "main.js",
   "license": "MIT",
   "devDependencies": {
+    "@preact/preset-vite": "^2.10.2",
     "esbuild": "^0.25.10",
     "htm": "^3.1.1",
-    "preact": "^10.27.2"
+    "preact": "^10.27.2",
+    "vite": "^7.1.9"
   },
   "scripts": {
-    "dev": "esbuild main.js --bundle --format=iife --outfile=../dist/unotebook.js --watch",
-    "build": "mkdir -p ../dist && esbuild main.js --bundle --minify --format=iife --outfile=../dist/unotebook.js --define:process.env.NODE_ENV='\"production\"' && gzip -fk ../dist/unotebook.js && ls -lh ../dist/unotebook.js.gz"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "preact-hooks": "^0.0.0-0.0.0",

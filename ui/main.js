@@ -4,7 +4,7 @@ import { Router } from 'preact-router';
 import { Notebook } from './notebook.js'
 import { Manager } from './manager.js'
 import { useState, useEffect, useMemo, useRef } from 'preact/hooks';
-import { BleNus } from './blenus';
+import { Pybricks } from './pybricks';
 import { WebRepl } from './webrepl';
 import { useGuardHashLinks } from './useGuardHashLinks.js';
 
@@ -101,7 +101,7 @@ function App() {
 
   const [url, setUrl] = useState(getHashPath());
 
-  const ble = useMemo(() => new BleNus(), []);
+  const pybricks = useMemo(() => new Pybricks(), []);
   const webrepl = useMemo(() => new WebRepl(), []);
   const [connected, setConnected] = useState(false);
   const [connected_text, set_connected_text] = useState(null);
@@ -110,7 +110,7 @@ function App() {
   const [https_warning, set_https_warning] = useState(false);
   const [active_backend, set_active_backend] = useState(null);
   const sinkRef = useRef({ id: 0, cb: null });
-  const backend = active_backend==='ble' ? ble : (active_backend==='webrepl' ? webrepl : null);
+  const backend = active_backend==='pybricks' ? pybricks : (active_backend==='webrepl' ? webrepl : null);
 
   const isDirtyRef = useRef(false);
   // pass a setter to Notebook so it can mark dirty/clean
@@ -138,12 +138,12 @@ function App() {
 
   useEffect(() => {
     const warning = [
-      ble?.status?.BATTERY_LOW_VOLTAGE_WARNING && 'Low Battery',
-      ble?.status?.BATTERY_HIGH_CURRENT && 'High Current',
-      //ble?.status?.BLE_HOST_CONNECTED && 'Connected'
+      pybricks?.status?.BATTERY_LOW_VOLTAGE_WARNING && 'Low Battery',
+      pybricks?.status?.BATTERY_HIGH_CURRENT && 'High Current',
+      //pybricks?.status?.BLE_HOST_CONNECTED && 'Connected'
     ].filter(Boolean);
     set_warning(warning.length ? warning.join('\n') : null);
-  }, [ble?.status]);
+  }, [pybricks?.status]);
 
   useEffect(() => {
     const onHash = () => {
@@ -170,16 +170,16 @@ function App() {
     })
   }
 
-  async function connect_ble() {
-    console.log('connect_ble')
+  async function connect_pybricks() {
+    console.log('connect_pybricks')
     if (!navigator.bluetooth) {
       set_http_warning(true)
       return
     }
-    set_active_backend('ble')
-    const name = await ble.connect()
+    set_active_backend('pybricks')
+    const name = await pybricks.connect()
     set_connected_text('🔗︎ '+name)
-    ble.send('print(1)')
+    pybricks.send('print(1)')
   }
 
   return html`
@@ -190,9 +190,9 @@ function App() {
           url.length > 1 ? html`<a href="#/">Home</a>${url.substring(1).split('/').map((s, i) => html` » ${decodeURIComponent(s)}`)}` : null
         }</span>
         <div style='display:flex; gap:1rem; align-items: center;'>
-          ${ connected ? null : html`<button onClick=${e=>connect_ble()}>🔗︎ Pybricks</button>` }
+          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()}>🔗︎ Pybricks</button>` }
           ${ connected ? null : html`<button onClick=${e=>connect_webrepl()}>🔗︎ WebREPL</button>` }
-          ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='ble' ? ble.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
+          ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
         </div>
       </div>
       ${ http_warning ? html`<div class='warning'>

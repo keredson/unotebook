@@ -1,6 +1,6 @@
 import { cleaveLastStatement, isSafeToWrapInPrint } from './repl.js'
 
-export class BleNus extends EventTarget {
+export class Pybricks extends EventTarget {
   static NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
   static NUS_RX      = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
   static NUS_TX      = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
@@ -22,13 +22,13 @@ export class BleNus extends EventTarget {
     if (this.connected) return;
     this.device = await navigator.bluetooth.requestDevice({
         //acceptAllDevices: true,
-        filters: [{ services: [BleNus.PYB_SERVICE] }],
-        optionalServices: [BleNus.PYB_SERVICE],
+        filters: [{ services: [Pybricks.PYB_SERVICE] }],
+        optionalServices: [Pybricks.PYB_SERVICE],
     });
     this.device.addEventListener('gattserverdisconnected', () => this._onDisconnect());
     this.server = await this.device.gatt.connect();
-    const service = await this.server.getPrimaryService(BleNus.PYB_SERVICE);
-    this.cmdEvt = await service.getCharacteristic(BleNus.PYB_CMD_EVT);
+    const service = await this.server.getPrimaryService(Pybricks.PYB_SERVICE);
+    this.cmdEvt = await service.getCharacteristic(Pybricks.PYB_CMD_EVT);
 
     this.cmdEvt.addEventListener("characteristicvaluechanged", (ev) => {
       const v = new Uint8Array(ev.target.value.buffer);

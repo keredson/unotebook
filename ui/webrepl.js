@@ -113,9 +113,19 @@ export class WebRepl extends EventTarget {
     console.log({code})
     this.ignore_bytes = code.length + 'paste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== '.length + 5
 
+    const sendChunked = async (data, chunkSize = 128) => {
+      for (let i = 0; i < data.length; i += chunkSize) {
+        const chunk = data.slice(i, i + chunkSize);
+        console.log('sending chunk', {chunk}, chunk.length)
+        await this.ws.send(chunk);
+        await sleep(10);
+      }
+    };
+
     this.ws.send('');
     await sleep(10);
-    this.ws.send(code);
+    sendChunked(code)
+    //this.ws.send(code);
     this.ws.send('');
   }
 

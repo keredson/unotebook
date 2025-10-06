@@ -79,11 +79,11 @@ jobs:
 
       - name: Gzip bundle
         run: |
-          cd dist/assets
+          cd ui/dist/assets
           FILE=$(ls index-*.js)
           echo "Found $FILE"
-          gzip -9 -c "$FILE" > ../unotebook.js.gz
-          ls -lh ../unotebook.js.gz
+          gzip -9 -c "$FILE" > ../../dist/unotebook.js.gz
+          ls -lh ../../dist/unotebook.js.gz
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

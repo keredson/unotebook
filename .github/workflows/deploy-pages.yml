@@ -74,7 +74,8 @@ jobs:
       - name: Prepare dist
         run: |
           mkdir -p dist/code
-          cp VERSION.txt dist/VERSION.txt
+          cp VERSION.txt dist/
+          cp style.css dist/
           cp -R ui/dist/* dist/code
 
       - name: Gzip bundle

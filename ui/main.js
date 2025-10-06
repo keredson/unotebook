@@ -202,8 +202,7 @@ function App() {
         Goto: <a href="https://unotebook.org/">https://unotebook.org/</a>
       </pre>` : null }
       ${ https_warning ? html`<pre class='warning'>
-        WebREPL not available over HTTPS.
-        Goto: <a href="http://unotebook.org/">http://unotebook.org/</a>
+        WebREPL not available over HTTPS. Copy <u>http://unotebook.org</u> into the address bar.
       </pre>` : null }
       ${ warning ? html`<pre class='warning' ><code>${warning}</code></pre>` : null }
       <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>

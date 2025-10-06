@@ -65,6 +65,7 @@ const css = `
     max-width: 280px;
     float: right;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    text-align: right;
   }
 
   pre.warning::before {
@@ -107,6 +108,8 @@ function App() {
   const [connected, setConnected] = useState(false);
   const [connected_text, set_connected_text] = useState(null);
   const [warning, set_warning] = useState(null);
+  const [http_warning, set_http_warning] = useState(false);
+  const [https_warning, set_https_warning] = useState(false);
   const [active_backend, set_active_backend] = useState(null);
   const sinkRef = useRef({ id: 0, cb: null });
   const backend = active_backend==='ble' ? ble : (active_backend==='webrepl' ? webrepl : null);
@@ -157,6 +160,10 @@ function App() {
 
   function connect_webrepl() {
     console.log('connect_webrepl')
+    if (location.protocol=='https:') {
+      set_https_warning(true)
+      return
+    }
     set_active_backend('webrepl')
     const connection_url = prompt("WebREPL ip[:port]?")
     set_connected_text('🔗︎ ws://'+connection_url)
@@ -167,6 +174,10 @@ function App() {
 
   async function connect_ble() {
     console.log('connect_ble')
+    if (!navigator.bluetooth) {
+      set_http_warning(true)
+      return
+    }
     set_active_backend('ble')
     const name = await ble.connect()
     set_connected_text('🔗︎ '+name)
@@ -186,6 +197,14 @@ function App() {
           ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='ble' ? ble.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
         </div>
       </div>
+      ${ http_warning ? html`<pre class='warning'>
+        Bluetooth not available over HTTP.
+        Goto: <a href="https://unotebook.org/">https://unotebook.org/</a>
+      </pre>` : null }
+      ${ https_warning ? html`<pre class='warning'>
+        WebREPL not available over HTTPS.
+        Goto: <a href="http://unotebook.org/">http://unotebook.org/</a>
+      </pre>` : null }
       ${ warning ? html`<pre class='warning' ><code>${warning}</code></pre>` : null }
       <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>
         <${Manager} path="/" />

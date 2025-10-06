@@ -222,12 +222,12 @@ export const Cell = forwardRef((props, ref) => {
     // start a new run; keep data in this cell only
     try {
       console.log('props.run_cell',props.run_cell)
-      const finished = () => {set_running(false)}
       set_running(true)
-      const cancel = await props.run_cell(source, append, { timeoutMs: 10000, newline: true }, finished);
-      cancelRef.current = cancel;
+      await props.run_cell(source, append, { timeoutMs: 10000, newline: true });
     } catch (e) {
       append(`\n⚠️ ${e}\n`);
+    } finally {
+      set_running(false)
     }
   }
 

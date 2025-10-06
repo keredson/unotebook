@@ -179,7 +179,6 @@ function App() {
     set_active_backend('pybricks')
     const name = await pybricks.connect()
     set_connected_text('🔗︎ '+name)
-    pybricks.send('print(1)')
   }
 
   return html`

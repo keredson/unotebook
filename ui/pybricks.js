@@ -13,7 +13,7 @@ export class Pybricks extends EventTarget {
     this.connected = false;
     this._encoder = new TextEncoder();
     this._decoder = new TextDecoder();
-    this.finished = null
+    this.running = false
     this.ignore_bytes = 0
     this.status = null
   }
@@ -44,14 +44,13 @@ export class Pybricks extends EventTarget {
             this.ignore_bytes = 0
           }
         }
+        if (text=='>>> ') {
+          this.running = false
+        }
         this.dispatchEvent(new CustomEvent('data', { detail: text }));
       } else if (v[0] === 0x00) { // STATUS_REPORT
         this.status = parsePybricksStatus(v)
         console.log("STATUS:", this.status);
-        if (this.finished) {
-          this.finished()
-          this.finished = null
-        }
       } else console.log('unknown event: ', v)
     });
 
@@ -70,13 +69,14 @@ export class Pybricks extends EventTarget {
     await this.cmdEvt.writeValueWithResponse(frame);
   }
 
-  async send(code, finished=null) {
+  async _send(code) {
     if (!this.connected) throw new Error('Not connected');
+
     const enc = new TextEncoder();
 
     code = code.replaceAll('\r\n','\n')
     const {head, tail} = cleaveLastStatement(code)
-    this.finished = finished
+    this.running = true
     console.log({head, tail})
     code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : (tail?.length ? '\n'+tail : ''))
     console.log({code})
@@ -89,6 +89,11 @@ export class Pybricks extends EventTarget {
     await this.sendCmd(0x06, bytes);
     // Ctrl-D to execute
     await this.sendCmd(0x06, new Uint8Array([0x04]));
+  }
+
+  async run(code) {
+    await this._send(code)
+    while (this.running) await sleep(100);
   }
 
   async reset() {

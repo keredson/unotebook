@@ -73,7 +73,7 @@ export class WebRepl extends EventTarget {
       }
       if (text==this.stop_bytes) {
         if (this.finished) this.finished()
-          return
+        return
       }
       this.dispatchEvent(new CustomEvent('data', { detail: text }));
     };

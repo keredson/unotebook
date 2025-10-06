@@ -109,7 +109,7 @@ export function Notebook(props) {
       const api = refs.current.get(c.id)?.current;
       try {
         const result = await api.getValue().run();
-        await sleep(200)
+        await sleep(100)
       } catch (e) {
         console.error("Cell failed:", c.id, e);
         break
@@ -117,7 +117,7 @@ export function Notebook(props) {
     }
   }
 
-  async function run_cell(code, onData, opts = {}, finished=null) {
+  async function run_cell(code, onData, opts = {}) {
     console.log('run_cell', code, backend?.connected)
     if (!backend?.connected) {
       alert("Not Connected")
@@ -129,36 +129,9 @@ export function Notebook(props) {
     const myId = sinkRef.current.id + 1;
     sinkRef.current = { id: myId, cb: onData };
 
-    // optional: auto-clear sink after a quiet timeout
-    let timer = null;
-    const armTimer = () => {
-      if (!timeoutMs) return;
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        // only clear if still the active session
-        if (sinkRef.current.id === myId) sinkRef.current = { id: myId, cb: null };
-      }, timeoutMs);
-    };
-    if (timeoutMs) armTimer();
-
-    // small wrapper to keep the sink alive while chunks come in
-    const originalCb = onData;
-    sinkRef.current.cb = (chunk) => {
-      originalCb(chunk);
-      armTimer();
-    };
-
     // send the code
     const payload = newline && !code.endsWith('\n') ? code + '\n' : code;
-    await backend.send(payload, finished);
-
-    // return a cancel function so the Cell can stop receiving
-    return () => {
-      if (sinkRef.current.id === myId) {
-        sinkRef.current = { id: myId, cb: null };
-      }
-      clearTimeout(timer);
-    };
+    await backend.run(payload);
   }
 
   async function reset() {

@@ -40,6 +40,7 @@ export function Notebook(props) {
       set_doc(doc)
       set_cells(doc.cells.map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
       set_metadata(doc.metadata)
+      props.backend.reset()
     })
   }, []);
 
@@ -94,6 +95,7 @@ export function Notebook(props) {
       const api = refs.current.get(c.id)?.current;
       try {
         const result = await api.getValue().run();
+        await sleep(200)
       } catch (e) {
         console.error("Cell failed:", c.id, e);
         break
@@ -187,3 +189,5 @@ function encode_fn(fn) {
     .replace(/\//g, "_")         // forbid slash
     .replace(/[^A-Za-z0-9+._-]/g, "_"); // all else -> _
 }
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));

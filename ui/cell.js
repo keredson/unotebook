@@ -195,7 +195,7 @@ export const Cell = forwardRef((props, ref) => {
 
   const append = (s) => set_stdout((prev) => (prev||'') + s);
 
-  function run() {
+  async function run() {
     set_stdout(null)
     set_jpeg(null)
     set_png(null)
@@ -208,7 +208,7 @@ export const Cell = forwardRef((props, ref) => {
       set_show_source(html_.length == 0)
     }
     else if (props.cell?.cell_type=='code') {
-      run_code().then(()=>{return})
+      await run_code()
     }
   }
 

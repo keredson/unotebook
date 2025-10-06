@@ -76,10 +76,10 @@ export class WebRepl extends EventTarget {
         }
       }
       console.log({text})
-      if (this.stdout.endsWith('>>> ')) {1
+      this.stdout += text
+      if (this.stdout.endsWith('>>> ')) {
         this.running = false
       }
-      this.stdout += text
       this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
     };
 

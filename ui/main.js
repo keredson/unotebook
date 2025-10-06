@@ -6,6 +6,7 @@ import { Manager } from './manager.js'
 import { useState, useEffect, useMemo, useRef } from 'preact/hooks';
 import { BleNus } from './blenus';
 import { WebRepl } from './webrepl';
+import { useGuardHashLinks } from './useGuardHashLinks.js';
 
 import VERSION from '../VERSION?raw';
 const VERSION_STR = (typeof VERSION === 'string' ? VERSION : VERSION?.default || '').trim();
@@ -112,6 +113,11 @@ function App() {
   const sinkRef = useRef({ id: 0, cb: null });
   const backend = active_backend==='ble' ? ble : (active_backend==='webrepl' ? webrepl : null);
 
+  const isDirtyRef = useRef(false);
+  // pass a setter to Notebook so it can mark dirty/clean
+  const setDirty = (v) => { isDirtyRef.current = !!v; };
+  useGuardHashLinks(isDirtyRef);
+
   useEffect(() => {
     if (backend==null) return;
     const onConnect = () => setConnected(true);
@@ -174,7 +180,7 @@ function App() {
       <style>${css}</style>
       <div style='display:flex; gap:1rem; justify-content:space-between;'>
         <span style='font-size:smaller;'>${
-          url.length > 1 ? html`<a href="#">Home</a>${url.substring(1).split('/').map((s, i) => html` » ${decodeURIComponent(s)}`)}` : null
+          url.length > 1 ? html`<a href="#/">Home</a>${url.substring(1).split('/').map((s, i) => html` » ${decodeURIComponent(s)}`)}` : null
         }</span>
         <div style='display:flex; gap:1rem; align-items: center;'>
           ${ connected ? null : html`<button onClick=${e=>connect_ble()}>🔗︎ Pybricks</button>` }
@@ -185,8 +191,8 @@ function App() {
       ${ warning ? html`<pre class='warning' ><code>${warning}</code></pre>` : null }
       <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>
         <${Manager} path="/" />
-        <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='local' path="/local/:fn" />
-        <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" />
+        <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='local' path="/local/:fn" onDirtyChange=${setDirty} />
+        <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" onDirtyChange=${setDirty} />
       </${Router}>
       <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'>
         <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${VERSION_STR} - © 2025

@@ -20,18 +20,9 @@ export function Notebook(props) {
 
   const { backend, connected, sinkRef } = props;
 
-  const changesRef = useRef(changes);
-  useEffect(() => { changesRef.current = changes }, [changes]);
-  useEffect(() => {
-    const handler = (e) => {
-      if (changesRef.current) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+  useEffect(() => { 
+    props.onDirtyChange(changes)
+  }, [changes]);
   
   const refs = useRef(new Map());
   const getRef = id => {

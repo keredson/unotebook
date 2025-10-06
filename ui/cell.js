@@ -21,7 +21,7 @@ export const Cell = forwardRef((props, ref) => {
   const cancelRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
-    getValue: () => ({run, source, clear})
+    getValue: () => ({run, cell:props.cell, source, clear})
   }));
 
     useEffect(() => {

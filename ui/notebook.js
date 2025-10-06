@@ -92,9 +92,10 @@ export function Notebook(props) {
     for (const c of cells) {
       const api = refs.current.get(c.id)?.current;
       const source = api.getValue().source.split('\n').map(l => l + '\n');
+      const cell = api.getValue().cell;
       // avoid adding an extra \n if already empty at end
       if (source[source.length - 1] === '\n') source.pop();
-      cells_.push({cell_type:c.cell_type, source})
+      cells_.push({...cell, source})
     }
     const payload = {cells:cells_, metadata}
     await storage.saveNotebook(fn, payload)
@@ -155,7 +156,10 @@ export function Notebook(props) {
       <button disabled=${props['fn']!='__new__.ipynb' && !changes} onClick=${e=>save()}>${props['fn']=='__new__.ipynb' ? 'Save as...' : 'Save'}</button>
     </div>
     ${cells.map((cell, i) => html`<${Cell} 
-        key=${cell.id} cell=${cell} idx=${i} fn=${props.fn}
+        key=${cell.id}
+        cell=${cell}
+        idx=${i}
+        fn=${props.fn}
         ref=${getRef(cell.id)} 
         insert_before=${(cell_type) => insert_before(i, cell_type)}
         delete_cell=${() => delete_cell(i)}

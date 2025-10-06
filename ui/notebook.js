@@ -94,7 +94,7 @@ export function Notebook(props) {
       const source = api.getValue().source.split('\n').map(l => l + '\n');
       // avoid adding an extra \n if already empty at end
       if (source[source.length - 1] === '\n') source.pop();
-      cells_.push({id:c.id, cell_type:c.cell_type, source})
+      cells_.push({cell_type:c.cell_type, source})
     }
     const payload = {cells:cells_, metadata}
     await storage.saveNotebook(fn, payload)

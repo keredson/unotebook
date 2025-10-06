@@ -17,6 +17,16 @@
         "# press ctrl-enter to run...",
         "1+1"
       ]
+    },
+    {
+      "id": "eztmrsk43pp",
+      "cell_type": "code",
+      "source": [
+        "import time",
+        "while True:",
+        "  print('woot')",
+        "  time.sleep(1)"
+      ]
     }
   ]
 }

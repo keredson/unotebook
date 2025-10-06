@@ -8,6 +8,7 @@ import { BleNus } from './blenus';
 import { WebRepl } from './webrepl';
 
 import VERSION from '../VERSION?raw';
+const VERSION_STR = (typeof VERSION === 'string' ? VERSION : VERSION?.default || '').trim();
 
 
 const html = htm.bind(h);
@@ -75,10 +76,26 @@ const css = `
 
   `;
 
+const BASE = location.pathname.startsWith('/unotebook/')
+  ? '/unotebook'
+  : ''; // '' when hosted at /
+
 const getHashPath = () => {
-  const p = location.hash.replace(/^#/, '');
-  return p && p.startsWith('/') ? p : '/';
+  // Prefer hash; if none, fall back to pathname (minus base)
+  let p = location.hash.replace(/^#/, '');
+  if (!p) {
+    p = location.pathname.slice(BASE.length) || '/';
+  }
+  if (!p.startsWith('/')) p = '/' + p;
+  return p;
 };
+
+function ensureHash() {
+  if (!location.hash) {
+    // keep current origin + base, inject a hash without reloading
+    history.replaceState(null, '', BASE + '#/');
+  }
+}
 
 
 function App() {
@@ -126,11 +143,10 @@ function App() {
   useEffect(() => {
     const onHash = () => {
       const next = getHashPath();
-      // avoid no-op setState (helps some reconciliation cases)
       setUrl(u => (u === next ? u : next));
     };
     window.addEventListener('hashchange', onHash);
-    // ensure first paint matches current bar (important on hard reload)
+    ensureHash();   // normalize first paint at / or /unotebook/
     onHash();
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
@@ -171,8 +187,10 @@ function App() {
         <${Manager} path="/" />
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='local' path="/local/:fn" />
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" />
-      <//>
-      <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'><a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${VERSION} - © 2025 Derek Anderson</div>
+      </${Router}>
+      <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'>
+        <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>µNotebook</a> v${VERSION_STR} - © 2025
+      </div>
     </div>
   `;
 }

@@ -75,7 +75,7 @@ jobs:
         run: |
           mkdir -p dist/code
           cp VERSION.txt dist/VERSION.txt
-          cp -R ui/dist dist/code
+          cp -R ui/dist/* dist/code
 
       - name: Gzip bundle
         run: |

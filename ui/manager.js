@@ -82,7 +82,7 @@ export function Manager() {
       ${files.map(f => html`<tr>
         <td style='color:#444;'>${iconForSource(f.source)}</td>
         <td style='padding-right:1em;'>
-          <a href='#/${f.source}/${f.fn}'><code>${f.fn}</code></a>
+          <a href='#/${f.source}/${f.fn}'>${f.fn}</a>
         </td>
         <td style='color:#444;'>${humanize_bytes(f.size)}</td>
         <td>

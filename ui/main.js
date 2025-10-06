@@ -52,7 +52,7 @@ const css = `
     line-height: 1.1em;
   }
 
-  pre.warning {
+  .warning {
     background: #ffe5e5;              /* soft red background */
     color: #a40000;                   /* dark red text */
     border: 1px solid #ffb3b3;        /* subtle border */
@@ -62,13 +62,11 @@ const css = `
     font-family: system-ui, sans-serif;
     font-size: 0.9rem;
     white-space: pre-wrap;            /* wrap long lines */
-    max-width: 280px;
-    float: right;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    text-align: right;
+    text-align: left;
   }
 
-  pre.warning::before {
+  .warning::before {
     content: "⚠️ ";
     font-size: 1rem;
   }
@@ -197,14 +195,15 @@ function App() {
           ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='ble' ? ble.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
         </div>
       </div>
-      ${ http_warning ? html`<pre class='warning'>
-        Bluetooth not available over HTTP.
-        Goto: <a href="https://unotebook.org/">https://unotebook.org/</a>
-      </pre>` : null }
-      ${ https_warning ? html`<pre class='warning'>
+      ${ http_warning ? html`<div class='warning'>
+        Bluetooth not available over HTTP. Goto: <a href="https://unotebook.org/">https://unotebook.org/</a>
+        <span onClick=${()=>set_http_warning(false)} style='cursor:pointer; float:right; margin-top:.1em'>❌︎</span>
+      </div>` : null }
+      ${ https_warning ? html`<div class='warning'>
         WebREPL not available over HTTPS. Copy <u>http://unotebook.org</u> into the address bar.
-      </pre>` : null }
-      ${ warning ? html`<pre class='warning' ><code>${warning}</code></pre>` : null }
+        <span onClick=${()=>set_https_warning(false)} style='cursor:pointer; float:right; margin-top:.1em'>❌︎</span>
+      </div>` : null }
+      ${ warning ? html`<pre class='warning' style='max-width: 280px; float: right;'><code>${warning}</code></pre>` : null }
       <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>
         <${Manager} path="/" />
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='local' path="/local/:fn" onDirtyChange=${setDirty} />

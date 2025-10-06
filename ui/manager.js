@@ -15,7 +15,7 @@ export function Manager() {
   }, [reload]);
 
   function new_notebook() {
-    document.location.hash = '#/local/__new__.unb'
+    document.location.hash = '#/local/__new__.ipynb'
   }
 
   async function delete_notebook(fn) {
@@ -27,7 +27,7 @@ export function Manager() {
   async function rename_notebook(fn) {
     var new_fn = prompt('Enter new name of notebook?', fn)
     if (!new_fn) return
-    if (!new_fn.endsWith('.unb')) new_fn = new_fn+'.unb'
+    if (!new_fn.endsWith('.ipynb')) new_fn = new_fn+'.ipynb'
     const doc = await storage.getNotebook(fn)
     await storage.saveNotebook(new_fn, doc)
     await storage.deleteNotebook(fn)
@@ -37,7 +37,7 @@ export function Manager() {
   async function copy_notebook(fn) {
     var new_fn = prompt('Enter a name for the new notebook...')
     if (!new_fn) return
-    if (!new_fn.endsWith('.unb')) new_fn = new_fn+'.unb'
+    if (!new_fn.endsWith('.ipynb')) new_fn = new_fn+'.ipynb'
     const doc = await storage.getNotebook(fn)
     await storage.saveNotebook(new_fn, doc)
     set_reload(reload+1)
@@ -99,7 +99,7 @@ export function Manager() {
       <tr><td colspan='3'>
         <div style='display:inline-flex; gap:.5rem; margin-top:.5em'>
           <button onClick=${()=>new_notebook()}>New Notebook</button>
-          <input id='upload_notebook' type="file" accept=".unb" style='display:none;' onChange=${()=>upload_notebook()} />
+          <input id='upload_notebook' type="file" accept=".ipynb" style='display:none;' onChange=${()=>upload_notebook()} />
           <button onClick=${()=>document.getElementById('upload_notebook').click()}>Upload Notebook...</button>
         </div>
       </td></tr>

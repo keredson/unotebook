@@ -9,7 +9,7 @@ const html = htm.bind(h);
 
 
 export const Cell = forwardRef((props, ref) => {
-  const [source, set_source] = useState(props.cell?.source?.join('\n') || '');
+  const [source, set_source] = useState(props.cell?.source?.join('') || '');
   const [stdout, set_stdout] = useState(null);
   const [error, set_error] = useState(null);
   const [running, set_running] = useState(false);

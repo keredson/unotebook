@@ -54,7 +54,7 @@ export function Notebook(props) {
       set_doc(doc)
       set_cells(doc.cells.map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
       set_metadata(doc.metadata)
-      props.backend.reset()
+      if (props.connected) props.backend.reset()
     })
   }, []);
 
@@ -85,20 +85,22 @@ export function Notebook(props) {
     set_saving(true)
     let cells_ = []
     let fn = props['fn'];
-    if (fn=='__new__.unb') {
+    if (fn=='__new__.ipynb') {
       fn = prompt("Enter notebook name:")
-      if (!fn.endsWith('.unb')) fn = fn+'.unb'
+      if (!fn.endsWith('.ipynb')) fn = fn+'.ipynb'
     }
     for (const c of cells) {
       const api = refs.current.get(c.id)?.current;
-      const source = api.getValue().source.split('\n');
+      const source = src.split('\n').map(l => l + '\n');
+      // avoid adding an extra \n if already empty at end
+      if (source[source.length - 1] === '\n') source.pop();
       cells_.push({id:c.id, cell_type:c.cell_type, source})
     }
     const payload = {cells:cells_, metadata}
     await storage.saveNotebook(fn, payload)
     set_saving(false)
     set_changes(false)
-    if (props['fn']=='__new__.unb') {
+    if (props['fn']=='__new__.ipynb') {
       document.location.hash = '#/local/'+fn
     }
   }
@@ -146,11 +148,11 @@ export function Notebook(props) {
   }
 
   return html`<div>
-    <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn.replace(/.unb$/, '')}</h1>
+    <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn.replace(/.ipynb$/, '')}</h1>
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
       <button onClick=${e=>run_all()}>Run All</button>
       <button onClick=${e=>reset()}>Reset</button>
-      <button disabled=${props['fn']!='__new__.unb' && !changes} onClick=${e=>save()}>${props['fn']=='__new__.unb' ? 'Save as...' : 'Save'}</button>
+      <button disabled=${props['fn']!='__new__.ipynb' && !changes} onClick=${e=>save()}>${props['fn']=='__new__.ipynb' ? 'Save as...' : 'Save'}</button>
     </div>
     ${cells.map((cell, i) => html`<${Cell} 
         key=${cell.id} cell=${cell} idx=${i} fn=${props.fn}

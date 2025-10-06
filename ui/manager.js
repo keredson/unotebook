@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
 import htm from 'htm';
+//import 'preact/debug'
+
 const html = htm.bind(h);
 
 import * as storage from './storage';
@@ -23,7 +25,7 @@ export function Manager() {
   }
 
   async function rename_notebook(fn) {
-    var new_fn = prompt('Enter new name of notebook?')
+    var new_fn = prompt('Enter new name of notebook?', fn)
     if (!new_fn) return
     if (!new_fn.endsWith('.unb')) new_fn = new_fn+'.unb'
     const doc = await storage.getNotebook(fn)

@@ -3,6 +3,7 @@ import { useState, useEffect, useImperativeHandle, useRef } from 'preact/hooks';
 import htm from 'htm';
 import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
+import { render_ansi } from './render_ansi.js'
 
 
 const html = htm.bind(h);
@@ -218,7 +219,7 @@ export const Cell = forwardRef((props, ref) => {
   async function run_code() {
     if (!props.connected) {
       alert('Not Connected')
-      return
+      throw new Error("Not Connected")
     }
     scrollIntoViewIfNeeded(cellRef.current)
     
@@ -268,7 +269,7 @@ export const Cell = forwardRef((props, ref) => {
             </td>
           </tr>
         </table>` : null }
-      ${stdout ? html`<pre class='output' style='margin:0;'><code>${stdout}</code></pre>` : null}
+      ${stdout ? html`<pre class='output' style='margin:0;'><code>${render_ansi(stdout)}</code></pre>` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}
       ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>

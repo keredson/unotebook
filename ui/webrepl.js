@@ -130,7 +130,7 @@ export class WebRepl extends EventTarget {
     code = (head.length ? head+'\n' : '') + (tail && isSafeToWrapInPrint(tail) ? '(lambda v: print(v) if v is not None else None)('+tail+')' : tail)
     console.log('code:', code)
 
-    const blocks = splitPythonTopLevelNoComments(code);
+    const blocks = groupBlocks(splitPythonTopLevelNoComments(code));
     for (const block of blocks) {
       console.log('sending ', block.type, ' block', block.text)
       this.ignore_bytes = block.text.length+2
@@ -140,6 +140,7 @@ export class WebRepl extends EventTarget {
       while (this.wait_for_paste_mode) await sleep(10)
       await this.ws.send(block.text)
       await this.ws.send('');
+      await sleep(100)
       while (this.ignore_bytes > 0) await sleep(10)
       while (this.running) {
         if (this._abort) {
@@ -306,3 +307,28 @@ function stripPythonComment(line) {
 }
 
 const CTRL_C = '\x03';
+
+function groupBlocks(blocks, limit=255) {
+  const grouped = [];
+  let cur = '';
+
+  const flush = () => {
+    if (cur) {
+      grouped.push({text:cur});
+      cur = '';
+    }
+  };
+
+  for (const b of blocks) {
+    const text = b.text.endsWith('\n') ? b.text : b.text + '\n';
+    console.log({text, cur})
+    // If current + next would exceed the hard limit → flush current
+    if (cur.length && cur.length + text.length > limit) {
+      flush();
+    }
+    cur += text;
+  }
+
+  flush();
+  return grouped;
+}

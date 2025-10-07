@@ -19,6 +19,7 @@ export const Cell = forwardRef((props, ref) => {
   const [html_, set_html] = useState(null);
   const [focused, set_focused] = useState(false);
   const cancelRef = useRef(null);
+  const cellRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
     getValue: () => ({run, cell:props.cell, source, clear})
@@ -219,6 +220,8 @@ export const Cell = forwardRef((props, ref) => {
       alert('Not Connected')
       return
     }
+    cellRef.current.scrollIntoView({ behavior: 'smooth', block:'center' })
+    
     // stop previous stream for this cell (if any)
     cancelRef.current?.();
     // start a new run; keep data in this cell only
@@ -234,7 +237,7 @@ export const Cell = forwardRef((props, ref) => {
   }
 
   return html`<div>
-    <div class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
+    <div ref=${cellRef} class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
       <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('code')}>+code</span>
       <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+doc</span>
     </div>

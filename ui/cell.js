@@ -51,10 +51,8 @@ export const Cell = forwardRef((props, ref) => {
     set_show_source(true)
   }
 
-  function stop() {
-    running.abort()
-    set_running(false)
-    set_error('Aborted')
+  async function stop() {
+    set_error(await props.backend.abort())
   }
 
   function setSourceAndRestoreSelection(nextValue, el, start, end = start) {

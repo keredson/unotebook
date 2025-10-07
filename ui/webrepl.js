@@ -16,6 +16,7 @@ export class WebRepl extends EventTarget {
     this.running = false;
     this.stdout = ''
     this.running_timer = null;
+    this._abort = false
   }
 
   async connect(url, onReady = null) {
@@ -124,6 +125,7 @@ export class WebRepl extends EventTarget {
     const {head, tail} = cleaveLastStatement(code)
     this.finished = finished
     this.stdout = ''
+    this._abort = false
     console.log({head, tail})
     code = (head.length ? head+'\n' : '') + (tail && isSafeToWrapInPrint(tail) ? '(lambda v: print(v) if v is not None else None)('+tail+')' : tail)
     console.log('code:', code)
@@ -138,9 +140,16 @@ export class WebRepl extends EventTarget {
       while (this.wait_for_paste_mode) await sleep(10)
       await this.ws.send(block.text)
       await this.ws.send('');
-      await sleep(1000)
-      while (this.ignore_bytes > 0) await sleep(100)
-      while (this.running) await sleep(100)
+      while (this.ignore_bytes > 0) await sleep(10)
+      while (this.running) {
+        if (this._abort) {
+          // CTRL-C doesn't do squat in WebREPL sadly...
+          //await this.ws.send(CTRL_C);
+          console.log('aborting...')
+        }
+        await sleep(10)
+      }
+      if (this._abort) break
     }
   }
 
@@ -151,6 +160,12 @@ export class WebRepl extends EventTarget {
 
   disconnect() {
     try { this.ws?.close(); } catch {}
+  }
+
+  async abort() {
+    this._abort = true
+    console.log('abort requested')
+    return "Abort requested.  If WebREPL stuck in infinite loop, manually reboot device."
   }
 }
 
@@ -289,3 +304,5 @@ function stripPythonComment(line) {
   }
   return line.trimEnd();
 }
+
+const CTRL_C = '\x03';

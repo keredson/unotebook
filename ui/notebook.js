@@ -166,6 +166,7 @@ export function Notebook(props) {
         save=${save}
         changed=${()=>set_changes(true)}
         connected=${connected}
+        backend=${backend}
         run_cell=${run_cell}
     />`)}
     <div style='display:flex; gap:.5rem; margin-top:.5em;'>

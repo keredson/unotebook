@@ -119,6 +119,11 @@ export class Pybricks extends EventTarget {
     await this.sendCmd(0x02);
   }
 
+  async abort() {
+    await this.sendCmd(0x06, new Uint8Array([0x03]));
+    return "Aborted"
+  }
+
   disconnect() {
     if (this.device?.gatt.connected) this.device.gatt.disconnect();
   }

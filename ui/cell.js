@@ -3,6 +3,7 @@ import { useState, useEffect, useImperativeHandle, useRef } from 'preact/hooks';
 import htm from 'htm';
 import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
+import { render_ansi } from './render_ansi.js'
 
 
 const html = htm.bind(h);
@@ -19,9 +20,10 @@ export const Cell = forwardRef((props, ref) => {
   const [html_, set_html] = useState(null);
   const [focused, set_focused] = useState(false);
   const cancelRef = useRef(null);
+  const cellRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
-    getValue: () => ({run, source, clear})
+    getValue: () => ({run, cell:props.cell, source, clear})
   }));
 
     useEffect(() => {
@@ -30,6 +32,12 @@ export const Cell = forwardRef((props, ref) => {
         set_show_source(false)
       }
     }, []);
+
+    useEffect(() => {
+      if (!props.connected) {
+        set_running(false)
+      }
+    }, [props.connected]);
 
   function placeholder() {
     if (props.cell.cell_type=='code') return 'print("Hello world!")'
@@ -45,10 +53,8 @@ export const Cell = forwardRef((props, ref) => {
     set_show_source(true)
   }
 
-  function stop() {
-    running.abort()
-    set_running(false)
-    set_error('Aborted')
+  async function stop() {
+    set_error(await props.backend.abort())
   }
 
   function setSourceAndRestoreSelection(nextValue, el, start, end = start) {
@@ -213,8 +219,10 @@ export const Cell = forwardRef((props, ref) => {
   async function run_code() {
     if (!props.connected) {
       alert('Not Connected')
-      return
+      throw new Error("Not Connected")
     }
+    scrollIntoViewIfNeeded(cellRef.current)
+    
     // stop previous stream for this cell (if any)
     cancelRef.current?.();
     // start a new run; keep data in this cell only
@@ -229,11 +237,8 @@ export const Cell = forwardRef((props, ref) => {
     }
   }
 
-  const stdout_without_repl_prompt = stdout?.endsWith('>>> ') ? stdout.substring(0,stdout.length-4) : stdout
-  console.log({stdout_without_repl_prompt})
-
   return html`<div>
-    <div class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
+    <div ref=${cellRef} class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
       <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('code')}>+code</span>
       <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+doc</span>
     </div>
@@ -264,7 +269,7 @@ export const Cell = forwardRef((props, ref) => {
             </td>
           </tr>
         </table>` : null }
-      ${stdout_without_repl_prompt ? html`<pre class='output' style='margin:0;'><code>${renderStdout(stdout_without_repl_prompt).trim()}</code></pre>` : null}
+      ${stdout ? html`<pre class='output' style='margin:0;'><code>${render_ansi(stdout)}</code></pre>` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}
       ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>
@@ -277,55 +282,12 @@ export const Cell = forwardRef((props, ref) => {
 })
 
 
-// Turn raw stdout (with \r, \n, etc.) into display text for a <pre>
-function renderStdout(raw) {
-  const lines = [''];
-  let col = 0; // cursor column in current line
-
-  for (let i = 0; i < raw.length; i++) {
-    const ch = raw[i];
-
-    if (ch === '\n') {
-      // newline: move to next line, column 0
-      lines.push('');
-      col = 0;
-      continue;
-    }
-    if (ch === '\r') {
-      // carriage return: go to column 0 (do not clear the line)
-      col = 0;
-      continue;
-    }
-    if (ch === '\b') {
-      // backspace: delete previous char if any
-      if (col > 0) {
-        const line = lines[lines.length - 1];
-        lines[lines.length - 1] = line.slice(0, col - 1) + line.slice(col);
-        col--;
-      }
-      continue;
-    }
-    if (ch === '\t') {
-      // simple tab expansion to next 8-col stop
-      const line = lines[lines.length - 1];
-      const spaces = 8 - (col % 8) || 8;
-      lines[lines.length - 1] = line + ' '.repeat(spaces);
-      col += spaces;
-      continue;
-    }
-
-    // printable char: overwrite or append at current column
-    const line = lines[lines.length - 1];
-    if (col < line.length) {
-      lines[lines.length - 1] = line.slice(0, col) + ch + line.slice(col + 1);
-    } else if (col === line.length) {
-      lines[lines.length - 1] = line + ch;
-    } else {
-      // cursor beyond EOL: pad spaces up to col, then write
-      lines[lines.length - 1] = line + ' '.repeat(col - line.length) + ch;
-    }
-    col++;
+function scrollIntoViewIfNeeded(el, options = { behavior: 'smooth', block: 'center' }) {
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+  const isVisible = rect.top >= 0 && rect.bottom <= viewHeight;
+  if (!isVisible) {
+    el.scrollIntoView(options);
   }
-
-  return lines.join('\n');
 }

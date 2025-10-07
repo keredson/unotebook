@@ -1,4 +1,4 @@
-import { cleaveLastStatement, isSafeToWrapInPrint, stripPythonComment } from './repl.js'
+import { cleaveLastStatement, isSafeToWrapInPrint, stripPythonComment, appendWithCR } from './repl.js'
 
 export class Pybricks extends EventTarget {
   static NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
@@ -45,11 +45,24 @@ export class Pybricks extends EventTarget {
             this.ignore_bytes = 0
           }
         }
-        this.stdout += text
-        this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
-        if (this.stdout.endsWith('>>> ')) {1
-          this.running = false
+        this.stdout = appendWithCR(this.stdout, text)
+
+        if (this.stdout.endsWith('>>> ')) {
+          clearTimeout(this.running_timer);
+          this.running_timer = setTimeout(() => {
+            if (this.stdout.endsWith('>>> ')) {
+              this.running = false;
+              this.stdout = this.stdout.replace(/>>> $/, '')
+              this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
+              console.log("Timed out — REPL idle");
+            }
+          }, 500);
+          return
+        } else {
+          clearTimeout(this.running_timer);
         }
+
+        this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
       } else if (v[0] === 0x00) { // STATUS_REPORT
         this.status = parsePybricksStatus(v)
         console.log("STATUS:", this.status);
@@ -104,6 +117,11 @@ export class Pybricks extends EventTarget {
     await this.sendCmd(0x00);
     await sleep(150)
     await this.sendCmd(0x02);
+  }
+
+  async abort() {
+    await this.sendCmd(0x06, new Uint8Array([0x03]));
+    return "Aborted"
   }
 
   disconnect() {

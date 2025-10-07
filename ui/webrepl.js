@@ -1,4 +1,4 @@
-import { cleaveLastStatement, isSafeToWrapInPrint } from './repl.js'
+import { cleaveLastStatement, isSafeToWrapInPrint, appendWithCR } from './repl.js'
 import * as storage from './storage';
 
 export class WebRepl extends EventTarget {
@@ -15,6 +15,8 @@ export class WebRepl extends EventTarget {
     this.finished = null;
     this.running = false;
     this.stdout = ''
+    this.running_timer = null;
+    this._abort = false
   }
 
   async connect(url, onReady = null) {
@@ -43,6 +45,7 @@ export class WebRepl extends EventTarget {
       } else {
         text = this._dec.decode(new Uint8Array(ev.data));
       }
+      //console.log('ws: ', JSON.stringify(text))
       if (this.first_msg && text=='Password: ') {
         const password = prompt("Password?", await storage.getNotebook('__webrepl_last_pass__') || '').trim()
         this.waiting_auth = true
@@ -62,8 +65,9 @@ export class WebRepl extends EventTarget {
         }
       }
       if (this.wait_for_paste_mode) {
-        if (text.trim()=='===') this.wait_for_paste_mode = false
-        console.log('wait_for_paste_mode', text.trim())
+        if (text.trim().startsWith('paste mode;') && text.trim().endsWith('===')) {
+          this.wait_for_paste_mode = false
+        }
         return
       }
       if (this.ignore_bytes) {
@@ -75,11 +79,25 @@ export class WebRepl extends EventTarget {
           this.ignore_bytes = 0
         }
       }
-      console.log({text})
-      this.stdout += text
-      if (this.stdout.endsWith('>>> ')) {
-        this.running = false
+      //console.log({text})
+
+      this.stdout = appendWithCR(this.stdout, text)
+
+      this.last_packet = text
+      if (text === '>>> ') {
+        clearTimeout(this.running_timer);
+        this.running_timer = setTimeout(() => {
+          if (this.last_packet === '>>> ') {
+            this.running = false;
+            this.stdout = this.stdout.replace(/>>> $/, '')
+            console.log("Timed out — REPL idle");
+          }
+        }, 500);
+        return
+      } else {
+        clearTimeout(this.running_timer);
       }
+
       this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
     };
 
@@ -106,27 +124,34 @@ export class WebRepl extends EventTarget {
     code = code.replaceAll('\r\n','\n')
     const {head, tail} = cleaveLastStatement(code)
     this.finished = finished
-    this.running = true
     this.stdout = ''
+    this._abort = false
     console.log({head, tail})
-    code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+tail+')' : tail)
-    console.log({code})
-    this.ignore_bytes = code.length + 'paste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== '.length + 5
+    code = (head.length ? head+'\n' : '') + (tail && isSafeToWrapInPrint(tail) ? '(lambda v: print(v) if v is not None else None)('+tail+')' : tail)
+    console.log('code:', code)
 
-    const sendChunked = async (data, chunkSize = 128) => {
-      for (let i = 0; i < data.length; i += chunkSize) {
-        const chunk = data.slice(i, i + chunkSize);
-        console.log('sending chunk', {chunk}, chunk.length)
-        await this.ws.send(chunk);
-        await sleep(10);
+    const blocks = groupBlocks(splitPythonTopLevelNoComments(code));
+    for (const block of blocks) {
+      console.log('sending ', block.type, ' block', block.text)
+      this.ignore_bytes = block.text.length+2
+      this.running = true
+      this.wait_for_paste_mode = true
+      await this.ws.send('');
+      while (this.wait_for_paste_mode) await sleep(10)
+      await this.ws.send(block.text)
+      await this.ws.send('');
+      await sleep(100)
+      while (this.ignore_bytes > 0) await sleep(10)
+      while (this.running) {
+        if (this._abort) {
+          // CTRL-C doesn't do squat in WebREPL sadly...
+          //await this.ws.send(CTRL_C);
+          console.log('aborting...')
+        }
+        await sleep(10)
       }
-    };
-
-    this.ws.send('');
-    await sleep(10);
-    sendChunked(code)
-    //this.ws.send(code);
-    this.ws.send('');
+      if (this._abort) break
+    }
   }
 
   async run(code) {
@@ -136,6 +161,12 @@ export class WebRepl extends EventTarget {
 
   disconnect() {
     try { this.ws?.close(); } catch {}
+  }
+
+  async abort() {
+    this._abort = true
+    console.log('abort requested')
+    return "Abort requested.  If WebREPL stuck in infinite loop, manually reboot device."
   }
 }
 
@@ -150,4 +181,154 @@ function check_non_ascii(text) {
       );
     }
   }
+}
+
+function splitPythonTopLevelNoComments(src) {
+  const code = src.replace(/\r\n?/g, "\n");
+  const lines = code.split("\n").map(stripPythonComment);
+
+  let inStr = false, strQuote = "";
+  let paren = 0, bracket = 0, brace = 0;
+
+  const blocks = [];
+  let blockStart = null;
+  let lastNonEmpty = -1;
+
+  const atTop = () => !inStr && paren === 0 && bracket === 0 && brace === 0;
+
+  const isContinuationHeader = (t) => {
+    // must be at column 0, not in parens/strings, and one of these headers:
+    // try-family: except/finally/else (for try), if-family: elif/else,
+    // loops: else, match: case/else
+    return /^(elif\b|else\s*:|except\b.*:|finally\s*:|case\b.*:)$/.test(t);
+  };
+
+  const classify = (text) => {
+    const t = text.trimStart();
+    if (/^@/.test(t)) return "decorators";
+    if (/^(async\s+)?def\b/.test(t)) return "def";
+    if (/^class\b/.test(t)) return "class";
+    if (/^(from\b|import\b)/.test(t)) return "import";
+    if (/^if\s+__name__\s*==\s*["']__main__["']\s*:/.test(t)) return "guard";
+    return "stmt";
+  };
+
+  const pushBlock = (start, end) => {
+    if (start == null || end <= start) return;
+    const text = lines.slice(start, end).join("\n");
+    if (text.trim()) blocks.push({ text, startLine: start, endLine: end, type: classify(text) });
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const indent = line.match(/^[ \t]*/)[0].length;
+    const trimmed = line.trim();
+    const isBlank = trimmed === "";
+
+    // Start of a new top-level *header*?
+    const startsTopHeader = atTop() && !isBlank && indent === 0;
+
+    // If a new header line appears at top level…
+    if (startsTopHeader) {
+      // Is it a continuation header (elif/else/except/finally/case)?
+      if (!isContinuationHeader(trimmed)) {
+        // Close previous block (if any), then start a new one
+        if (blockStart !== null) pushBlock(blockStart, i);
+        blockStart = i;
+      }
+      // else: continuation header → keep in current block (do not split)
+    }
+
+    if (!isBlank) lastNonEmpty = i;
+
+    // ——— update parser state across the line ———
+    for (let k = 0; k < line.length; k++) {
+      const ch = line[k];
+
+      if (inStr) {
+        if (strQuote.length === 1) {
+          if (ch === "\\") { k++; continue; }
+          if (ch === strQuote) { inStr = false; strQuote = ""; }
+        } else {
+          if (line.slice(k, k+3) === strQuote) { inStr = false; strQuote = ""; k += 2; }
+        }
+        continue;
+      }
+
+      if (ch === "#") break;
+
+      if (ch === "'" || ch === '"') {
+        if (line.slice(k, k+3) === ch.repeat(3)) { inStr = true; strQuote = ch.repeat(3); k += 2; }
+        else { inStr = true; strQuote = ch; }
+        continue;
+      }
+
+      if (ch === "(") paren++;
+      else if (ch === ")") paren = Math.max(0, paren - 1);
+      else if (ch === "[") bracket++;
+      else if (ch === "]") bracket = Math.max(0, bracket - 1);
+      else if (ch === "{") brace++;
+      else if (ch === "}") brace = Math.max(0, brace - 1);
+    }
+  }
+
+  if (blockStart !== null) pushBlock(blockStart, lastNonEmpty + 1);
+
+  // merge decorators with following def/class
+  const merged = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (b.type === "decorators" && i + 1 < blocks.length &&
+        (blocks[i + 1].type === "def" || blocks[i + 1].type === "class")) {
+      merged.push({
+        text: b.text + "\n" + blocks[i + 1].text,
+        startLine: b.startLine,
+        endLine: blocks[i + 1].endLine,
+        type: blocks[i + 1].type,
+      });
+      i++;
+    } else {
+      merged.push(b);
+    }
+  }
+  return merged;
+}
+
+// comment stripper from earlier (keeps # inside strings)
+function stripPythonComment(line) {
+  let inSingle = false, inDouble = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === "'" && !inDouble && line[i - 1] !== "\\") inSingle = !inSingle;
+    else if (ch === '"' && !inSingle && line[i - 1] !== "\\") inDouble = !inDouble;
+    else if (ch === "#" && !inSingle && !inDouble) return line.slice(0, i).trimEnd();
+  }
+  return line.trimEnd();
+}
+
+const CTRL_C = '\x03';
+
+function groupBlocks(blocks, limit=255) {
+  const grouped = [];
+  let cur = '';
+
+  const flush = () => {
+    if (cur) {
+      grouped.push({text:cur});
+      cur = '';
+    }
+  };
+
+  for (const b of blocks) {
+    const text = b.text.endsWith('\n') ? b.text : b.text + '\n';
+    console.log({text, cur})
+    // If current + next would exceed the hard limit → flush current
+    if (cur.length && cur.length + text.length > limit) {
+      flush();
+    }
+    cur += text;
+  }
+
+  flush();
+  return grouped;
 }

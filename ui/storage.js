@@ -92,7 +92,9 @@ export async function listNotebooks() {
       const cur = e.target.result;
       if (!cur) return resolve(items);
       const { fn, size, updatedAt } = cur.value;
-      items.push({ source:'local', fn, size, updatedAt });
+      if (fn.endsWith('.ipynb')) {
+        items.push({ source:'local', fn, size, updatedAt });
+      }
       cur.continue();
     };
     req.onerror = () => reject(req.error);

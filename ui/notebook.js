@@ -92,9 +92,10 @@ export function Notebook(props) {
     for (const c of cells) {
       const api = refs.current.get(c.id)?.current;
       const source = api.getValue().source.split('\n').map(l => l + '\n');
+      const cell = api.getValue().cell;
       // avoid adding an extra \n if already empty at end
       if (source[source.length - 1] === '\n') source.pop();
-      cells_.push({id:c.id, cell_type:c.cell_type, source})
+      cells_.push({...cell, source})
     }
     const payload = {cells:cells_, metadata}
     await storage.saveNotebook(fn, payload)
@@ -139,7 +140,7 @@ export function Notebook(props) {
   async function reset() {
     if (confirm("Clear all output and reset all variables/code on the device?")) {
       sinkRef.current = { id: null, cb: null };
-      await props.backend.reset()
+      await props.backend?.reset()
       for (const c of cells) {
         const api = refs.current.get(c.id)?.current;
         api.getValue().clear();
@@ -155,13 +156,17 @@ export function Notebook(props) {
       <button disabled=${props['fn']!='__new__.ipynb' && !changes} onClick=${e=>save()}>${props['fn']=='__new__.ipynb' ? 'Save as...' : 'Save'}</button>
     </div>
     ${cells.map((cell, i) => html`<${Cell} 
-        key=${cell.id} cell=${cell} idx=${i} fn=${props.fn}
+        key=${cell.id}
+        cell=${cell}
+        idx=${i}
+        fn=${props.fn}
         ref=${getRef(cell.id)} 
         insert_before=${(cell_type) => insert_before(i, cell_type)}
         delete_cell=${() => delete_cell(i)}
         save=${save}
         changed=${()=>set_changes(true)}
         connected=${connected}
+        backend=${backend}
         run_cell=${run_cell}
     />`)}
     <div style='display:flex; gap:.5rem; margin-top:.5em;'>

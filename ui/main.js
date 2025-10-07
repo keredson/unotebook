@@ -8,6 +8,7 @@ import { Pybricks } from './pybricks';
 import { WebRepl } from './webrepl';
 import { useGuardHashLinks } from './useGuardHashLinks.js';
 import * as storage from './storage';
+//import 'preact/debug';
 
 import VERSION from '../VERSION.txt?raw';
 

@@ -240,3 +240,50 @@ export function stripPythonComment(line) {
   }
   return line.trimEnd();
 }
+
+let pendingCR = false;
+export function appendWithCR(prev, chunk) {
+  let out = prev || '';
+  let i = 0;
+
+  // If the previous chunk ended with '\r', decide what to do now
+  if (pendingCR) {
+    if (chunk[i] === '\n') {
+      // It was actually CRLF across chunks → newline
+      out += '\n';
+      i++; // consume the '\n'
+    } else {
+      // Bare CR → overwrite current line
+      const lastNL = out.lastIndexOf('\n');
+      out = lastNL === -1 ? '' : out.slice(0, lastNL + 1);
+      // (do not consume current char; we'll append normally below)
+    }
+    pendingCR = false;
+  }
+
+  for (; i < chunk.length; i++) {
+    const ch = chunk[i];
+
+    if (ch === '\r') {
+      // Look ahead for '\n' inside this same chunk
+      if (i + 1 < chunk.length && chunk[i + 1] === '\n') {
+        out += '\n';   // CRLF → newline
+        i++;           // skip the LF
+      } else {
+        // Bare CR → move to line start (overwrite)
+        const lastNL = out.lastIndexOf('\n');
+        out = lastNL === -1 ? '' : out.slice(0, lastNL + 1);
+        // Don't output anything yet; subsequent chars will overwrite
+      }
+      continue;
+    }
+
+    // Normal char
+    out += ch;
+  }
+
+  // If this chunk ended with CR (and no LF yet), remember for the next call
+  if (chunk.endsWith('\r')) pendingCR = true;
+
+  return out;
+}

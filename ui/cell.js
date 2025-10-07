@@ -220,7 +220,7 @@ export const Cell = forwardRef((props, ref) => {
       alert('Not Connected')
       return
     }
-    cellRef.current.scrollIntoView({ behavior: 'smooth', block:'center' })
+    scrollIntoViewIfNeeded(cellRef.current)
     
     // stop previous stream for this cell (if any)
     cancelRef.current?.();
@@ -281,3 +281,12 @@ export const Cell = forwardRef((props, ref) => {
 })
 
 
+function scrollIntoViewIfNeeded(el, options = { behavior: 'smooth', block: 'center' }) {
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+  const isVisible = rect.top >= 0 && rect.bottom <= viewHeight;
+  if (!isVisible) {
+    el.scrollIntoView(options);
+  }
+}

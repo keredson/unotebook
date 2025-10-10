@@ -1,4 +1,4 @@
-import { cleaveLastStatement, isSafeToWrapInPrint, appendWithCR } from './repl.js'
+import { cleaveLastStatement, is_safe_to_assign_to_var, stripPythonComment, appendWithCR } from './repl.js'
 import * as storage from './storage';
 
 export class WebRepl extends EventTarget {
@@ -127,7 +127,22 @@ export class WebRepl extends EventTarget {
     this.stdout = ''
     this._abort = false
     console.log({head, tail})
-    code = (head.length ? head+'\n' : '') + (tail && isSafeToWrapInPrint(tail) ? '(lambda v: print(v) if v is not None else None)('+tail+')' : tail)
+    const segments = []
+    if (head) segments.push(head)
+    if (tail) {
+      if (is_safe_to_assign_to_var(tail)) {
+        const expr = stripPythonComment(tail).trim()
+        if (expr.length) {
+          segments.push(`_ = (${expr})`)
+          segments.push('if _ is not None:\n    print(_)')
+        } else {
+          segments.push(tail)
+        }
+      } else {
+        segments.push(tail)
+      }
+    }
+    code = segments.join('\n')
     console.log('code:', code)
 
     const blocks = groupBlocks(splitPythonTopLevelNoComments(code));
@@ -292,18 +307,6 @@ function splitPythonTopLevelNoComments(src) {
     }
   }
   return merged;
-}
-
-// comment stripper from earlier (keeps # inside strings)
-function stripPythonComment(line) {
-  let inSingle = false, inDouble = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === "'" && !inDouble && line[i - 1] !== "\\") inSingle = !inSingle;
-    else if (ch === '"' && !inSingle && line[i - 1] !== "\\") inDouble = !inDouble;
-    else if (ch === "#" && !inSingle && !inDouble) return line.slice(0, i).trimEnd();
-  }
-  return line.trimEnd();
 }
 
 const CTRL_C = '\x03';

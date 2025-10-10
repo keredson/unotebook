@@ -53,7 +53,7 @@ export function cleaveLastStatement(src) {
 
 /**
  * Return true iff `line` is a self-contained *expression* line
- * that is safe to wrap in print(...).
+ * that is safe to assign via `_ = <expr>`.
  *
  * Disqualifies:
  *   - blank / comment-only
@@ -65,7 +65,7 @@ export function cleaveLastStatement(src) {
  *   - assignment statements (a=1, a+=1, etc). (Allows walrus `:=`.)
  *   - top-level 'yield' or 'await' (unsafe outside proper contexts)
  */
-export function isSafeToWrapInPrint(line) {
+export function is_safe_to_assign_to_var(line) {
   if (line == null) return false;
   const src = line.replace(/\r\n?$/, "");
   const trimmed = src.trim();

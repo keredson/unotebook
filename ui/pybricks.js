@@ -1,4 +1,4 @@
-import { cleaveLastStatement, isSafeToWrapInPrint, stripPythonComment, appendWithCR } from './repl.js'
+import { cleaveLastStatement, is_safe_to_assign_to_var, stripPythonComment, appendWithCR } from './repl.js'
 
 export class Pybricks extends EventTarget {
   static NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
@@ -94,7 +94,23 @@ export class Pybricks extends EventTarget {
     this.running = true
     this.stdout = ''
     console.log({head, tail})
-    code = head + (tail && isSafeToWrapInPrint(tail) ? '\n(lambda v: print(v) if v is not None else None)('+stripPythonComment(tail)+')' : (tail?.length ? '\n'+tail : ''))
+
+    const segments = []
+    if (head) segments.push(head)
+    if (tail) {
+      if (is_safe_to_assign_to_var(tail)) {
+        const expr = stripPythonComment(tail).trim()
+        if (expr.length) {
+          segments.push(`_ = (${expr})`)
+          segments.push('if _ is not None:\n    print(_)')
+        } else {
+          segments.push(tail)
+        }
+      } else {
+        segments.push(tail)
+      }
+    }
+    code = segments.join('\n')
     console.log({code})
     const bytes = enc.encode(code.endsWith('\n') ? code : code + '\n');
     this.ignore_bytes = bytes.length + 'paste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== '.length + 5

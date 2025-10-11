@@ -647,7 +647,7 @@ export const Cell = forwardRef((props, ref) => {
               />
             </td>
             <td width='4em' valign='top'>
-              <div style='opacity:${is_blockly || focused ? 1 : 0}; line-height:1.1'>
+              <div style='opacity:line-height:1.1'>
                 <div style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>running ? stop() : run()}>${running ? '◼' : '▶'}</div>
                 ${is_blockly ? html`<div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${openBlockly}>🖉</div>` : null }
                 <div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${()=>props.delete_cell()}>🗙</div>

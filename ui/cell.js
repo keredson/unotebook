@@ -269,6 +269,15 @@ export const Cell = forwardRef((props, ref) => {
 
         const functionBlocks = registerNotebookFunctionBlocks(Blockly, pythonGenerator, symbolInfo.functions);
 
+        const origInit = pythonGenerator.init;
+        pythonGenerator.init = function (workspace) {
+          origInit.call(this, workspace);
+          // Remove Blockly’s automatic "var = None" pre-declarations
+          if (this.definitions_) {
+            delete this.definitions_.variables;          // common key
+          }
+        };
+
         const defaultProcedureCallback = workspace.getToolboxCategoryCallback
           ? workspace.getToolboxCategoryCallback('PROCEDURE')
           : (Blockly.Procedures && Blockly.Procedures.flyoutCategory) ? Blockly.Procedures.flyoutCategory : null;

@@ -70,9 +70,7 @@ export const Cell = forwardRef((props, ref) => {
             console.error('Failed to restore Blockly workspace', err);
           }
           const restored = pythonGenerator.workspaceToCode(workspace);
-          set_blockly_source(restored);
-        } else if (source) {
-          set_blockly_source(source);
+          set_source(restored.trim());
         } else {
           changeListener();
         }
@@ -111,7 +109,7 @@ export const Cell = forwardRef((props, ref) => {
           blocklyContextRef.current = null;
         }
       };
-    }, [props.cell?.metadata?.blockly, blocklyVisible, blockly_id, source]);
+    }, [props.cell?.metadata?.blockly, blocklyVisible, blockly_id]);
 
     useEffect(() => {
       if (!props.connected) {
@@ -288,7 +286,6 @@ export const Cell = forwardRef((props, ref) => {
     if (ctx?.workspace) {
       const { workspace, pythonGenerator, Blockly, changeListener, resizeWorkspace } = ctx;
       const code = pythonGenerator.workspaceToCode(workspace);
-      set_blockly_source(code);
       set_source(code);
       props.changed?.();
       try {

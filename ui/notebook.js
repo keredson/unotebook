@@ -200,7 +200,7 @@ export function Notebook(props) {
     />`)}
     <div style='display:flex; gap:.5rem; margin-top:.5em;'>
       <button onClick=${e=>add_cell()}>Add Python</button>
-      <button onClick=${e=>add_cell('blockly')}>Add Blockly</button>
+      <button onClick=${e=>add_cell('blockly')}>Add Blocks</button>
       <button onClick=${e=>add_cell('markdown')} style='border: 0; background-color: transparent; color: #444;'>Add Doc</button>
     </div>
   </div>`;

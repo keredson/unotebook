@@ -84,11 +84,14 @@ const css = `
     fill: #f0ebe1 !important;              /* flyout SVG rect fill */
     rx: 0 !important;
     ry: 0 !important;
-    fill-opacity: 1 !important;
+    fill-opacity: .6 !important;
     }
 
-  .blocklyToolboxDiv {
+  .blocklyToolbox {
     border-radius: 0 !important;
+  }
+  .blocklyToolbox {
+    background-color: #f0ebe1 !important;
   }
 
   .blocklyToolboxDiv,

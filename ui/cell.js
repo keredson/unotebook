@@ -4,8 +4,7 @@ import htm from 'htm';
 import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
 import { render_ansi } from './render_ansi.js'
-import * as Blockly from 'blockly';
-import { pythonGenerator } from 'blockly/python'
+import { FULL_TOOLBOX, loadBlockly } from './blockly_util.js'
 
 
 
@@ -14,6 +13,7 @@ const html = htm.bind(h);
 
 export const Cell = forwardRef((props, ref) => {
   const blockly_id = useMemo(() => 'blockly-'+Math.random().toString(36).slice(2, 9), []);
+  const [blockly_source, set_blockly_source] = useState(null);
   const [source, set_source] = useState(props.cell?.source?.join('') || '');
   const [stdout, set_stdout] = useState(null);
   const [error, set_error] = useState(null);
@@ -38,28 +38,44 @@ export const Cell = forwardRef((props, ref) => {
     }, []);
 
     useEffect(() => {
-      if (props.cell.metadata?.blockly) {
-        const toolbox = {
-          kind: 'flyoutToolbox',
-          contents: [
-            { kind: 'block', type: 'text_print' },
-            { kind: 'block', type: 'controls_repeat_ext' },
-          ],
-        };
-        const workspace = Blockly.inject(blockly_id, { 
-          toolbox,
-          //toolboxPosition: 'top',
-          //renderer: 'thrasos',
+      if (!props.cell.metadata?.blockly) return;
+
+      let workspace;
+      let listener;
+      let disposed = false;
+
+      (async () => {
+        const { Blockly, pythonGenerator } = await loadBlockly();
+        if (disposed) return;
+
+        workspace = Blockly.inject(blockly_id, {
+          toolbox: FULL_TOOLBOX,
+          renderer: 'thrasos',
           trashcan: true,
         });
-        const listener = () => {
-          const code = pythonGenerator.workspaceToCode(workspace)
-          console.log('Generated code:\n' + code)
-          set_source(code)
+
+        listener = () => {
+          const code = pythonGenerator.workspaceToCode(workspace);
+          console.log('Generated code:\n' + code);
+          set_blockly_source(code);
+        };
+
+        workspace.addChangeListener(listener);
+        listener();
+
+        setTimeout(() => {
+          if (!disposed) workspace.scrollCenter();
+        }, 0);
+      })();
+
+      return () => {
+        disposed = true;
+        if (workspace && listener) {
+          workspace.removeChangeListener(listener);
         }
-        workspace.addChangeListener(listener)
-      }
-    }, []);
+        workspace?.dispose();
+      };
+    }, [props.cell?.metadata?.blockly, blockly_id]);
 
     useEffect(() => {
       if (!props.connected) {
@@ -278,20 +294,22 @@ export const Cell = forwardRef((props, ref) => {
             <td>
               ${ props.cell.metadata?.blockly ? html`
                 <div id=${blockly_id} style="height: 50vh; margin-bottom:1em"></div>
-              ` : null }
-              <textarea 
-                spellcheck=${false}
-                autocapitalize=${'off'}
-                autocorrect=${'off'}
-                autocomplete=${'off'}
-                style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:calc(100% - 1.5em)"
-                placeholder=${placeholder()}
-                rows=${source.split('\n').length || 1}
-                onInput=${e => {set_source(e.target.value); props.changed()}}
-                onKeyDown=${handleKeyDown}
-                onFocus=${()=>set_focused(true)}
-                onBlur=${()=>set_focused(false)}
-              >${source}</textarea>
+                <pre class='output'><code>${blockly_source}</code></pre>
+              ` : html`
+                <textarea 
+                  spellcheck=${false}
+                  autocapitalize=${'off'}
+                  autocorrect=${'off'}
+                  autocomplete=${'off'}
+                  style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:calc(100% - 1.5em)"
+                  placeholder=${placeholder()}
+                  rows=${source.split('\n').length || 1}
+                  onInput=${e => {set_source(e.target.value); props.changed()}}
+                  onKeyDown=${handleKeyDown}
+                  onFocus=${()=>set_focused(true)}
+                  onBlur=${()=>set_focused(false)}
+                >${source}</textarea>
+              ` }
             </td>
             <td width='4em' valign='top'>
               <div style='opacity:${focused ? 1 : 0}; line-height:1.1'>

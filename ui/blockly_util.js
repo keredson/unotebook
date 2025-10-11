@@ -32,7 +32,7 @@ async function ensureBlocklyLoaded() {
             nextStatement: null,
             colour: 30,
             tooltip: 'Create a Pybricks Motor attached to the selected port.',
-            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor'
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html'
           },
           {
             type: 'pybricks_motor_run',
@@ -49,7 +49,7 @@ async function ensureBlocklyLoaded() {
             nextStatement: null,
             colour: 30,
             tooltip: 'Run a Pybricks Motor at the given speed in degrees per second.',
-            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor.run'
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run'
           },
           {
             type: 'pybricks_motor_run_time',
@@ -75,7 +75,7 @@ async function ensureBlocklyLoaded() {
             nextStatement: null,
             colour: 30,
             tooltip: 'Run a Pybricks Motor at a speed for a specific duration (milliseconds).',
-            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor.run_time'
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run_time'
           },
           {
             type: 'pybricks_motor_run_angle',
@@ -101,7 +101,7 @@ async function ensureBlocklyLoaded() {
             nextStatement: null,
             colour: 30,
             tooltip: 'Rotate a Pybricks Motor through a target angle.',
-            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor.run_angle'
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run_angle'
           },
           {
             type: 'pybricks_motor_stop',
@@ -117,7 +117,7 @@ async function ensureBlocklyLoaded() {
             nextStatement: null,
             colour: 30,
             tooltip: 'Stop a Pybricks Motor.',
-            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor.stop'
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.stop'
           },
           {
             type: 'pybricks_port',
@@ -140,6 +140,64 @@ async function ensureBlocklyLoaded() {
             colour: 30,
             tooltip: 'Select a Pybricks port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/parameters.html#pybricks.parameters.Port'
+          },
+          {
+            type: 'pybricks_hub_init',
+            message0: 'set %1 to PrimeHub',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Create a PrimeHub instance.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html'
+          },
+          {
+            type: 'pybricks_drivebase_init',
+            message0: 'set %1 to DriveBase with left %2 right %3 wheel %4 axle %5',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'LEFT' },
+              { type: 'input_value', name: 'RIGHT' },
+              { type: 'input_value', name: 'WHEEL', check: 'Number' },
+              { type: 'input_value', name: 'AXLE', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Create a DriveBase with two motors and geometry.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html'
+          },
+          {
+            type: 'pybricks_drivebase_straight',
+            message0: '%1 drive straight %2 mm',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DIST', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Drive a DriveBase straight for a distance in millimeters.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.straight'
+          },
+          {
+            type: 'pybricks_drivebase_turn',
+            message0: '%1 turn %2 degrees',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'ANGLE', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Turn a DriveBase by a given angle in degrees.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.turn'
           }
         ]);
       }
@@ -152,7 +210,7 @@ async function ensureBlocklyLoaded() {
 
       function ensureMotorImports(needsPort = false) {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
-        pythonGenerator.definitions_['import_pybricks_motor'] = 'from pybricks.ev3devices import Motor';
+        pythonGenerator.definitions_['import_pybricks_motor'] = 'from pybricks.pupdevices import Motor';
         if (needsPort) {
           pythonGenerator.definitions_['import_pybricks_port'] = 'from pybricks.parameters import Port';
         }
@@ -207,6 +265,16 @@ async function ensureBlocklyLoaded() {
         return `${motorVar}.stop()\n`;
       };
 
+      function ensureHubImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_hub'] = 'from pybricks.hubs import PrimeHub';
+      }
+
+      function ensureDriveBaseImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_drivebase'] = 'from pybricks.robotics import DriveBase';
+      }
+
       function ensurePortImport() {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_port'] = 'from pybricks.parameters import Port';
@@ -216,6 +284,38 @@ async function ensureBlocklyLoaded() {
         ensurePortImport();
         const port = block.getFieldValue('PORT') || 'Port.A';
         return [port, pythonGenerator.ORDER_ATOMIC];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_init'] = function(block, generator) {
+        ensureHubImport();
+        const hubVar = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const code = `${hubVar} = PrimeHub()\n`;
+        return code;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_init'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const dbVar = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const left = generator.valueToCode(block, 'LEFT', pythonGenerator.ORDER_NONE) || 'left_motor';
+        const right = generator.valueToCode(block, 'RIGHT', pythonGenerator.ORDER_NONE) || 'right_motor';
+        const wheel = generator.valueToCode(block, 'WHEEL', pythonGenerator.ORDER_NONE) || '56';
+        const axle = generator.valueToCode(block, 'AXLE', pythonGenerator.ORDER_NONE) || '120';
+        const code = `${dbVar} = DriveBase(${left}, ${right}, ${wheel}, ${axle})\n`;
+        return code;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_straight'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const dist = generator.valueToCode(block, 'DIST', pythonGenerator.ORDER_NONE) || '0';
+        return `${db}.straight(${dist})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_turn'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const angle = generator.valueToCode(block, 'ANGLE', pythonGenerator.ORDER_NONE) || '0';
+        return `${db}.turn(${angle})\n`;
       };
 
       pythonGenerator.scrubNakedValue = function(line) { return line + '\n'; };
@@ -316,47 +416,24 @@ export const FULL_TOOLBOX = {
     },
     { kind: 'sep', gap: 12 },
     {
-      kind: 'category', name: 'Ports', colour: '#C66A21',
+      kind: 'category', name: 'Hub', colour: '#C66A21',
       contents: [
         {
           kind: 'block',
-          type: 'pybricks_port',
-          fields: { PORT: 'Port.A' }
+          type: 'pybricks_hub_init'
         },
-        {
-          kind: 'block',
-          type: 'pybricks_port',
-          fields: { PORT: 'Port.B' }
-        },
-        {
-          kind: 'block',
-          type: 'pybricks_port',
-          fields: { PORT: 'Port.C' }
-        },
-        {
-          kind: 'block',
-          type: 'pybricks_port',
-          fields: { PORT: 'Port.D' }
-        },
-        {
-          kind: 'block',
-          type: 'pybricks_port',
-          fields: { PORT: 'Port.E' }
-        },
-        {
-          kind: 'block',
-          type: 'pybricks_port',
-          fields: { PORT: 'Port.F' }
-        }
+        { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.A' } },
+        { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.B' } },
+        { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.C' } },
+        { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.D' } },
+        { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.E' } },
+        { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.F' } }
       ]
     },
     {
       kind: 'category', name: 'Motors', colour: '#5C68A6',
       contents: [
-        {
-          kind: 'block',
-          type: 'pybricks_motor_init'
-        },
+        { kind: 'block', type: 'pybricks_motor_init' },
         {
           kind: 'block',
           type: 'pybricks_motor_run',
@@ -380,10 +457,29 @@ export const FULL_TOOLBOX = {
             ANGLE: { shadow: { type: 'math_number', fields: { NUM: 180 } } }
           }
         },
+        { kind: 'block', type: 'pybricks_motor_stop' },
         {
           kind: 'block',
-          type: 'pybricks_motor_stop'
+          type: 'pybricks_drivebase_init',
+          inputs: {
+            WHEEL: { shadow: { type: 'math_number', fields: { NUM: 56 } } },
+            AXLE: { shadow: { type: 'math_number', fields: { NUM: 120 } } }
+          }
         },
+        {
+          kind: 'block',
+          type: 'pybricks_drivebase_straight',
+          inputs: {
+            DIST: { shadow: { type: 'math_number', fields: { NUM: 100 } } }
+          }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_drivebase_turn',
+          inputs: {
+            ANGLE: { shadow: { type: 'math_number', fields: { NUM: 90 } } }
+          }
+        }
       ]
     },
     /*{

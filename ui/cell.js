@@ -13,7 +13,6 @@ const html = htm.bind(h);
 
 export const Cell = forwardRef((props, ref) => {
   const blockly_id = useMemo(() => 'blockly-'+Math.random().toString(36).slice(2, 9), []);
-  const [blockly_source, set_blockly_source] = useState(props.cell?.metadata?.blockly ? (props.cell?.source?.join('') || '') : null);
   const [source, set_source] = useState(props.cell?.source?.join('') || '');
   const [stdout, set_stdout] = useState(null);
   const [error, set_error] = useState(null);
@@ -29,6 +28,8 @@ export const Cell = forwardRef((props, ref) => {
   const blocklyStateRef = useRef(null);
   const blocklyContextRef = useRef(null);
 
+  const is_blockly = props.cell.metadata?.blockly
+
   useImperativeHandle(ref, () => ({
     getValue: () => ({run, cell:props.cell, source, clear})
   }));
@@ -41,7 +42,7 @@ export const Cell = forwardRef((props, ref) => {
     }, []);
 
     useEffect(() => {
-      if (!props.cell.metadata?.blockly || !blocklyVisible) return;
+      if (!is_blockly || !blocklyVisible) return;
 
       let cancelled = false;
 
@@ -57,7 +58,7 @@ export const Cell = forwardRef((props, ref) => {
 
         const changeListener = () => {
           const code = pythonGenerator.workspaceToCode(workspace);
-          set_blockly_source(code);
+          set_source(code.trim());
         };
 
         workspace.addChangeListener(changeListener);
@@ -336,15 +337,7 @@ export const Cell = forwardRef((props, ref) => {
           borderBottom: '1px solid #ddd',
           zIndex: 1
         }}>
-          <button onClick=${closeBlockly} style=${{
-            border: '1px solid #bbb',
-            borderRadius: '4px',
-            background: '#fff',
-            color: '#333',
-            fontSize: '0.95rem',
-            padding: '0.25rem 0.9rem',
-            cursor: 'pointer'
-          }}>✕ Close</button>
+          <button onClick=${closeBlockly}>Close</button>
         </div>
         <div id=${blockly_id} style=${{ flex: '1', minHeight: 0, position: 'relative' }}></div>
       </div>
@@ -401,26 +394,25 @@ export const Cell = forwardRef((props, ref) => {
         <table style='width: 100%;'>
           <tr>
             <td>
-              ${ props.cell.metadata?.blockly ? html`
+              <textarea 
+                spellcheck=${false}
+                autocapitalize=${'off'}
+                autocorrect=${'off'}
+                autocomplete=${'off'}
+                style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:calc(100% - 1.5em)"
+                placeholder=${placeholder()}
+                rows=${source.split('\n').length || 1}
+                onInput=${e => {set_source(e.target.value); props.changed()}}
+                onKeyDown=${handleKeyDown}
+                onFocus=${()=>set_focused(true)}
+                onBlur=${()=>set_focused(false)}
+                readOnly={is_blockly}
+              >${source}</textarea>
+              ${ is_blockly ? html`
                 <div>
-                  <button onClick=${openBlockly}>Open Blockly Editor</button>
+                  <button onClick=${openBlockly}>Edit with Blockly</button>
                 </div>
-                ${blockly_source ? html`<pre class='cell_source_code' style='margin:0;'><code>${blockly_source}</code></pre>` : html`<div style="color:#666;">No Blockly code generated yet.</div>`}
-              ` : html`
-                <textarea 
-                  spellcheck=${false}
-                  autocapitalize=${'off'}
-                  autocorrect=${'off'}
-                  autocomplete=${'off'}
-                  style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:calc(100% - 1.5em)"
-                  placeholder=${placeholder()}
-                  rows=${source.split('\n').length || 1}
-                  onInput=${e => {set_source(e.target.value); props.changed()}}
-                  onKeyDown=${handleKeyDown}
-                  onFocus=${()=>set_focused(true)}
-                  onBlur=${()=>set_focused(false)}
-                >${source}</textarea>
-              ` }
+              ` : null}
             </td>
             <td width='4em' valign='top'>
               <div style='opacity:${focused ? 1 : 0}; line-height:1.1'>
@@ -453,12 +445,3 @@ function scrollIntoViewIfNeeded(el, options = { behavior: 'smooth', block: 'cent
     el.scrollIntoView(options);
   }
 }
-
-
-const CSS = html`
-<style>
-  .cell_source_code {
-    padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1;
-  }
-</style>
-`

@@ -93,7 +93,13 @@ export function Notebook(props) {
     }
     for (const c of cells) {
       const api = refs.current.get(c.id)?.current;
-      const source = api.getValue().source.split('\n').map(l => l + '\n');
+      const original = api.getValue().source;
+      const hasTrailingNewline = original.endsWith('\n');
+      const sourceLines = original.split('\n').map((line) => line + '\n');
+      if (!hasTrailingNewline && sourceLines.length) {
+        sourceLines[sourceLines.length - 1] = sourceLines[sourceLines.length - 1].slice(0, -1);
+      }
+      const source = sourceLines;
       const cell = api.getValue().cell;
       // avoid adding an extra \n if already empty at end
       if (source[source.length - 1] === '\n') source.pop();

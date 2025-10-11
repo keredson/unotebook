@@ -12,17 +12,134 @@ async function ensureBlocklyLoaded() {
       const pythonModule = await import('blockly/python');
       const pythonGenerator = pythonModule.pythonGenerator;
 
-      if (!Blockly.Blocks['say_hello']) {
+      if (!Blockly.Blocks['pybricks_motor_init']) {
         Blockly.defineBlocksWithJsonArray([
           {
-            type: 'say_hello',
-            message0: 'say hello to %1',
+            type: 'pybricks_motor_init',
+            message0: 'set %1 to Motor on %2',
             args0: [
-              { type: 'input_value', name: 'NAME' }
+              {
+                type: 'input_value',
+                name: 'MOTOR'
+              },
+              {
+                type: 'input_value',
+                name: 'PORT'
+              }
             ],
-            colour: 160,
-            tooltip: 'Prints a greeting',
-            helpUrl: ''
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 30,
+            tooltip: 'Create a Pybricks Motor attached to the selected port.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor'
+          },
+          {
+            type: 'pybricks_motor_run',
+            message0: 'run %1 at speed %2 deg/s',
+            args0: [
+              {
+                type: 'input_value',
+                name: 'MOTOR'
+              },
+              { type: 'input_value', name: 'SPEED', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 30,
+            tooltip: 'Run a Pybricks Motor at the given speed in degrees per second.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor.run'
+          },
+          {
+            type: 'pybricks_motor_run_time',
+            message0: 'run %1 at speed %2 deg/s for %3 ms wait %4',
+            args0: [
+              {
+                type: 'input_value',
+                name: 'MOTOR'
+              },
+              { type: 'input_value', name: 'SPEED', check: 'Number' },
+              { type: 'input_value', name: 'TIME', check: 'Number' },
+              {
+                type: 'field_dropdown',
+                name: 'WAIT',
+                options: [
+                  ['yes', 'TRUE'],
+                  ['no', 'FALSE']
+                ]
+              }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 30,
+            tooltip: 'Run a Pybricks Motor at a speed for a specific duration (milliseconds).',
+            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor.run_time'
+          },
+          {
+            type: 'pybricks_motor_run_angle',
+            message0: 'run %1 at speed %2 deg/s for %3 degrees wait %4',
+            args0: [
+              {
+                type: 'input_value',
+                name: 'MOTOR'
+              },
+              { type: 'input_value', name: 'SPEED', check: 'Number' },
+              { type: 'input_value', name: 'ANGLE', check: 'Number' },
+              {
+                type: 'field_dropdown',
+                name: 'WAIT',
+                options: [
+                  ['yes', 'TRUE'],
+                  ['no', 'FALSE']
+                ]
+              }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 30,
+            tooltip: 'Rotate a Pybricks Motor through a target angle.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor.run_angle'
+          },
+          {
+            type: 'pybricks_motor_stop',
+            message0: 'stop %1',
+            args0: [
+              {
+                type: 'input_value',
+                name: 'MOTOR'
+              }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 30,
+            tooltip: 'Stop a Pybricks Motor.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/motors.html#pybricks.ev3devices.Motor.stop'
+          },
+          {
+            type: 'pybricks_port',
+            message0: 'port %1',
+            args0: [
+              {
+                type: 'field_dropdown',
+                name: 'PORT',
+                options: [
+                  ['A', 'Port.A'],
+                  ['B', 'Port.B'],
+                  ['C', 'Port.C'],
+                  ['D', 'Port.D'],
+                  ['E', 'Port.E'],
+                  ['F', 'Port.F']
+                ]
+              }
+            ],
+            output: null,
+            colour: 30,
+            tooltip: 'Select a Pybricks port.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/parameters.html#pybricks.parameters.Port'
           }
         ]);
       }
@@ -31,6 +148,74 @@ async function ensureBlocklyLoaded() {
         const name = generator.valueToCode(block, 'NAME', pythonGenerator.ORDER_NONE) || '"world"';
         const code = `print("Hello, " + str(${name}))\n`;
         return code;
+      };
+
+      function ensureMotorImports(needsPort = false) {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_motor'] = 'from pybricks.ev3devices import Motor';
+        if (needsPort) {
+          pythonGenerator.definitions_['import_pybricks_port'] = 'from pybricks.parameters import Port';
+        }
+      }
+
+      function getMotorCode(block, generator) {
+        const code = generator.valueToCode(block, 'MOTOR', pythonGenerator.ORDER_NONE);
+        return (code && code.trim()) || 'motor';
+      }
+
+      function getPortCode(block, generator) {
+        const code = generator.valueToCode(block, 'PORT', pythonGenerator.ORDER_NONE);
+        return (code && code.trim()) || 'Port.A';
+      }
+
+      pythonGenerator.forBlock['pybricks_motor_init'] = function(block, generator) {
+        ensureMotorImports(true);
+        const motorVar = getMotorCode(block, generator);
+        const port = getPortCode(block, generator);
+        const code = `${motorVar} = Motor(${port})\n`;
+        return code;
+      };
+
+      pythonGenerator.forBlock['pybricks_motor_run'] = function(block, generator) {
+        ensureMotorImports();
+        const motorVar = getMotorCode(block, generator);
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
+        return `${motorVar}.run(${speed})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_motor_run_time'] = function(block, generator) {
+        ensureMotorImports();
+        const motorVar = getMotorCode(block, generator);
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
+        const time = generator.valueToCode(block, 'TIME', pythonGenerator.ORDER_NONE) || '0';
+        const wait = block.getFieldValue('WAIT') === 'TRUE' ? 'True' : 'False';
+        return `${motorVar}.run_time(${speed}, ${time}, wait=${wait})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_motor_run_angle'] = function(block, generator) {
+        ensureMotorImports();
+        const motorVar = getMotorCode(block, generator);
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
+        const angle = generator.valueToCode(block, 'ANGLE', pythonGenerator.ORDER_NONE) || '0';
+        const wait = block.getFieldValue('WAIT') === 'TRUE' ? 'True' : 'False';
+        return `${motorVar}.run_angle(${speed}, ${angle}, wait=${wait})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_motor_stop'] = function(block, generator) {
+        ensureMotorImports();
+        const motorVar = getMotorCode(block, generator);
+        return `${motorVar}.stop()\n`;
+      };
+
+      function ensurePortImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_port'] = 'from pybricks.parameters import Port';
+      }
+
+      pythonGenerator.forBlock['pybricks_port'] = function(block) {
+        ensurePortImport();
+        const port = block.getFieldValue('PORT') || 'Port.A';
+        return [port, pythonGenerator.ORDER_ATOMIC];
       };
 
       pythonGenerator.scrubNakedValue = function(line) { return line + '\n'; };
@@ -129,6 +314,52 @@ export const FULL_TOOLBOX = {
         { kind: 'block', type: 'math_random_float' }
       ]
     },
+    { kind: 'sep', gap: 12 },
+    {
+      kind: 'category', name: 'Ports', colour: '#C66A21',
+      contents: [
+        {
+          kind: 'block',
+          type: 'pybricks_port'
+        }
+      ]
+    },
+    {
+      kind: 'category', name: 'Motors', colour: '#C66A21',
+      contents: [
+        {
+          kind: 'block',
+          type: 'pybricks_motor_init'
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_motor_run',
+          inputs: {
+            SPEED: { shadow: { type: 'math_number', fields: { NUM: 360 } } }
+          }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_motor_run_time',
+          inputs: {
+            SPEED: { shadow: { type: 'math_number', fields: { NUM: 360 } } },
+            TIME: { shadow: { type: 'math_number', fields: { NUM: 1000 } } }
+          }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_motor_run_angle',
+          inputs: {
+            SPEED: { shadow: { type: 'math_number', fields: { NUM: 360 } } },
+            ANGLE: { shadow: { type: 'math_number', fields: { NUM: 180 } } }
+          }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_motor_stop'
+        },
+      ]
+    },
     /*{
       kind: 'category', name: 'Text', colour: '#5CA68D',
       contents: [
@@ -179,7 +410,7 @@ export const FULL_TOOLBOX = {
     },
 
     {
-      kind: 'category', name: 'Other', colour: '#5C68A6',
+      kind: 'category', name: 'Motors', colour: '#5C68A6',
       contents: [
         { kind: 'block', type: 'say_hello', },
       ]

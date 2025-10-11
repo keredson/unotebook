@@ -37,11 +37,11 @@ const css = `
     font-family: system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   }
   body > #app {
-    border-radius: 6px;
+    border-radius: 10px;
     margin-top: 1em;
     background-color: #f4f0e8;
     padding:2em;
-    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     margin: 1em;
   }
   html {

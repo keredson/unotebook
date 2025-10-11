@@ -155,6 +155,20 @@ async function ensureBlocklyLoaded() {
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html'
           },
           {
+            type: 'pybricks_hub_display_text',
+            message0: '%1 display text %2',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'TEXT' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Show text on the PrimeHub display.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.display'
+          },
+          {
             type: 'pybricks_drivebase_init',
             message0: 'set %1 to DriveBase with left %2 right %3 wheel %4 axle %5',
             args0: [
@@ -368,6 +382,13 @@ async function ensureBlocklyLoaded() {
         return code;
       };
 
+      pythonGenerator.forBlock['pybricks_hub_display_text'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const text = generator.valueToCode(block, 'TEXT', pythonGenerator.ORDER_NONE) || "''";
+        return `${hub}.display.text(${text})\n`;
+      };
+
       pythonGenerator.forBlock['pybricks_drivebase_init'] = function(block, generator) {
         ensureDriveBaseImport();
         const dbVar = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
@@ -546,6 +567,8 @@ export const FULL_TOOLBOX = {
           kind: 'block',
           type: 'pybricks_hub_init'
         },
+        
+        { kind: 'block', type: 'pybricks_hub_display_text' },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.A' } },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.B' } },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.C' } },
@@ -617,7 +640,7 @@ export const FULL_TOOLBOX = {
         { kind: 'block', type: 'pybricks_gyro_sensor_angle' }
       ]
     },
-    /*{
+    {
       kind: 'category', name: 'Text', colour: '#5CA68D',
       contents: [
         { kind: 'block', type: 'text' },
@@ -637,7 +660,7 @@ export const FULL_TOOLBOX = {
           inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'Enter value:' } } } }
         }
       ]
-    },//*/
+    },
     /*{
       kind: 'category', name: 'Lists', colour: '#745CA6',
       contents: [

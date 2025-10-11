@@ -175,6 +175,180 @@ async function ensureBlocklyLoaded() {
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.display'
           },
           {
+            type: 'pybricks_hub_display_char',
+            message0: '%1 display char %2',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'CHAR' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Show a single character on the display.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.char'
+          },
+          {
+            type: 'pybricks_hub_display_number',
+            message0: '%1 display number %2',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'NUMBER', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Show a number on the display.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.number'
+          },
+          {
+            type: 'pybricks_hub_display_pixel',
+            message0: '%1 display pixel row %2 column %3 brightness %4',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'ROW', check: 'Number' },
+              { type: 'input_value', name: 'COLUMN', check: 'Number' },
+              { type: 'input_value', name: 'BRIGHTNESS', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Set a pixel on the display (brightness 0-100).',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.pixel'
+          },
+          {
+            type: 'pybricks_hub_display_off',
+            message0: '%1 display off',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Turn off the display.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.off'
+          },
+          {
+            type: 'pybricks_hub_display_orientation',
+            message0: '%1 display orientation %2',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              {
+                type: 'field_dropdown',
+                name: 'ORIENTATION',
+                options: [
+                  ['up', 'Direction.UP'],
+                  ['down', 'Direction.DOWN'],
+                  ['left', 'Direction.LEFT'],
+                  ['right', 'Direction.RIGHT'],
+                  ['front', 'Direction.FRONT'],
+                  ['back', 'Direction.BACK']
+                ]
+              }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Set which side of the hub faces up.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.orientation'
+          },
+          {
+            type: 'pybricks_hub_light_on',
+            message0: '%1 light on %2',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              {
+                type: 'field_dropdown',
+                name: 'COLOR',
+                options: [
+                  ['white', 'Color.WHITE'],
+                  ['red', 'Color.RED'],
+                  ['green', 'Color.GREEN'],
+                  ['blue', 'Color.BLUE'],
+                  ['yellow', 'Color.YELLOW'],
+                  ['orange', 'Color.ORANGE'],
+                  ['pink', 'Color.PINK'],
+                  ['violet', 'Color.VIOLET']
+                ]
+              }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Turn the hub light on with a color.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Lights.on'
+          },
+          {
+            type: 'pybricks_hub_light_off',
+            message0: '%1 light off',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Turn the hub light off.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Lights.off'
+          },
+          {
+            type: 'pybricks_hub_charger_connected',
+            message0: '%1 charger connected?',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: 'Boolean',
+            colour: 200,
+            tooltip: 'Check if the charger is connected.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.charger'
+          },
+          {
+            type: 'pybricks_hub_charger_current',
+            message0: '%1 charger current (mA)',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: null,
+            colour: 200,
+            tooltip: 'Get charger current draw in mA.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Charger.current'
+          },
+          {
+            type: 'pybricks_hub_charger_status',
+            message0: '%1 charger status',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: null,
+            colour: 200,
+            tooltip: 'Get numeric charger status.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Charger.status'
+          },
+          {
+            type: 'pybricks_hub_system_info',
+            message0: '%1 system info',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: null,
+            colour: 200,
+            tooltip: 'Get system information dictionary.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.System.info'
+          },
+          {
+            type: 'pybricks_hub_system_shutdown',
+            message0: '%1 system shutdown',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 200,
+            tooltip: 'Shut down the hub system.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.System.shutdown'
+          },
+          {
             type: 'pybricks_drivebase_init',
             message0: 'DriveBase',
             message1: '↳ left motor %1',
@@ -463,6 +637,16 @@ async function ensureBlocklyLoaded() {
         }
       }
 
+      function ensureDirectionImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_direction'] = 'from pybricks.parameters import Direction';
+      }
+
+      function ensureColorImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_color_param'] = 'from pybricks.parameters import Color';
+      }
+
       function ensureAxisImport() {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_axis'] = 'from pybricks.parameters import Axis';
@@ -683,6 +867,87 @@ async function ensureBlocklyLoaded() {
         return [`${hub}.imu.orientation()`, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
+      pythonGenerator.forBlock['pybricks_hub_charger_connected'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.charger.connected()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_charger_current'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.charger.current()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_charger_status'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.charger.status()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_system_info'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.system.info()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_system_shutdown'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return `${hub}.system.shutdown()\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_display_char'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const char = generator.valueToCode(block, 'CHAR', pythonGenerator.ORDER_NONE) || "''";
+        return `${hub}.display.char(${char})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_display_number'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const number = generator.valueToCode(block, 'NUMBER', pythonGenerator.ORDER_NONE) || '0';
+        return `${hub}.display.number(${number})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_display_pixel'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const row = generator.valueToCode(block, 'ROW', pythonGenerator.ORDER_NONE) || '0';
+        const column = generator.valueToCode(block, 'COLUMN', pythonGenerator.ORDER_NONE) || '0';
+        const brightness = generator.valueToCode(block, 'BRIGHTNESS', pythonGenerator.ORDER_NONE) || '100';
+        return `${hub}.display.pixel(${row}, ${column}, ${brightness})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_display_off'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return `${hub}.display.off()\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_display_orientation'] = function(block, generator) {
+        ensureHubImport();
+        ensureDirectionImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const orientation = block.getFieldValue('ORIENTATION') || 'Direction.UP';
+        return `${hub}.display.orientation(${orientation})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_light_on'] = function(block, generator) {
+        ensureHubImport();
+        ensureColorImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const color = block.getFieldValue('COLOR') || 'Color.WHITE';
+        return `${hub}.light.on(${color})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_light_off'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return `${hub}.light.off()\n`;
+      };
+
       pythonGenerator.forBlock['pybricks_touch_sensor_init'] = function(block, generator) {
         ensureSensorImports();
         const port = getPortCode(block, generator);
@@ -799,7 +1064,6 @@ export const FULL_TOOLBOX = {
           kind: 'block',
           type: 'pybricks_hub_init'
         },
-        { kind: 'block', type: 'pybricks_hub_display_text' },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.A' } },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.B' } },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.C' } },
@@ -815,7 +1079,24 @@ export const FULL_TOOLBOX = {
         { kind: 'block', type: 'pybricks_hub_imu_heading' },
         { kind: 'block', type: 'pybricks_hub_imu_reset_heading' },
         { kind: 'block', type: 'pybricks_hub_imu_rotation' },
-        { kind: 'block', type: 'pybricks_hub_imu_orientation' }
+        { kind: 'block', type: 'pybricks_hub_imu_orientation' },
+        { kind: 'block', type: 'pybricks_hub_display_text' },
+        { kind: 'block', type: 'pybricks_hub_display_char' },
+        { kind: 'block', type: 'pybricks_hub_display_number' },
+        { kind: 'block', type: 'pybricks_hub_display_pixel',
+          inputs: {
+            BRIGHTNESS: { shadow: { type: 'math_number', fields: { NUM: 100 } } }
+          }
+        },
+        { kind: 'block', type: 'pybricks_hub_display_off' },
+        { kind: 'block', type: 'pybricks_hub_display_orientation' },
+        { kind: 'block', type: 'pybricks_hub_light_on' },
+        { kind: 'block', type: 'pybricks_hub_light_off' },
+        { kind: 'block', type: 'pybricks_hub_charger_connected' },
+        { kind: 'block', type: 'pybricks_hub_charger_current' },
+        { kind: 'block', type: 'pybricks_hub_charger_status' },
+        { kind: 'block', type: 'pybricks_hub_system_info' },
+        { kind: 'block', type: 'pybricks_hub_system_shutdown' },
       ]
     },
     {

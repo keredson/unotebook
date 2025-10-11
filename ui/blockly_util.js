@@ -320,12 +320,38 @@ export const FULL_TOOLBOX = {
       contents: [
         {
           kind: 'block',
-          type: 'pybricks_port'
+          type: 'pybricks_port',
+          fields: { PORT: 'Port.A' }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_port',
+          fields: { PORT: 'Port.B' }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_port',
+          fields: { PORT: 'Port.C' }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_port',
+          fields: { PORT: 'Port.D' }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_port',
+          fields: { PORT: 'Port.E' }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_port',
+          fields: { PORT: 'Port.F' }
         }
       ]
     },
     {
-      kind: 'category', name: 'Motors', colour: '#C66A21',
+      kind: 'category', name: 'Motors', colour: '#5C68A6',
       contents: [
         {
           kind: 'block',
@@ -407,14 +433,7 @@ export const FULL_TOOLBOX = {
     },
     {
       kind: 'category', name: 'Functions', colour: '#9A5CA6', custom: 'PROCEDURE'
-    },
-
-    {
-      kind: 'category', name: 'Motors', colour: '#5C68A6',
-      contents: [
-        { kind: 'block', type: 'say_hello', },
-      ]
-    },
+    }
 
   ]
 };

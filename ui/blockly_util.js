@@ -198,6 +198,81 @@ async function ensureBlocklyLoaded() {
             colour: 20,
             tooltip: 'Turn a DriveBase by a given angle in degrees.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.turn'
+          },
+          {
+            type: 'pybricks_color_sensor_init',
+            message0: 'set %1 to ColorSensor on %2',
+            args0: [
+              { type: 'input_value', name: 'SENSOR' },
+              { type: 'input_value', name: 'PORT' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 280,
+            tooltip: 'Create a ColorSensor on a given port.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/colorsensor.html'
+          },
+          {
+            type: 'pybricks_color_sensor_color',
+            message0: '%1 get color',
+            args0: [
+              { type: 'input_value', name: 'SENSOR' }
+            ],
+            output: null,
+            colour: 280,
+            tooltip: 'Read the detected color from a ColorSensor.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/colorsensor.html#pybricks.pupdevices.ColorSensor.color'
+          },
+          {
+            type: 'pybricks_ultrasonic_sensor_init',
+            message0: 'set %1 to UltrasonicSensor on %2',
+            args0: [
+              { type: 'input_value', name: 'SENSOR' },
+              { type: 'input_value', name: 'PORT' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 300,
+            tooltip: 'Create an UltrasonicSensor on a given port.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html'
+          },
+          {
+            type: 'pybricks_ultrasonic_sensor_distance',
+            message0: '%1 distance (mm)',
+            args0: [
+              { type: 'input_value', name: 'SENSOR' }
+            ],
+            output: null,
+            colour: 300,
+            tooltip: 'Measure distance in millimeters using an UltrasonicSensor.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html#pybricks.pupdevices.UltrasonicSensor.distance'
+          },
+          {
+            type: 'pybricks_gyro_sensor_init',
+            message0: 'set %1 to GyroSensor on %2',
+            args0: [
+              { type: 'input_value', name: 'SENSOR' },
+              { type: 'input_value', name: 'PORT' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 320,
+            tooltip: 'Create a GyroSensor on a given port.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/sensors/gyrosensor.html'
+          },
+          {
+            type: 'pybricks_gyro_sensor_angle',
+            message0: '%1 angle (deg)',
+            args0: [
+              { type: 'input_value', name: 'SENSOR' }
+            ],
+            output: null,
+            colour: 320,
+            tooltip: 'Read the angle from a GyroSensor.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/sensors/gyrosensor.html#pybricks.sensors.GyroSensor.angle'
           }
         ]);
       }
@@ -316,6 +391,55 @@ async function ensureBlocklyLoaded() {
         const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
         const angle = generator.valueToCode(block, 'ANGLE', pythonGenerator.ORDER_NONE) || '0';
         return `${db}.turn(${angle})\n`;
+      };
+
+      function ensureSensorImports() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_color'] = 'from pybricks.pupdevices import ColorSensor';
+        pythonGenerator.definitions_['import_pybricks_ultrasonic'] = 'from pybricks.pupdevices import UltrasonicSensor';
+        pythonGenerator.definitions_['import_pybricks_gyro'] = 'from pybricks.sensors import GyroSensor';
+      }
+
+      pythonGenerator.forBlock['pybricks_color_sensor_init'] = function(block, generator) {
+        ensureSensorImports();
+        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'color_sensor';
+        const port = getPortCode(block, generator);
+        return `${sensorVar} = ColorSensor(${port})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_color_sensor_color'] = function(block, generator) {
+        ensureSensorImports();
+        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'color_sensor';
+        const code = `${sensorVar}.color()`;
+        return [code, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_ultrasonic_sensor_init'] = function(block, generator) {
+        ensureSensorImports();
+        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'ultrasonic_sensor';
+        const port = getPortCode(block, generator);
+        return `${sensorVar} = UltrasonicSensor(${port})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_ultrasonic_sensor_distance'] = function(block, generator) {
+        ensureSensorImports();
+        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'ultrasonic_sensor';
+        const code = `${sensorVar}.distance()`;
+        return [code, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_gyro_sensor_init'] = function(block, generator) {
+        ensureSensorImports();
+        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'gyro_sensor';
+        const port = getPortCode(block, generator);
+        return `${sensorVar} = GyroSensor(${port})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_gyro_sensor_angle'] = function(block, generator) {
+        ensureSensorImports();
+        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'gyro_sensor';
+        const code = `${sensorVar}.angle()`;
+        return [code, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
       pythonGenerator.scrubNakedValue = function(line) { return line + '\n'; };
@@ -480,6 +604,17 @@ export const FULL_TOOLBOX = {
             ANGLE: { shadow: { type: 'math_number', fields: { NUM: 90 } } }
           }
         }
+      ]
+    },
+    {
+      kind: 'category', name: 'Sensors', colour: '#7A4FBF',
+      contents: [
+        { kind: 'block', type: 'pybricks_color_sensor_init' },
+        { kind: 'block', type: 'pybricks_color_sensor_color' },
+        { kind: 'block', type: 'pybricks_ultrasonic_sensor_init' },
+        { kind: 'block', type: 'pybricks_ultrasonic_sensor_distance' },
+        { kind: 'block', type: 'pybricks_gyro_sensor_init' },
+        { kind: 'block', type: 'pybricks_gyro_sensor_angle' }
       ]
     },
     /*{

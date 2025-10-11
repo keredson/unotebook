@@ -33,8 +33,8 @@ async function ensureBlocklyLoaded() {
                 type: 'field_dropdown',
                 name: 'DIRECTION',
                 options: [
-                  ['Counterclockwise', 'Direction.COUNTERCLOCKWISE'],
-                  ['Clockwise', 'Direction.CLOCKWISE']
+                  ['⟲', 'Direction.COUNTERCLOCKWISE'],
+                  ['⟳', 'Direction.CLOCKWISE']
                 ]
               }
             ],

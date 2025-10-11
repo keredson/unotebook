@@ -250,7 +250,7 @@ function App() {
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" onDirtyChange=${setDirty} />
       </${Router}>
       <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'>
-        <a style='color: #444;' href='//unotebook.org' target='_unotebook_org'>µNotebook</a> v${VERSION} - <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>code</a> © 2025
+        <a style='color: #444;' href='//unotebook.org' target='_unotebook_org'>µNotebook</a> v${VERSION} - <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>code</a> © 2025 (<a style='color: #444;' href='https://github.com/keredson/unotebook/issues/new' target='_unotebook_github'>report a bug</a>)
       </div>
     </div>
   `;

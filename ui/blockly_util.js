@@ -63,7 +63,7 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_motor_run_time',
-            message0: 'run %1 at speed %2 deg/s for %3 ms wait %4',
+            message0: 'run %1 at speed %2 deg/s for %3 seconds wait %4',
             args0: [
               {
                 type: 'input_value',
@@ -84,7 +84,7 @@ async function ensureBlocklyLoaded() {
             previousStatement: null,
             nextStatement: null,
             colour: 30,
-            tooltip: 'Run a Pybricks Motor at a speed for a specific duration (milliseconds).',
+            tooltip: 'Run a Pybricks Motor at speed for a duration in seconds.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run_time'
           },
           {
@@ -201,7 +201,7 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_drivebase_straight',
-            message0: '%1 drive straight %2 mm',
+            message0: '%1 drive straight %2 millimeters',
             args0: [
               { type: 'input_value', name: 'DB' },
               { type: 'input_value', name: 'DIST', check: 'Number' }
@@ -356,9 +356,10 @@ async function ensureBlocklyLoaded() {
         ensureMotorImports();
         const motorVar = getMotorCode(block, generator);
         const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
-        const time = generator.valueToCode(block, 'TIME', pythonGenerator.ORDER_NONE) || '0';
+        const duration = generator.valueToCode(block, 'TIME', pythonGenerator.ORDER_NONE) || '0';
         const wait = block.getFieldValue('WAIT') === 'TRUE' ? 'True' : 'False';
-        return `${motorVar}.run_time(${speed}, ${time}, wait=${wait})\n`;
+        const timeExpr = `(${duration}) * 1000`;
+        return `${motorVar}.run_time(${speed}, ${timeExpr}, wait=${wait})\n`;
       };
 
       pythonGenerator.forBlock['pybricks_motor_run_angle'] = function(block, generator) {
@@ -612,7 +613,7 @@ export const FULL_TOOLBOX = {
           type: 'pybricks_motor_run_time',
           inputs: {
             SPEED: { shadow: { type: 'math_number', fields: { NUM: 360 } } },
-            TIME: { shadow: { type: 'math_number', fields: { NUM: 1000 } } }
+            TIME: { shadow: { type: 'math_number', fields: { NUM: 1 } } }
           }
         },
         {

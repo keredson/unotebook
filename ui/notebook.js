@@ -61,7 +61,7 @@ export function Notebook(props) {
   function insert_before(i, cell_type) {
     console.log('insert_before', i, cell_type)
     const next = cells.slice()
-    if (cell_type=='blockly') next.push({source:[], cell_type:'raw', metadata:{blockly:{version:1}}})
+    if (cell_type=='blockly') next.push({source:[], cell_type:'code', metadata:{blockly:{version:1}}})
     else next.splice(i, 0, {cell_type, source:[]})
     set_cells(next)
 
@@ -78,7 +78,7 @@ export function Notebook(props) {
 
   function add_cell(cell_type='code') {
     const next = cells.slice()
-    if (cell_type=='blockly') next.push({source:[], cell_type:'raw', metadata:{blockly:{version:1}}})
+    if (cell_type=='blockly') next.push({source:[], cell_type:'code', metadata:{blockly:{version:1}}})
     else next.push({source:[], cell_type})
     set_cells(next)
   }

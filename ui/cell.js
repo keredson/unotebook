@@ -4,7 +4,7 @@ import htm from 'htm';
 import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
 import { render_ansi } from './render_ansi.js'
-import { FULL_TOOLBOX, loadBlockly } from './blockly_util.js'
+import { FULL_TOOLBOX, loadBlockly, BLOCKLY_CSS } from './blockly_util.js'
 
 const registeredNotebookFunctionBlocks = new Set();
 
@@ -183,18 +183,6 @@ export const Cell = forwardRef((props, ref) => {
   const [cellMetadata, set_cellMetadata] = useState(() => props.cell?.metadata ? {...props.cell.metadata} : {});
 
   const is_blockly = Boolean(cellMetadata?.blockly);
-  const blocklyOverlayStyles = blocklyVisible ? html`<style>
-    .blockly-modal__header {
-      display: flex;
-      justify-content: flex-end;
-      padding: 0.6rem 0.9rem;
-      background: #f5f5f5;
-      border-bottom: 1px solid #ddd;
-      z-index: 1;
-    }
-    .blockly-modal__close {
-    }
-  </style>` : null;
 
   useImperativeHandle(ref, () => ({
     getValue: () => {
@@ -561,7 +549,7 @@ export const Cell = forwardRef((props, ref) => {
   }
 
   const blocklyOverlay = blocklyVisible ? html`
-    ${blocklyOverlayStyles}
+    ${ is_blockly ? BLOCKLY_CSS : null}
     <div style=${{
       position: 'fixed',
       top: '0',

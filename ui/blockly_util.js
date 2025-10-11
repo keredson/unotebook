@@ -1,3 +1,7 @@
+import { h } from 'preact';
+import htm from 'htm';
+const html = htm.bind(h);
+
 let blocklyLoader;
 
 async function ensureBlocklyLoaded() {
@@ -16,12 +20,8 @@ async function ensureBlocklyLoaded() {
         Blockly.defineBlocksWithJsonArray([
           {
             type: 'pybricks_motor_init',
-            message0: 'set %1 to Motor on %2',
+            message0: 'Motor on %1',
             args0: [
-              {
-                type: 'input_value',
-                name: 'MOTOR'
-              },
               {
                 type: 'input_value',
                 name: 'PORT'
@@ -39,8 +39,7 @@ async function ensureBlocklyLoaded() {
               }
             ],
             inputsInline: true,
-            previousStatement: null,
-            nextStatement: null,
+            output: null,
             colour: 30,
             tooltip: 'Create a Pybricks Motor attached to the selected port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html'
@@ -154,13 +153,9 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_hub_init',
-            message0: 'set %1 to PrimeHub',
-            args0: [
-              { type: 'input_value', name: 'HUB' }
-            ],
-            inputsInline: true,
-            previousStatement: null,
-            nextStatement: null,
+            message0: 'PrimeHub',
+            args0: [],
+            output: null,
             colour: 200,
             tooltip: 'Create a PrimeHub instance.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html'
@@ -181,17 +176,15 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_drivebase_init',
-            message0: 'set %1 to DriveBase with left %2 right %3 wheel %4 axle %5',
+            message0: 'DriveBase with left %1 right %2 wheel %3 axle %4',
             args0: [
-              { type: 'input_value', name: 'DB' },
               { type: 'input_value', name: 'LEFT' },
               { type: 'input_value', name: 'RIGHT' },
               { type: 'input_value', name: 'WHEEL', check: 'Number' },
               { type: 'input_value', name: 'AXLE', check: 'Number' }
             ],
             inputsInline: true,
-            previousStatement: null,
-            nextStatement: null,
+            output: null,
             colour: 20,
             tooltip: 'Create a DriveBase with two motors and geometry.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html'
@@ -336,11 +329,10 @@ async function ensureBlocklyLoaded() {
 
       pythonGenerator.forBlock['pybricks_motor_init'] = function(block, generator) {
         ensureMotorImports(true, true);
-        const motorVar = getMotorCode(block, generator);
         const port = getPortCode(block, generator);
         const direction = getDirectionCode(block);
-        const code = `${motorVar} = Motor(${port}, positive_direction=${direction})\n`;
-        return code;
+        const code = `Motor(${port}, positive_direction=${direction})`;
+        return [code, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
       pythonGenerator.forBlock['pybricks_motor_run'] = function(block, generator) {
@@ -397,9 +389,7 @@ async function ensureBlocklyLoaded() {
 
       pythonGenerator.forBlock['pybricks_hub_init'] = function(block, generator) {
         ensureHubImport();
-        const hubVar = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
-        const code = `${hubVar} = PrimeHub()\n`;
-        return code;
+        return ['PrimeHub()', pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
       pythonGenerator.forBlock['pybricks_hub_display_text'] = function(block, generator) {
@@ -411,13 +401,12 @@ async function ensureBlocklyLoaded() {
 
       pythonGenerator.forBlock['pybricks_drivebase_init'] = function(block, generator) {
         ensureDriveBaseImport();
-        const dbVar = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
         const left = generator.valueToCode(block, 'LEFT', pythonGenerator.ORDER_NONE) || 'left_motor';
         const right = generator.valueToCode(block, 'RIGHT', pythonGenerator.ORDER_NONE) || 'right_motor';
         const wheel = generator.valueToCode(block, 'WHEEL', pythonGenerator.ORDER_NONE) || '56';
         const axle = generator.valueToCode(block, 'AXLE', pythonGenerator.ORDER_NONE) || '120';
-        const code = `${dbVar} = DriveBase(${left}, ${right}, ${wheel}, ${axle})\n`;
-        return code;
+        const code = `DriveBase(${left}, ${right}, ${wheel}, ${axle})`;
+        return [code, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
       pythonGenerator.forBlock['pybricks_drivebase_straight'] = function(block, generator) {
@@ -711,3 +700,24 @@ export const FULL_TOOLBOX = {
 
   ]
 };
+
+
+export const BLOCKLY_CSS = html`
+  <style>
+    .blocklyWidgetDiv,
+    .blocklyDropDownDiv {
+      z-index: 999999 !important;
+      pointer-events: auto !important;
+    }
+    .blockly-modal__header {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0.6rem 0.9rem;
+      background: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+      z-index: 1;
+    }
+    .blockly-modal__close {
+    }
+  </style>
+`

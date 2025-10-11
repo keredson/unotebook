@@ -176,14 +176,24 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_drivebase_init',
-            message0: 'DriveBase with left %1 right %2 wheel %3 axle %4',
-            args0: [
-              { type: 'input_value', name: 'LEFT' },
-              { type: 'input_value', name: 'RIGHT' },
-              { type: 'input_value', name: 'WHEEL', check: 'Number' },
+            message0: 'DriveBase',
+            message1: '↳ left motor %1',
+            message2: '↳ right motor %1',
+            message3: '↳ wheel diameter %1',
+            message4: '↳ axle track %1',
+            args0: [],
+            args1: [
+              { type: 'input_value', name: 'LEFT' }
+            ],
+            args2: [
+              { type: 'input_value', name: 'RIGHT' }
+            ],
+            args3: [
+              { type: 'input_value', name: 'WHEEL', check: 'Number' }
+            ],
+            args4: [
               { type: 'input_value', name: 'AXLE', check: 'Number' }
             ],
-            inputsInline: true,
             output: null,
             colour: 20,
             tooltip: 'Create a DriveBase with two motors and geometry.',

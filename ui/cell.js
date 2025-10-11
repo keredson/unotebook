@@ -13,7 +13,7 @@ const html = htm.bind(h);
 
 export const Cell = forwardRef((props, ref) => {
   const blockly_id = useMemo(() => 'blockly-'+Math.random().toString(36).slice(2, 9), []);
-  const [blockly_source, set_blockly_source] = useState(null);
+  const [blockly_source, set_blockly_source] = useState(props.cell?.metadata?.blockly ? (props.cell?.source?.join('') || '') : null);
   const [source, set_source] = useState(props.cell?.source?.join('') || '');
   const [stdout, set_stdout] = useState(null);
   const [error, set_error] = useState(null);
@@ -25,6 +25,9 @@ export const Cell = forwardRef((props, ref) => {
   const [focused, set_focused] = useState(false);
   const cancelRef = useRef(null);
   const cellRef = useRef(null);
+  const [blocklyVisible, set_blocklyVisible] = useState(false);
+  const blocklyStateRef = useRef(null);
+  const blocklyContextRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
     getValue: () => ({run, cell:props.cell, source, clear})
@@ -38,44 +41,76 @@ export const Cell = forwardRef((props, ref) => {
     }, []);
 
     useEffect(() => {
-      if (!props.cell.metadata?.blockly) return;
+      if (!props.cell.metadata?.blockly || !blocklyVisible) return;
 
-      let workspace;
-      let listener;
-      let disposed = false;
+      let cancelled = false;
 
       (async () => {
         const { Blockly, pythonGenerator } = await loadBlockly();
-        if (disposed) return;
+        if (cancelled) return;
 
-        workspace = Blockly.inject(blockly_id, {
+        const workspace = Blockly.inject(blockly_id, {
           toolbox: FULL_TOOLBOX,
           renderer: 'thrasos',
           trashcan: true,
         });
 
-        listener = () => {
+        const changeListener = () => {
           const code = pythonGenerator.workspaceToCode(workspace);
-          console.log('Generated code:\n' + code);
           set_blockly_source(code);
         };
 
-        workspace.addChangeListener(listener);
-        listener();
+        workspace.addChangeListener(changeListener);
 
-        setTimeout(() => {
-          if (!disposed) workspace.scrollCenter();
-        }, 0);
+        if (blocklyStateRef.current) {
+          try {
+            Blockly.serialization.workspaces.load(blocklyStateRef.current, workspace);
+          } catch (err) {
+            console.error('Failed to restore Blockly workspace', err);
+          }
+          const restored = pythonGenerator.workspaceToCode(workspace);
+          set_blockly_source(restored);
+        } else if (source) {
+          set_blockly_source(source);
+        } else {
+          changeListener();
+        }
+
+        blocklyContextRef.current = { workspace, Blockly, pythonGenerator, changeListener };
+
+        const resizeWorkspace = () => {
+          Blockly.svgResize(workspace);
+        };
+
+        const scheduleInitialLayout = () => {
+          if (cancelled) return;
+          Blockly.svgResize(workspace);
+          workspace.scrollCenter();
+        };
+
+        window.addEventListener('resize', resizeWorkspace);
+        requestAnimationFrame(scheduleInitialLayout);
+
+        blocklyContextRef.current = {
+          workspace,
+          Blockly,
+          pythonGenerator,
+          changeListener,
+          resizeWorkspace,
+        };
       })();
 
       return () => {
-        disposed = true;
-        if (workspace && listener) {
-          workspace.removeChangeListener(listener);
+        cancelled = true;
+        const ctx = blocklyContextRef.current;
+        if (ctx?.workspace) {
+          window.removeEventListener('resize', ctx.resizeWorkspace);
+          ctx.workspace.removeChangeListener(ctx.changeListener);
+          ctx.workspace.dispose();
+          blocklyContextRef.current = null;
         }
-        workspace?.dispose();
       };
-    }, [props.cell?.metadata?.blockly, blockly_id]);
+    }, [props.cell?.metadata?.blockly, blocklyVisible, blockly_id, source]);
 
     useEffect(() => {
       if (!props.connected) {
@@ -243,6 +278,79 @@ export const Cell = forwardRef((props, ref) => {
     }
   }
 
+  function openBlockly() {
+    set_blocklyVisible(true);
+  }
+
+  function closeBlockly() {
+    const ctx = blocklyContextRef.current;
+    if (ctx?.workspace) {
+      const { workspace, pythonGenerator, Blockly, changeListener, resizeWorkspace } = ctx;
+      const code = pythonGenerator.workspaceToCode(workspace);
+      set_blockly_source(code);
+      set_source(code);
+      props.changed?.();
+      try {
+        blocklyStateRef.current = Blockly.serialization.workspaces.save(workspace);
+      } catch (err) {
+        console.error('Failed to serialize Blockly workspace', err);
+        blocklyStateRef.current = null;
+      }
+      window.removeEventListener('resize', resizeWorkspace);
+      workspace.removeChangeListener(changeListener);
+      workspace.dispose();
+      blocklyContextRef.current = null;
+    }
+    set_blocklyVisible(false);
+  }
+
+  const blocklyOverlay = blocklyVisible ? html`
+    <div style=${{
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100vw',
+      height: '100vh',
+      background: 'rgba(0, 0, 0, 0.6)',
+      zIndex: 2000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <div style=${{
+        position: 'relative',
+        width: '90vw',
+        height: '90vh',
+        background: '#fff',
+        borderRadius: '6px',
+        boxShadow: '0 4px 18px rgba(0, 0, 0, 0.35)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}>
+        <div style=${{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          padding: '0.6rem 0.9rem',
+          background: '#f5f5f5',
+          borderBottom: '1px solid #ddd',
+          zIndex: 1
+        }}>
+          <button onClick=${closeBlockly} style=${{
+            border: '1px solid #bbb',
+            borderRadius: '4px',
+            background: '#fff',
+            color: '#333',
+            fontSize: '0.95rem',
+            padding: '0.25rem 0.9rem',
+            cursor: 'pointer'
+          }}>✕ Close</button>
+        </div>
+        <div id=${blockly_id} style=${{ flex: '1', minHeight: 0, position: 'relative' }}></div>
+      </div>
+    </div>
+  ` : null;
+
   async function run() {
     set_stdout(null)
     set_jpeg(null)
@@ -282,6 +390,7 @@ export const Cell = forwardRef((props, ref) => {
   }
 
   return html`<div>
+    ${CSS}
     <div ref=${cellRef} class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
       <span title="Insert Code..." style="cursor:pointer;" onClick=${()=>props.insert_before('code')}>+code</span>
       <span title="Insert Blockly..." style="cursor:pointer;" onClick=${()=>props.insert_before('blockly')}>+blockly</span>
@@ -293,8 +402,10 @@ export const Cell = forwardRef((props, ref) => {
           <tr>
             <td>
               ${ props.cell.metadata?.blockly ? html`
-                <div id=${blockly_id} style="height: 50vh; margin-bottom:1em"></div>
-                <pre class='output'><code>${blockly_source}</code></pre>
+                <div>
+                  <button onClick=${openBlockly}>Open Blockly Editor</button>
+                </div>
+                ${blockly_source ? html`<pre class='cell_source_code' style='margin:0;'><code>${blockly_source}</code></pre>` : html`<div style="color:#666;">No Blockly code generated yet.</div>`}
               ` : html`
                 <textarea 
                   spellcheck=${false}
@@ -328,6 +439,7 @@ export const Cell = forwardRef((props, ref) => {
       </div>` : null}
       ${error ? html`<pre class='output' style='margin:0; background-color:#ffdddd;'><code>${error}</code></pre>` : null}
     </div>
+    ${blocklyOverlay}
   </div>`;
 })
 
@@ -341,3 +453,12 @@ function scrollIntoViewIfNeeded(el, options = { behavior: 'smooth', block: 'cent
     el.scrollIntoView(options);
   }
 }
+
+
+const CSS = html`
+<style>
+  .cell_source_code {
+    padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1;
+  }
+</style>
+`

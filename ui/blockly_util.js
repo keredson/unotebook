@@ -5,6 +5,9 @@ async function ensureBlocklyLoaded() {
     blocklyLoader = (async () => {
       const blocklyModule = await import('blockly/core');
       const Blockly = blocklyModule.default || blocklyModule;
+      const localeModule = await import('blockly/msg/en');
+      const locale = localeModule.default || localeModule;
+      Blockly.setLocale(locale);
       await import('blockly/blocks');
       const pythonModule = await import('blockly/python');
       const pythonGenerator = pythonModule.pythonGenerator;

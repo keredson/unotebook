@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { useState, useEffect, useRef } from 'preact/hooks';
+import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
 import htm from 'htm';
 import { Cell } from './cell';
 import { route } from 'preact-router';
@@ -61,7 +61,7 @@ export function Notebook(props) {
   function insert_before(i, cell_type) {
     console.log('insert_before', i, cell_type)
     const next = cells.slice()
-    if (cell_type=='blockly') next.push({source:[], cell_type:'code', metadata:{blockly:{version:1}}})
+    if (cell_type=='blockly') next.splice(i, 0, {source:[], cell_type:'code', metadata:{blockly:{version:1}}})
     else next.splice(i, 0, {cell_type, source:[]})
     set_cells(next)
 
@@ -82,6 +82,26 @@ export function Notebook(props) {
     else next.push({source:[], cell_type})
     set_cells(next)
   }
+
+  const getNotebookContext = useCallback((idx) => {
+    const context = [];
+    for (let j = 0; j < idx; j++) {
+      const ref = refs.current.get(cells[j].id)?.current;
+      let cell = cells[j];
+      let source = '';
+      if (ref?.getValue) {
+        const value = ref.getValue();
+        source = value?.source ?? '';
+        cell = value?.cell ?? cell;
+      } else {
+        source = (cell?.source || []).join('');
+      }
+      if ((cell?.cell_type || 'code') === 'code' && source) {
+        context.push(source);
+      }
+    }
+    return context;
+  }, [cells]);
 
   async function save() {
     set_saving(true)
@@ -169,6 +189,7 @@ export function Notebook(props) {
         idx=${i}
         fn=${props.fn}
         ref=${getRef(cell.id)} 
+        getNotebookContext=${getNotebookContext}
         insert_before=${(cell_type) => insert_before(i, cell_type)}
         delete_cell=${() => delete_cell(i)}
         save=${save}

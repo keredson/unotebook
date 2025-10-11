@@ -6,6 +6,159 @@ import snarkdown from 'snarkdown';
 import { render_ansi } from './render_ansi.js'
 import { FULL_TOOLBOX, loadBlockly } from './blockly_util.js'
 
+const registeredNotebookFunctionBlocks = new Set();
+
+function extractNotebookSymbols(codeSnippets) {
+  const variableNames = new Set();
+  const functionMap = new Map();
+  const defRegex = /^def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(([^)]*)\)\s*:/;
+  const assignRegex = /^([A-Za-z_][A-Za-z0-9_]*)\s*(?::[^=]+)?=\s*(?![=])/;
+
+  for (const snippet of codeSnippets || []) {
+    if (!snippet) continue;
+    const lines = snippet.split('\n');
+    for (const line of lines) {
+      if (!line) continue;
+      if (/^\s/.test(line)) continue; // ignore indented lines
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+
+      if (trimmed.startsWith('def ')) {
+        const match = defRegex.exec(trimmed);
+        if (match) {
+          const [, name, paramSection] = match;
+          const params = paramSection
+            .split(',')
+            .map(p => p.trim())
+            .filter(Boolean)
+            .map(p => p.replace(/=.*/, '').replace(/:.*/, '').replace(/^\*+/, '').trim())
+            .filter(Boolean);
+          functionMap.set(name, { name, params });
+        }
+        continue;
+      }
+
+      const assignMatch = assignRegex.exec(trimmed);
+      if (assignMatch) {
+        variableNames.add(assignMatch[1]);
+      }
+    }
+  }
+
+  return { variables: Array.from(variableNames).sort(), functions: Array.from(functionMap.values()) };
+}
+
+function sanitizeFunctionName(name) {
+  return name.replace(/[^A-Za-z0-9_]/g, '_');
+}
+
+function registerNotebookFunctionBlocks(Blockly, pythonGenerator, functions) {
+  const registered = [];
+  if (!functions || !functions.length) return registered;
+
+  functions.forEach((fn, index) => {
+    const safeName = sanitizeFunctionName(fn.name || `func_${index}`);
+    const signatureKey = `${safeName}_${fn.params.length}_${index}`;
+    const stmtType = `notebook_call_${signatureKey}_stmt`;
+    const exprType = `notebook_call_${signatureKey}_expr`;
+
+    const params = fn.params || [];
+    const tooltip = params.length ? `${fn.name}(${params.join(', ')})` : `${fn.name}()`;
+
+    if (!registeredNotebookFunctionBlocks.has(stmtType)) {
+      Blockly.Blocks[stmtType] = {
+        init() {
+          this.setStyle('procedure_blocks');
+          this.setPreviousStatement(true);
+          this.setNextStatement(true);
+          this.setInputsInline(true);
+          if (params.length === 0) {
+            this.appendDummyInput('HEADER').appendField(`call ${fn.name}()`);
+          } else {
+            this.appendDummyInput('HEADER').appendField(`call ${fn.name}(`);
+            params.forEach((param, idx) => {
+              const input = this.appendValueInput(`ARG${idx}`).setCheck(null);
+              const suffix = idx === params.length - 1 ? ')' : ',';
+              input.appendField(`${param}${suffix}`);
+            });
+          }
+          this.setTooltip(`Call ${tooltip}`);
+        }
+      };
+
+      pythonGenerator.forBlock[stmtType] = function(block, generator) {
+        const args = params.map((param, idx) => generator.valueToCode(block, `ARG${idx}`, pythonGenerator.ORDER_NONE) || 'None');
+        const code = `${fn.name}(${args.join(', ')})\n`;
+        return code;
+      };
+
+      registeredNotebookFunctionBlocks.add(stmtType);
+    }
+
+    if (!registeredNotebookFunctionBlocks.has(exprType)) {
+      Blockly.Blocks[exprType] = {
+        init() {
+          this.setStyle('procedure_blocks');
+          this.setOutput(true, null);
+          this.setInputsInline(true);
+          if (params.length === 0) {
+            this.appendDummyInput('HEADER').appendField(`${fn.name}()`);
+          } else {
+            this.appendDummyInput('HEADER').appendField(`${fn.name}(`);
+            params.forEach((param, idx) => {
+              const input = this.appendValueInput(`ARG${idx}`).setCheck(null);
+              const suffix = idx === params.length - 1 ? ')' : ',';
+              input.appendField(`${param}${suffix}`);
+            });
+          }
+          this.setTooltip(`Return value of ${tooltip}`);
+        }
+      };
+
+      pythonGenerator.forBlock[exprType] = function(block, generator) {
+        const args = params.map((param, idx) => generator.valueToCode(block, `ARG${idx}`, pythonGenerator.ORDER_NONE) || 'None');
+        const code = `${fn.name}(${args.join(', ')})`;
+        return [code, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      registeredNotebookFunctionBlocks.add(exprType);
+    }
+
+    registered.push({ stmtType, exprType });
+  });
+
+  return registered;
+}
+
+function createFunctionFlyoutItems(functionBlocks) {
+  if (!functionBlocks || !functionBlocks.length) return [];
+  const items = [];
+  functionBlocks.forEach(({ stmtType, exprType }) => {
+    items.push({ kind: 'block', type: stmtType });
+    items.push({ kind: 'block', type: exprType });
+  });
+  return items;
+}
+
+function ensureNotebookVariables(workspace, variableNames) {
+  if (!variableNames || !variableNames.length) return;
+  const existing = new Set((workspace.getAllVariables() || []).map(v => v.name));
+  let added = false;
+  variableNames.forEach(name => {
+    if (name && !existing.has(name)) {
+      workspace.createVariable(name);
+      added = true;
+    }
+  });
+  if (added) {
+    if (workspace.refreshToolboxSelection) {
+      workspace.refreshToolboxSelection();
+    } else if (workspace.toolbox_?.refreshSelection) {
+      workspace.toolbox_.refreshSelection();
+    }
+  }
+}
+
 
 
 const html = htm.bind(h);
@@ -102,6 +255,9 @@ export const Cell = forwardRef((props, ref) => {
       let cancelled = false;
 
       (async () => {
+        const codeContext = props.getNotebookContext ? props.getNotebookContext(props.idx) : [];
+        const symbolInfo = extractNotebookSymbols(codeContext);
+
         const { Blockly, pythonGenerator } = await loadBlockly();
         if (cancelled) return;
 
@@ -110,6 +266,19 @@ export const Cell = forwardRef((props, ref) => {
           renderer: 'thrasos',
           trashcan: true,
         });
+
+        const functionBlocks = registerNotebookFunctionBlocks(Blockly, pythonGenerator, symbolInfo.functions);
+
+        const defaultProcedureCallback = workspace.getToolboxCategoryCallback
+          ? workspace.getToolboxCategoryCallback('PROCEDURE')
+          : (Blockly.Procedures && Blockly.Procedures.flyoutCategory) ? Blockly.Procedures.flyoutCategory : null;
+
+        workspace.registerToolboxCategoryCallback('PROCEDURE', (ws) => {
+          const original = defaultProcedureCallback ? defaultProcedureCallback(ws) : [];
+          const extras = createFunctionFlyoutItems(functionBlocks);
+          return original.concat(extras);
+        });
+        ensureNotebookVariables(workspace, symbolInfo.variables);
 
         let initializing = true;
 
@@ -134,6 +303,7 @@ export const Cell = forwardRef((props, ref) => {
           }
           const restored = pythonGenerator.workspaceToCode(workspace);
           set_source(restored.trim());
+          ensureNotebookVariables(workspace, symbolInfo.variables);
         } else {
           changeListener();
         }
@@ -172,7 +342,7 @@ export const Cell = forwardRef((props, ref) => {
           blocklyContextRef.current = null;
         }
       };
-    }, [is_blockly, blocklyVisible, blockly_id]);
+    }, [is_blockly, blocklyVisible, blockly_id, props.getNotebookContext, props.idx]);
 
     useEffect(() => {
       if (!props.connected) {

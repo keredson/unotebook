@@ -229,14 +229,12 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_color_sensor_init',
-            message0: 'set %1 to ColorSensor on %2',
+            message0: 'ColorSensor on %1',
             args0: [
-              { type: 'input_value', name: 'SENSOR' },
               { type: 'input_value', name: 'PORT' }
             ],
             inputsInline: true,
-            previousStatement: null,
-            nextStatement: null,
+            output: null,
             colour: 280,
             tooltip: 'Create a ColorSensor on a given port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/colorsensor.html'
@@ -254,14 +252,12 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_ultrasonic_sensor_init',
-            message0: 'set %1 to UltrasonicSensor on %2',
+            message0: 'UltrasonicSensor on %1',
             args0: [
-              { type: 'input_value', name: 'SENSOR' },
               { type: 'input_value', name: 'PORT' }
             ],
             inputsInline: true,
-            previousStatement: null,
-            nextStatement: null,
+            output: null,
             colour: 300,
             tooltip: 'Create an UltrasonicSensor on a given port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html'
@@ -278,29 +274,174 @@ async function ensureBlocklyLoaded() {
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html#pybricks.pupdevices.UltrasonicSensor.distance'
           },
           {
-            type: 'pybricks_gyro_sensor_init',
-            message0: 'set %1 to GyroSensor on %2',
+            type: 'pybricks_hub_tilt',
+            message0: '%1 tilt %2 (degrees)',
             args0: [
-              { type: 'input_value', name: 'SENSOR' },
-              { type: 'input_value', name: 'PORT' }
+              { type: 'input_value', name: 'HUB' },
+              {
+                type: 'field_dropdown',
+                name: 'AXIS',
+                options: [
+                  ['pitch', 'PITCH'],
+                  ['roll', 'ROLL']
+                ]
+              }
             ],
-            inputsInline: true,
+            output: null,
+            colour: 320,
+            tooltip: 'Read the pitch or roll from a hub IMU.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.imu'
+          },
+          {
+            type: 'pybricks_hub_imu_ready',
+            message0: '%1 IMU ready?',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: 'Boolean',
+            colour: 320,
+            tooltip: 'Check if the hub IMU is ready.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.imu'
+          },
+          {
+            type: 'pybricks_hub_imu_stationary',
+            message0: '%1 stationary?',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: 'Boolean',
+            colour: 320,
+            tooltip: 'Check if the hub IMU detects no motion.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.imu'
+          },
+          {
+            type: 'pybricks_hub_imu_up',
+            message0: '%1 up',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: null,
+            colour: 320,
+            tooltip: 'Get the side which is up reported by the hub IMU.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.imu'
+          },
+          {
+            type: 'pybricks_hub_imu_acceleration',
+            message0: '%1 acceleration axis %2',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              {
+                type: 'field_dropdown',
+                name: 'AXIS',
+                options: [
+                  ['X', 'Axis.X'],
+                  ['Y', 'Axis.Y'],
+                  ['Z', 'Axis.Z']
+                ]
+              }
+            ],
+            output: null,
+            colour: 320,
+            tooltip: 'Get linear acceleration in mm/s² along an axis.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.acceleration'
+          },
+          {
+            type: 'pybricks_hub_imu_angular_velocity',
+            message0: '%1 angular velocity axis %2',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              {
+                type: 'field_dropdown',
+                name: 'AXIS',
+                options: [
+                  ['X', 'Axis.X'],
+                  ['Y', 'Axis.Y'],
+                  ['Z', 'Axis.Z']
+                ]
+              }
+            ],
+            output: null,
+            colour: 320,
+            tooltip: 'Get angular velocity in deg/s along an axis.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.angular_velocity'
+          },
+          {
+            type: 'pybricks_hub_imu_heading',
+            message0: '%1 heading',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: null,
+            colour: 320,
+            tooltip: 'Get the current heading in degrees.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.heading'
+          },
+          {
+            type: 'pybricks_hub_imu_reset_heading',
+            message0: '%1 reset heading to %2 deg',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'ANGLE', check: 'Number' }
+            ],
             previousStatement: null,
             nextStatement: null,
             colour: 320,
-            tooltip: 'Create a GyroSensor on a given port.',
-            helpUrl: 'https://docs.pybricks.com/en/latest/sensors/gyrosensor.html'
+            tooltip: 'Reset the IMU heading to a given angle.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.reset_heading'
           },
           {
-            type: 'pybricks_gyro_sensor_angle',
-            message0: '%1 angle (deg)',
+            type: 'pybricks_hub_imu_rotation',
+            message0: '%1 rotation axis %2 (deg)',
+            args0: [
+              { type: 'input_value', name: 'HUB' },
+              {
+                type: 'field_dropdown',
+                name: 'AXIS',
+                options: [
+                  ['X', 'Axis.X'],
+                  ['Y', 'Axis.Y'],
+                  ['Z', 'Axis.Z']
+                ]
+              }
+            ],
+            output: null,
+            colour: 320,
+            tooltip: 'Get the rotation angle around an axis.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.rotation'
+          },
+          {
+            type: 'pybricks_hub_imu_orientation',
+            message0: '%1 orientation matrix',
+            args0: [
+              { type: 'input_value', name: 'HUB' }
+            ],
+            output: null,
+            colour: 320,
+            tooltip: 'Get the orientation matrix from the IMU.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.orientation'
+          },
+          {
+            type: 'pybricks_touch_sensor_init',
+            message0: 'TouchSensor on %1',
+            args0: [
+              { type: 'input_value', name: 'PORT' }
+            ],
+            inputsInline: true,
+            output: null,
+            colour: 340,
+            tooltip: 'Create a TouchSensor on a given port.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/touchsensor.html'
+          },
+          {
+            type: 'pybricks_touch_sensor_pressed',
+            message0: '%1 pressed?',
             args0: [
               { type: 'input_value', name: 'SENSOR' }
             ],
             output: null,
-            colour: 320,
-            tooltip: 'Read the angle from a GyroSensor.',
-            helpUrl: 'https://docs.pybricks.com/en/latest/sensors/gyrosensor.html#pybricks.sensors.GyroSensor.angle'
+            colour: 340,
+            tooltip: 'Check if the TouchSensor is pressed.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/touchsensor.html#pybricks.pupdevices.TouchSensor.pressed'
           }
         ]);
       }
@@ -320,6 +461,11 @@ async function ensureBlocklyLoaded() {
         if (needsDirection) {
           pythonGenerator.definitions_['import_pybricks_direction'] = 'from pybricks.parameters import Direction';
         }
+      }
+
+      function ensureAxisImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_axis'] = 'from pybricks.parameters import Axis';
       }
 
       function getMotorCode(block, generator) {
@@ -438,14 +584,13 @@ async function ensureBlocklyLoaded() {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_color'] = 'from pybricks.pupdevices import ColorSensor';
         pythonGenerator.definitions_['import_pybricks_ultrasonic'] = 'from pybricks.pupdevices import UltrasonicSensor';
-        pythonGenerator.definitions_['import_pybricks_gyro'] = 'from pybricks.sensors import GyroSensor';
+        pythonGenerator.definitions_['import_pybricks_touch'] = 'from pybricks.pupdevices import TouchSensor';
       }
 
       pythonGenerator.forBlock['pybricks_color_sensor_init'] = function(block, generator) {
         ensureSensorImports();
-        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'color_sensor';
         const port = getPortCode(block, generator);
-        return `${sensorVar} = ColorSensor(${port})\n`;
+        return [`ColorSensor(${port})`, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
       pythonGenerator.forBlock['pybricks_color_sensor_color'] = function(block, generator) {
@@ -457,9 +602,8 @@ async function ensureBlocklyLoaded() {
 
       pythonGenerator.forBlock['pybricks_ultrasonic_sensor_init'] = function(block, generator) {
         ensureSensorImports();
-        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'ultrasonic_sensor';
         const port = getPortCode(block, generator);
-        return `${sensorVar} = UltrasonicSensor(${port})\n`;
+        return [`UltrasonicSensor(${port})`, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
       pythonGenerator.forBlock['pybricks_ultrasonic_sensor_distance'] = function(block, generator) {
@@ -469,18 +613,86 @@ async function ensureBlocklyLoaded() {
         return [code, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
-      pythonGenerator.forBlock['pybricks_gyro_sensor_init'] = function(block, generator) {
-        ensureSensorImports();
-        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'gyro_sensor';
-        const port = getPortCode(block, generator);
-        return `${sensorVar} = GyroSensor(${port})\n`;
+      pythonGenerator.forBlock['pybricks_hub_tilt'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const axis = block.getFieldValue('AXIS') || 'PITCH';
+        const index = axis === 'ROLL' ? 1 : 0;
+        const code = `${hub}.imu.tilt()[${index}]`;
+        return [code, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
-      pythonGenerator.forBlock['pybricks_gyro_sensor_angle'] = function(block, generator) {
+      pythonGenerator.forBlock['pybricks_hub_imu_ready'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.imu.ready()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_imu_stationary'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.imu.stationary()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_imu_up'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.imu.up()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_imu_acceleration'] = function(block, generator) {
+        ensureHubImport();
+        ensureAxisImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const axis = block.getFieldValue('AXIS') || 'Axis.X';
+        return [`${hub}.imu.acceleration(${axis})`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_imu_angular_velocity'] = function(block, generator) {
+        ensureHubImport();
+        ensureAxisImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const axis = block.getFieldValue('AXIS') || 'Axis.X';
+        return [`${hub}.imu.angular_velocity(${axis})`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_imu_heading'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.imu.heading()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_imu_reset_heading'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const angle = generator.valueToCode(block, 'ANGLE', pythonGenerator.ORDER_NONE) || '0';
+        return `${hub}.imu.reset_heading(${angle})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_imu_rotation'] = function(block, generator) {
+        ensureHubImport();
+        ensureAxisImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        const axis = block.getFieldValue('AXIS') || 'Axis.X';
+        return [`${hub}.imu.rotation(${axis})`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_hub_imu_orientation'] = function(block, generator) {
+        ensureHubImport();
+        const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
+        return [`${hub}.imu.orientation()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_touch_sensor_init'] = function(block, generator) {
         ensureSensorImports();
-        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'gyro_sensor';
-        const code = `${sensorVar}.angle()`;
-        return [code, pythonGenerator.ORDER_FUNCTION_CALL];
+        const port = getPortCode(block, generator);
+        return [`TouchSensor(${port})`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_touch_sensor_pressed'] = function(block, generator) {
+        ensureSensorImports();
+        const sensorVar = generator.valueToCode(block, 'SENSOR', pythonGenerator.ORDER_NONE) || 'touch_sensor';
+        return [`${sensorVar}.pressed()`, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
       pythonGenerator.scrubNakedValue = function(line) { return line + '\n'; };
@@ -587,14 +799,23 @@ export const FULL_TOOLBOX = {
           kind: 'block',
           type: 'pybricks_hub_init'
         },
-        
         { kind: 'block', type: 'pybricks_hub_display_text' },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.A' } },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.B' } },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.C' } },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.D' } },
         { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.E' } },
-        { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.F' } }
+        { kind: 'block', type: 'pybricks_port', fields: { PORT: 'Port.F' } },
+        { kind: 'block', type: 'pybricks_hub_tilt' },
+        { kind: 'block', type: 'pybricks_hub_imu_ready' },
+        { kind: 'block', type: 'pybricks_hub_imu_stationary' },
+        { kind: 'block', type: 'pybricks_hub_imu_up' },
+        { kind: 'block', type: 'pybricks_hub_imu_acceleration' },
+        { kind: 'block', type: 'pybricks_hub_imu_angular_velocity' },
+        { kind: 'block', type: 'pybricks_hub_imu_heading' },
+        { kind: 'block', type: 'pybricks_hub_imu_reset_heading' },
+        { kind: 'block', type: 'pybricks_hub_imu_rotation' },
+        { kind: 'block', type: 'pybricks_hub_imu_orientation' }
       ]
     },
     {
@@ -656,8 +877,8 @@ export const FULL_TOOLBOX = {
         { kind: 'block', type: 'pybricks_color_sensor_color' },
         { kind: 'block', type: 'pybricks_ultrasonic_sensor_init' },
         { kind: 'block', type: 'pybricks_ultrasonic_sensor_distance' },
-        { kind: 'block', type: 'pybricks_gyro_sensor_init' },
-        { kind: 'block', type: 'pybricks_gyro_sensor_angle' }
+        { kind: 'block', type: 'pybricks_touch_sensor_init' },
+        { kind: 'block', type: 'pybricks_touch_sensor_pressed' },
       ]
     },
     {

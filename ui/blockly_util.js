@@ -350,7 +350,7 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_drivebase_init',
-            message0: 'DriveBase',
+            message0: 'Differential Drive',
             message1: '↳ left motor %1',
             message2: '↳ right motor %1',
             message3: '↳ wheel diameter %1',
@@ -400,6 +400,173 @@ async function ensureBlocklyLoaded() {
             colour: 20,
             tooltip: 'Turn a DriveBase by a given angle in degrees.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.turn'
+          },
+          {
+            type: 'pybricks_drivebase_drive',
+            message0: '%1 drive speed %2 turn %3',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'SPEED', check: 'Number' },
+              { type: 'input_value', name: 'TURN', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Drive the robot with speed (mm/s) and turn rate (deg/s).',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.drive'
+          },
+          {
+            type: 'pybricks_drivebase_drive_time',
+            message0: '%1 drive speed %2 turn %3 for %4 seconds',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'SPEED', check: 'Number' },
+              { type: 'input_value', name: 'TURN', check: 'Number' },
+              { type: 'input_value', name: 'TIME', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Drive with speed and turn rate for a duration (seconds).',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.drive_time'
+          },
+          {
+            type: 'pybricks_drivebase_drive_distance',
+            message0: '%1 drive speed %2 turn %3 distance %4 mm',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'SPEED', check: 'Number' },
+              { type: 'input_value', name: 'TURN', check: 'Number' },
+              { type: 'input_value', name: 'DIST', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Drive with speed and turn rate for a distance in millimeters.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.drive_distance'
+          },
+          {
+            type: 'pybricks_drivebase_curve',
+            message0: '%1 curve distance %2 angle %3',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DIST', check: 'Number' },
+              { type: 'input_value', name: 'ANGLE', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Move along a curve with given distance and angle.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.curve'
+          },
+          {
+            type: 'pybricks_drivebase_stop',
+            message0: '%1 stop with %2',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              {
+                type: 'field_dropdown',
+                name: 'STOP',
+                options: [
+                  ['coast', 'Stop.COAST'],
+                  ['brake', 'Stop.BRAKE'],
+                  ['hold', 'Stop.HOLD']
+                ]
+              }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Stop the robot with a given stopping style.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.stop'
+          },
+          {
+            type: 'pybricks_drivebase_settings',
+            message0: 'DriveBase settings %1',
+            message1: '↳ straight speed %1',
+            message2: '↳ straight accel %1',
+            message3: '↳ turn rate %1',
+            message4: '↳ turn accel %1',
+            args0: [
+              { type: 'input_value', name: 'DB' }
+            ],
+            args1: [
+              { type: 'input_value', name: 'SPEED', check: 'Number' }
+            ],
+            args2: [
+              { type: 'input_value', name: 'S_ACCEL', check: 'Number' }
+            ],
+            args3: [
+              { type: 'input_value', name: 'TURN_RATE', check: 'Number' }
+            ],
+            args4: [
+              { type: 'input_value', name: 'T_ACCEL', check: 'Number' }
+            ],
+            inputsInline: false,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Configure straight and turning speed/acceleration settings.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.settings'
+          },
+          {
+            type: 'pybricks_drivebase_distance_value',
+            message0: '%1 distance traveled (mm)',
+            args0: [
+              { type: 'input_value', name: 'DB' }
+            ],
+            output: null,
+            colour: 20,
+            tooltip: 'Get the distance traveled in millimeters.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.distance'
+          },
+          {
+            type: 'pybricks_drivebase_angle_value',
+            message0: '%1 rotation (deg)',
+            args0: [
+              { type: 'input_value', name: 'DB' }
+            ],
+            output: null,
+            colour: 20,
+            tooltip: 'Get the angle turned in degrees.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.angle'
+          },
+          {
+            type: 'pybricks_drivebase_reset',
+            message0: '%1 reset distance and angle',
+            args0: [
+              { type: 'input_value', name: 'DB' }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Reset the odometry values.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.reset'
+          },
+          {
+            type: 'pybricks_drivebase_use_gyro',
+            message0: '%1 use gyro %2',
+            args0: [
+              { type: 'input_value', name: 'DB' },
+              {
+                type: 'field_dropdown',
+                name: 'USE',
+                options: [
+                  ['yes', 'TRUE'],
+                  ['no', 'FALSE']
+                ]
+              }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Enable or disable the built-in gyro for driving.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.use_gyro'
           },
           {
             type: 'pybricks_color_sensor_init',
@@ -762,6 +929,89 @@ async function ensureBlocklyLoaded() {
         const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
         const angle = generator.valueToCode(block, 'ANGLE', pythonGenerator.ORDER_NONE) || '0';
         return `${db}.turn(${angle})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_drive'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
+        const turn = generator.valueToCode(block, 'TURN', pythonGenerator.ORDER_NONE) || '0';
+        return `${db}.drive(${speed}, ${turn})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_drive_time'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
+        const turn = generator.valueToCode(block, 'TURN', pythonGenerator.ORDER_NONE) || '0';
+        const time = generator.valueToCode(block, 'TIME', pythonGenerator.ORDER_NONE) || '0';
+        const timeMs = `(${time}) * 1000`;
+        return `${db}.drive_time(${speed}, ${turn}, ${timeMs})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_drive_distance'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
+        const turn = generator.valueToCode(block, 'TURN', pythonGenerator.ORDER_NONE) || '0';
+        const dist = generator.valueToCode(block, 'DIST', pythonGenerator.ORDER_NONE) || '0';
+        return `${db}.drive_distance(${speed}, ${turn}, ${dist})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_curve'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const dist = generator.valueToCode(block, 'DIST', pythonGenerator.ORDER_NONE) || '0';
+        const angle = generator.valueToCode(block, 'ANGLE', pythonGenerator.ORDER_NONE) || '0';
+        return `${db}.curve(${dist}, ${angle})\n`;
+      };
+
+      function ensureStopImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_stop'] = 'from pybricks.parameters import Stop';
+      }
+
+      pythonGenerator.forBlock['pybricks_drivebase_stop'] = function(block, generator) {
+        ensureDriveBaseImport();
+        ensureStopImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const stopType = block.getFieldValue('STOP') || 'Stop.COAST';
+        return `${db}.stop(${stopType})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_settings'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || 'None';
+        const sAccel = generator.valueToCode(block, 'S_ACCEL', pythonGenerator.ORDER_NONE) || 'None';
+        const turnRate = generator.valueToCode(block, 'TURN_RATE', pythonGenerator.ORDER_NONE) || 'None';
+        const tAccel = generator.valueToCode(block, 'T_ACCEL', pythonGenerator.ORDER_NONE) || 'None';
+        return `${db}.settings(${speed}, ${sAccel}, ${turnRate}, ${tAccel})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_distance_value'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        return [`${db}.distance()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_angle_value'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        return [`${db}.angle()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_reset'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        return `${db}.reset()\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_use_gyro'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        const use = block.getFieldValue('USE') === 'TRUE' ? 'True' : 'False';
+        return `${db}.use_gyro(${use})\n`;
       };
 
       function ensureSensorImports() {
@@ -1127,6 +1377,11 @@ export const FULL_TOOLBOX = {
           }
         },
         { kind: 'block', type: 'pybricks_motor_stop' },
+      ]
+    },
+    {
+      kind: 'category', name: 'Diff Drive', colour: '#7A4FBF',
+      contents: [
         {
           kind: 'block',
           type: 'pybricks_drivebase_init',
@@ -1148,7 +1403,56 @@ export const FULL_TOOLBOX = {
           inputs: {
             ANGLE: { shadow: { type: 'math_number', fields: { NUM: 90 } } }
           }
-        }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_drivebase_drive',
+          inputs: {
+            SPEED: { shadow: { type: 'math_number', fields: { NUM: 200 } } },
+            TURN: { shadow: { type: 'math_number', fields: { NUM: 0 } } }
+          }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_drivebase_drive_time',
+          inputs: {
+            SPEED: { shadow: { type: 'math_number', fields: { NUM: 200 } } },
+            TURN: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+            TIME: { shadow: { type: 'math_number', fields: { NUM: 1 } } }
+          }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_drivebase_drive_distance',
+          inputs: {
+            SPEED: { shadow: { type: 'math_number', fields: { NUM: 200 } } },
+            TURN: { shadow: { type: 'math_number', fields: { NUM: 0 } } },
+            DIST: { shadow: { type: 'math_number', fields: { NUM: 200 } } }
+          }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_drivebase_curve',
+          inputs: {
+            DIST: { shadow: { type: 'math_number', fields: { NUM: 200 } } },
+            ANGLE: { shadow: { type: 'math_number', fields: { NUM: 45 } } }
+          }
+        },
+        { kind: 'block', type: 'pybricks_drivebase_stop' },
+        {
+          kind: 'block',
+          type: 'pybricks_drivebase_settings',
+          inputs: {
+            SPEED: { shadow: { type: 'math_number', fields: { NUM: 500 } } },
+            S_ACCEL: { shadow: { type: 'math_number', fields: { NUM: 1000 } } },
+            TURN_RATE: { shadow: { type: 'math_number', fields: { NUM: 180 } } },
+            T_ACCEL: { shadow: { type: 'math_number', fields: { NUM: 720 } } }
+          }
+        },
+        { kind: 'block', type: 'pybricks_drivebase_distance_value' },
+        { kind: 'block', type: 'pybricks_drivebase_angle_value' },
+        { kind: 'block', type: 'pybricks_drivebase_reset' },
+        { kind: 'block', type: 'pybricks_drivebase_use_gyro' },
       ]
     },
     {

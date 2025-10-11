@@ -131,7 +131,7 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_port',
-            message0: 'port %1',
+            message0: 'Port %1',
             args0: [
               {
                 type: 'field_dropdown',

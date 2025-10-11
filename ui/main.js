@@ -75,6 +75,30 @@ const css = `
     font-size: 1rem;
   }
 
+  .blocklyMainBackground {
+    fill: #f8f6f1 !important; /* light tan background */
+    stroke: none !important;
+  }
+
+  .blocklyFlyoutBackground {
+    fill: #f0ebe1 !important;              /* flyout SVG rect fill */
+    rx: 0 !important;
+    ry: 0 !important;
+    fill-opacity: 1 !important;
+    }
+
+  .blocklyToolboxDiv {
+    border-radius: 0 !important;
+  }
+
+  .blocklyToolboxDiv,
+  .blocklyFlyoutBackground,
+  .blocklyTreeRow {
+    border-radius: 0 !important;
+    rx: 0 !important;
+    ry: 0 !important;
+  }
+
 
   `;
 

@@ -16,6 +16,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "blockly": "^12.3.1",
     "preact-hooks": "^0.0.0-0.0.0",
     "preact-router": "^4.1.2",
     "snarkdown": "^2.0.0"

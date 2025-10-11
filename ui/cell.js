@@ -1,15 +1,19 @@
 import { h } from 'preact';
-import { useState, useEffect, useImperativeHandle, useRef } from 'preact/hooks';
+import { useState, useEffect, useImperativeHandle, useRef, useMemo } from 'preact/hooks';
 import htm from 'htm';
 import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
 import { render_ansi } from './render_ansi.js'
+import * as Blockly from 'blockly';
+import { pythonGenerator } from 'blockly/python'
+
 
 
 const html = htm.bind(h);
 
 
 export const Cell = forwardRef((props, ref) => {
+  const blockly_id = useMemo(() => 'blockly-'+Math.random().toString(36).slice(2, 9), []);
   const [source, set_source] = useState(props.cell?.source?.join('') || '');
   const [stdout, set_stdout] = useState(null);
   const [error, set_error] = useState(null);
@@ -30,6 +34,30 @@ export const Cell = forwardRef((props, ref) => {
       if (props.cell?.cell_type=='markdown' && source.length) {
         set_html(snarkdown(source))
         set_show_source(false)
+      }
+    }, []);
+
+    useEffect(() => {
+      if (props.cell.metadata?.blockly) {
+        const toolbox = {
+          kind: 'flyoutToolbox',
+          contents: [
+            { kind: 'block', type: 'text_print' },
+            { kind: 'block', type: 'controls_repeat_ext' },
+          ],
+        };
+        const workspace = Blockly.inject(blockly_id, { 
+          toolbox,
+          //toolboxPosition: 'top',
+          //renderer: 'thrasos',
+          trashcan: true,
+        });
+        const listener = () => {
+          const code = pythonGenerator.workspaceToCode(workspace)
+          console.log('Generated code:\n' + code)
+          set_source(code)
+        }
+        workspace.addChangeListener(listener)
       }
     }, []);
 
@@ -239,14 +267,18 @@ export const Cell = forwardRef((props, ref) => {
 
   return html`<div>
     <div ref=${cellRef} class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
-      <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('code')}>+code</span>
-      <span title="Insert Cell..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+doc</span>
+      <span title="Insert Code..." style="cursor:pointer;" onClick=${()=>props.insert_before('code')}>+code</span>
+      <span title="Insert Blockly..." style="cursor:pointer;" onClick=${()=>props.insert_before('blockly')}>+blockly</span>
+      <span title="Insert Documentation..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+doc</span>
     </div>
     <div style="border-radius: 3px; border-left: 5px solid ${running ? '#df651eff' : '#ded2ba'} !important; padding: .5em; background-color:#f0ebe1;">
       ${show_source ? html`
         <table style='width: 100%;'>
           <tr>
             <td>
+              ${ props.cell.metadata?.blockly ? html`
+                <div id=${blockly_id} style="height: 50vh; margin-bottom:1em"></div>
+              ` : null }
               <textarea 
                 spellcheck=${false}
                 autocapitalize=${'off'}

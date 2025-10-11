@@ -61,7 +61,8 @@ export function Notebook(props) {
   function insert_before(i, cell_type) {
     console.log('insert_before', i, cell_type)
     const next = cells.slice()
-    next.splice(i, 0, {id:crypto.randomUUID(), cell_type, source:[]})
+    if (cell_type=='blockly') next.push({source:[], cell_type:'raw', metadata:{blockly:{version:1}}})
+    else next.splice(i, 0, {cell_type, source:[]})
     set_cells(next)
 
   }
@@ -77,7 +78,8 @@ export function Notebook(props) {
 
   function add_cell(cell_type='code') {
     const next = cells.slice()
-    next.push({source:[], cell_type})
+    if (cell_type=='blockly') next.push({source:[], cell_type:'raw', metadata:{blockly:{version:1}}})
+    else next.push({source:[], cell_type})
     set_cells(next)
   }
 
@@ -170,7 +172,8 @@ export function Notebook(props) {
         run_cell=${run_cell}
     />`)}
     <div style='display:flex; gap:.5rem; margin-top:.5em;'>
-      <button onClick=${e=>add_cell()}>Add Code</button>
+      <button onClick=${e=>add_cell()}>Add Python</button>
+      <button onClick=${e=>add_cell('blockly')}>Add Blockly</button>
       <button onClick=${e=>add_cell('markdown')} style='border: 0; background-color: transparent; color: #444;'>Add Doc</button>
     </div>
   </div>`;

@@ -120,10 +120,13 @@ const getHashPath = () => {
 };
 
 function ensureHash() {
-  if (!location.hash) {
-    // keep current origin + base, inject a hash without reloading
-    history.replaceState(null, '', BASE + '#/');
-  }
+  if (location.hash) return;
+
+  const path = location.pathname;
+  if (path !== BASE) return;
+
+  // keep current origin + base, inject a hash without reloading
+  history.replaceState(null, '', BASE + '#/');
 }
 
 

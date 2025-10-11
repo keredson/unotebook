@@ -27,6 +27,17 @@ async function ensureBlocklyLoaded() {
                 name: 'PORT'
               }
             ],
+            message1: 'direction %1',
+            args1: [
+              {
+                type: 'field_dropdown',
+                name: 'DIRECTION',
+                options: [
+                  ['Counterclockwise', 'Direction.COUNTERCLOCKWISE'],
+                  ['Clockwise', 'Direction.CLOCKWISE']
+                ]
+              }
+            ],
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
@@ -297,11 +308,14 @@ async function ensureBlocklyLoaded() {
         return code;
       };
 
-      function ensureMotorImports(needsPort = false) {
+      function ensureMotorImports(needsPort = false, needsDirection = false) {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_motor'] = 'from pybricks.pupdevices import Motor';
         if (needsPort) {
           pythonGenerator.definitions_['import_pybricks_port'] = 'from pybricks.parameters import Port';
+        }
+        if (needsDirection) {
+          pythonGenerator.definitions_['import_pybricks_direction'] = 'from pybricks.parameters import Direction';
         }
       }
 
@@ -315,11 +329,17 @@ async function ensureBlocklyLoaded() {
         return (code && code.trim()) || 'Port.A';
       }
 
+      function getDirectionCode(block) {
+        const value = block.getFieldValue('DIRECTION');
+        return value || 'Direction.COUNTERCLOCKWISE';
+      }
+
       pythonGenerator.forBlock['pybricks_motor_init'] = function(block, generator) {
-        ensureMotorImports(true);
+        ensureMotorImports(true, true);
         const motorVar = getMotorCode(block, generator);
         const port = getPortCode(block, generator);
-        const code = `${motorVar} = Motor(${port})\n`;
+        const direction = getDirectionCode(block);
+        const code = `${motorVar} = Motor(${port}, positive_direction=${direction})\n`;
         return code;
       };
 

@@ -5,4 +5,7 @@ export default defineConfig({
   build: {
     emptyOutDir: true,     // clean dist/ before build
   },
+  server: {
+    host: '0.0.0.0',
+  },
 });

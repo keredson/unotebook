@@ -122,7 +122,7 @@ function rstrip(str, suffix) {
 
 function iconForSource(source) {
   switch (source) {
-    case 'local':   return '🌐︎'; // browser-local or 🌐
+    case 'local':   return html`<span style='cursor:default' title="Local Storage">🌐︎</span>`; // browser-local or 🌐
     case 'device':  return '⚙︎'; // esp32 / pybricks or ⚙️
     case 'cloud':   return '☁︎'; // or ☁️
     default:        return '';

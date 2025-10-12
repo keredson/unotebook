@@ -350,7 +350,7 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_drivebase_init',
-            message0: 'Differential Drive',
+            message0: 'Differential Drive Robot',
             message1: '↳ left motor %1',
             message2: '↳ right motor %1',
             message3: '↳ wheel diameter %1',
@@ -567,6 +567,80 @@ async function ensureBlocklyLoaded() {
             colour: 20,
             tooltip: 'Enable or disable the built-in gyro for driving.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.use_gyro'
+          },
+          {
+            type: 'pybricks_drivebase_state',
+            message0: '%1 state (distance, angle)',
+            args0: [
+              { type: 'input_value', name: 'DB' }
+            ],
+            output: null,
+            colour: 20,
+            tooltip: 'Get both distance and angle as a tuple.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.state'
+          },
+          {
+            type: 'pybricks_car_init',
+            message0: 'Car Robot',
+            message1: '↳ steer motor %1',
+            message2: '↳ drive motor %1',
+            message3: '↳ torque limit (%) %1',
+            args1: [
+              { type: 'input_value', name: 'STEER' },
+            ],
+            args2: [
+              { type: 'input_value', name: 'DRIVE' }
+            ],
+            args3: [
+              { type: 'input_value', name: 'TORQUE', check: 'Number' }
+            ],
+            inputsInline: false,
+            output: null,
+            colour: 20,
+            tooltip: 'Create a Car with steer and drive motors.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car'
+          },
+          {
+            type: 'pybricks_car_steer',
+            message0: '%1 steer %2 %',
+            args0: [
+              { type: 'input_value', name: 'CAR' },
+              { type: 'input_value', name: 'AMOUNT', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Steer the front wheels as a percentage.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car.steer'
+          },
+          {
+            type: 'pybricks_car_drive_power',
+            message0: '%1 drive (power) %2 %',
+            args0: [
+              { type: 'input_value', name: 'CAR' },
+              { type: 'input_value', name: 'POWER', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Drive the car with a power percentage.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car.drive_power'
+          },
+          {
+            type: 'pybricks_car_drive_speed',
+            message0: '%1 drive (speed) %2 deg/s',
+            args0: [
+              { type: 'input_value', name: 'CAR' },
+              { type: 'input_value', name: 'SPEED', check: 'Number' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Drive the car at motor speed.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car.drive_speed'
           },
           {
             type: 'pybricks_color_sensor_init',
@@ -884,6 +958,11 @@ async function ensureBlocklyLoaded() {
         pythonGenerator.definitions_['import_pybricks_drivebase'] = 'from pybricks.robotics import DriveBase';
       }
 
+      function ensureCarImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_car'] = 'from pybricks.robotics import Car';
+      }
+
       function ensurePortImport() {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_port'] = 'from pybricks.parameters import Port';
@@ -1012,6 +1091,42 @@ async function ensureBlocklyLoaded() {
         const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
         const use = block.getFieldValue('USE') === 'TRUE' ? 'True' : 'False';
         return `${db}.use_gyro(${use})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_state'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        return [`${db}.state()`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_car_init'] = function(block, generator) {
+        ensureCarImport();
+        const steer = generator.valueToCode(block, 'STEER', pythonGenerator.ORDER_NONE) || 'steer_motor';
+        const drive = generator.valueToCode(block, 'DRIVE', pythonGenerator.ORDER_NONE) || 'drive_motor';
+        const torque = generator.valueToCode(block, 'TORQUE', pythonGenerator.ORDER_NONE);
+        const args = torque ? `${steer}, ${drive}, torque_limit=${torque}` : `${steer}, ${drive}`;
+        return [`Car(${args})`, pythonGenerator.ORDER_FUNCTION_CALL];
+      };
+
+      pythonGenerator.forBlock['pybricks_car_steer'] = function(block, generator) {
+        ensureCarImport();
+        const car = generator.valueToCode(block, 'CAR', pythonGenerator.ORDER_NONE) || 'car';
+        const amount = generator.valueToCode(block, 'AMOUNT', pythonGenerator.ORDER_NONE) || '0';
+        return `${car}.steer(${amount})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_car_drive_power'] = function(block, generator) {
+        ensureCarImport();
+        const car = generator.valueToCode(block, 'CAR', pythonGenerator.ORDER_NONE) || 'car';
+        const power = generator.valueToCode(block, 'POWER', pythonGenerator.ORDER_NONE) || '0';
+        return `${car}.drive_power(${power})\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_car_drive_speed'] = function(block, generator) {
+        ensureCarImport();
+        const car = generator.valueToCode(block, 'CAR', pythonGenerator.ORDER_NONE) || 'car';
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
+        return `${car}.drive_speed(${speed})\n`;
       };
 
       function ensureSensorImports() {
@@ -1380,7 +1495,7 @@ export const FULL_TOOLBOX = {
       ]
     },
     {
-      kind: 'category', name: 'Diff Drive', colour: '#7A4FBF',
+      kind: 'category', name: 'Diff Bot', colour: '#7A4FBF',
       contents: [
         {
           kind: 'block',
@@ -1453,6 +1568,16 @@ export const FULL_TOOLBOX = {
         { kind: 'block', type: 'pybricks_drivebase_angle_value' },
         { kind: 'block', type: 'pybricks_drivebase_reset' },
         { kind: 'block', type: 'pybricks_drivebase_use_gyro' },
+        { kind: 'block', type: 'pybricks_drivebase_state' }
+      ]
+    },
+    {
+      kind: 'category', name: 'Car Bot', colour: '#7A4FBF',
+      contents: [
+        { kind: 'block', type: 'pybricks_car_init' },
+        { kind: 'block', type: 'pybricks_car_steer' },
+        { kind: 'block', type: 'pybricks_car_drive_power' },
+        { kind: 'block', type: 'pybricks_car_drive_speed' }
       ]
     },
     {

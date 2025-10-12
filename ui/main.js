@@ -85,24 +85,25 @@ const css = `
     fill: #f0ebe1 !important;              /* flyout SVG rect fill */
     rx: 0 !important;
     ry: 0 !important;
-    fill-opacity: .6 !important;
+    /*fill-opacity: .6 !important;*/
     }
 
-  .blocklyToolbox {
-    border-radius: 0 !important;
-  }
   .blocklyToolbox {
     background-color: #f0ebe1 !important;
   }
 
-  .blocklyToolboxDiv,
-  .blocklyFlyoutBackground,
-  .blocklyTreeRow {
-    border-radius: 0 !important;
-    rx: 0 !important;
-    ry: 0 !important;
+  .blocklyText,
+  .blocklyDropdownText,
+  .blocklyEditableText,
+  .blocklyTreeLabel,
+  .blocklyFlyoutLabel,
+  .blocklyMenuItemContent,
+  .blocklyWidget,
+  .blocklyToolbox,
+  .blocklyTextArea,
+  .blocklyHtmlInput {
+    font-family: system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif !important;
   }
-
 
   `;
 

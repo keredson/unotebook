@@ -37,7 +37,7 @@ const css = `
     height: auto;
     font-family: system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   }
-  body > #app {
+  body #app_container {
     border-radius: 10px;
     margin-top: 1em;
     background-color: #f4f0e8;
@@ -49,12 +49,14 @@ const css = `
     background-color: #ddd;
   }
   .output {
-    padding: 8px;
     display: block;
-    font-size:smaller;
-    line-height: 1.1em;
     max-height: calc(1.1em * 30);  /* ≈ 40 lines */
     overflow-y: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.75em;
+    line-height: 1.2;
+    padding: 0.5em;
+    padding-top: 1em;
   }
 
   .warning {
@@ -289,7 +291,7 @@ function App() {
   }
 
   return html`
-    <div>
+    <div id='app_container'>
       <style>${css}</style>
       <div style='display:flex; gap:1rem; justify-content:space-between;'>
         <span style='font-size:smaller;'>${
@@ -324,9 +326,9 @@ function App() {
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='local' path="/local/:fn" onDirtyChange=${setDirty} />
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" onDirtyChange=${setDirty} />
       </${Router}>
-      <div style='text-align:center; margin-top:2em; color: #444; font-size:smaller;'>
-        <a style='color: #444;' href='//unotebook.org' target='_unotebook_org'>µNotebook</a> v${VERSION} - <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>code</a> © 2025 (<a style='color: #444;' href='https://github.com/keredson/unotebook/issues/new' target='_unotebook_github'>report a bug</a>)
-      </div>
+    </div>
+    <div style='text-align:center; margin-top:1em; color: #444; font-size:smaller;'>
+      <a style='color: #444;' href='//unotebook.org' target='_unotebook_org'>µNotebook</a> v${VERSION} © 2025 - <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>source code</a> - <a style='color: #444;' href='https://github.com/keredson/unotebook/issues/new' target='_unotebook_github'>report a bug</a>
     </div>
   `;
 }

@@ -574,29 +574,8 @@ export const Cell = forwardRef((props, ref) => {
 
   const blocklyOverlay = blocklyVisible ? html`
     ${ is_blockly ? BLOCKLY_CSS : null}
-    <div style=${{
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      width: '100vw',
-      height: '100vh',
-      background: 'rgba(0, 0, 0, 0.6)',
-      zIndex: 2000,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <div style=${{
-        position: 'relative',
-        width: '90vw',
-        height: '90vh',
-        background: '#fff',
-        borderRadius: '6px',
-        boxShadow: '0 4px 18px rgba(0, 0, 0, 0.35)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden'
-      }}>
+    <div class='blockly-modal__overlay'>
+      <div class='blockly-modal__content'>
         <div class='blockly-modal__header'>
           <button class='blockly-modal__close' onClick=${closeBlockly}>✕ Close</button>
         </div>

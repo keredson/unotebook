@@ -1692,6 +1692,38 @@ export const FULL_TOOLBOX = {
 
 export const BLOCKLY_CSS = html`
   <style>
+    .blockly-modal__overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+    .blockly-modal__content {
+      position: relative;
+      width: min(960px, 90vw);
+      height: min(640px, 90vh);
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    @media (max-width: 640px) {
+      .blockly-modal__overlay {
+        padding: 0;
+      }
+      .blockly-modal__content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+      }
+    }
     .blocklyWidgetDiv,
     .blocklyDropDownDiv {
       z-index: 999999 !important;

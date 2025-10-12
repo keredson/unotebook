@@ -28,6 +28,7 @@ const css = `
     margin-top: 0;
   }
   body {
+    margin: 0;
     font-size: 16px;
     line-height: 1.65;
     margin-left: auto;
@@ -44,6 +45,14 @@ const css = `
     padding:2em;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     margin: 1em;
+  }
+  @media (max-width: 600px) {
+    body #app_container {
+      margin: 0;
+      border-radius: 0;
+      padding: 1em;
+      box-shadow: none;
+    }
   }
   html {
     background-color: #ddd;

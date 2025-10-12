@@ -196,7 +196,7 @@ export const Cell = forwardRef((props, ref) => {
     () => Math.max(1, (source.match(/\n/g)?.length ?? 0) + 1),
     [source]
   );
-  const editorHeight = useMemo(() => `${lineCount * 1.45 + 1}em`, [lineCount]);
+  const editorHeight = useMemo(() => `${lineCount * 1.1 + 1}em`, [lineCount]);
   const borderColor = BORDER_COLORS[runState] || BORDER_COLORS.idle;
   const isRunning = runState === 'running';
   const handleStdout = useCallback((value) => {
@@ -661,11 +661,12 @@ export const Cell = forwardRef((props, ref) => {
                 <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
               </pre>
             ` : html`
-              <div class='code-editor' style=${{ minHeight: editorHeight }}>
+              <div class='code-editor' style=${{ minHeight: editorHeight*1.45/1.1 }}>
                 <pre class='blockly-python language-python code-editor__preview' style=${{ minHeight: editorHeight }}>
                   <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
                 </pre>
                 <textarea 
+                  sstyle=${{ height: editorHeight }}
                   class='python-textarea code-editor__textarea'
                   spellcheck=${false}
                   autocapitalize=${'off'}

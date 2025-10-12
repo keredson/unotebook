@@ -348,7 +348,7 @@ function App() {
     <div id='app_container'>
       <style>${css}</style>
       <div style='display:flex; gap:1rem; justify-content:space-between;'>
-        <span style='font-size:smaller;'>${
+        <span style='font-size:smaller; white-space:nowrap;'>${
           url.length > 1
             ? html`<a href="#/">Home</a>${url
                 .substring(1)
@@ -360,10 +360,10 @@ function App() {
                 )}`
             : null
         }</span>
-        <div style='display:flex; gap:1rem; align-items: center;'>
-          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()}>🔗︎ Pybricks</button>` }
-          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()}>🔗︎ WebREPL</button>` }
-          ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}}>Disconnect</button>` : null }
+        <div style='text-align:right;'>
+          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()} style='white-space:nowrap;'>🔗︎ Pybricks</button>` }
+          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()} style='white-space:nowrap; margin-left:.5em;'>🔗︎ WebREPL</button>` }
+          ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}} style='margin-left:.5em;'>Disconnect</button>` : null }
         </div>
       </div>
       ${ http_warning ? html`<div class='warning'>

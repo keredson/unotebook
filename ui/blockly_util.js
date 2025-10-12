@@ -24,7 +24,8 @@ async function ensureBlocklyLoaded() {
             args0: [
               {
                 type: 'input_value',
-                name: 'PORT'
+                name: 'PORT',
+                check: 'Port'
               }
             ],
             message1: 'direction %1',
@@ -39,7 +40,7 @@ async function ensureBlocklyLoaded() {
               }
             ],
             inputsInline: true,
-            output: null,
+            output: 'Motor',
             colour: 30,
             tooltip: 'Create a Pybricks Motor attached to the selected port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html'
@@ -50,7 +51,8 @@ async function ensureBlocklyLoaded() {
             args0: [
               {
                 type: 'input_value',
-                name: 'MOTOR'
+                name: 'MOTOR',
+                check: 'Motor'
               },
               { type: 'input_value', name: 'SPEED', check: 'Number' }
             ],
@@ -67,7 +69,8 @@ async function ensureBlocklyLoaded() {
             args0: [
               {
                 type: 'input_value',
-                name: 'MOTOR'
+                name: 'MOTOR',
+                check: 'Motor'
               },
               { type: 'input_value', name: 'SPEED', check: 'Number' },
               { type: 'input_value', name: 'TIME', check: 'Number' },
@@ -93,7 +96,8 @@ async function ensureBlocklyLoaded() {
             args0: [
               {
                 type: 'input_value',
-                name: 'MOTOR'
+                name: 'MOTOR',
+                check: 'Motor'
               },
               { type: 'input_value', name: 'SPEED', check: 'Number' },
               { type: 'input_value', name: 'ANGLE', check: 'Number' },
@@ -119,7 +123,8 @@ async function ensureBlocklyLoaded() {
             args0: [
               {
                 type: 'input_value',
-                name: 'MOTOR'
+                name: 'MOTOR',
+                check: 'Motor'
               }
             ],
             inputsInline: true,
@@ -146,7 +151,7 @@ async function ensureBlocklyLoaded() {
                 ]
               }
             ],
-            output: null,
+            output: 'Port',
             colour: 30,
             tooltip: 'Select a Pybricks port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/parameters.html#pybricks.parameters.Port'
@@ -155,7 +160,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_init',
             message0: 'PrimeHub',
             args0: [],
-            output: null,
+            output: 'PrimeHub',
             colour: 200,
             tooltip: 'Create a PrimeHub instance.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html'
@@ -164,7 +169,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_display_text',
             message0: '%1 display text %2',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               { type: 'input_value', name: 'TEXT' }
             ],
             inputsInline: true,
@@ -178,7 +183,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_display_char',
             message0: '%1 display char %2',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               { type: 'input_value', name: 'CHAR' }
             ],
             inputsInline: true,
@@ -192,7 +197,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_display_number',
             message0: '%1 display number %2',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               { type: 'input_value', name: 'NUMBER', check: 'Number' }
             ],
             inputsInline: true,
@@ -206,7 +211,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_display_pixel',
             message0: '%1 display pixel row %2 column %3 brightness %4',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               { type: 'input_value', name: 'ROW', check: 'Number' },
               { type: 'input_value', name: 'COLUMN', check: 'Number' },
               { type: 'input_value', name: 'BRIGHTNESS', check: 'Number' }
@@ -222,7 +227,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_display_off',
             message0: '%1 display off',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             previousStatement: null,
             nextStatement: null,
@@ -234,7 +239,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_display_orientation',
             message0: '%1 display orientation %2',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               {
                 type: 'field_dropdown',
                 name: 'ORIENTATION',
@@ -258,7 +263,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_light_on',
             message0: '%1 light on %2',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               {
                 type: 'field_dropdown',
                 name: 'COLOR',
@@ -284,7 +289,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_light_off',
             message0: '%1 light off',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             previousStatement: null,
             nextStatement: null,
@@ -296,7 +301,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_charger_connected',
             message0: '%1 charger connected?',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: 'Boolean',
             colour: 200,
@@ -307,9 +312,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_charger_current',
             message0: '%1 charger current (mA)',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
-            output: null,
+            output: 'Number',
             colour: 200,
             tooltip: 'Get charger current draw in mA.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Charger.current'
@@ -318,9 +323,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_charger_status',
             message0: '%1 charger status',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
-            output: null,
+            output: 'Number',
             colour: 200,
             tooltip: 'Get numeric charger status.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Charger.status'
@@ -329,7 +334,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_system_info',
             message0: '%1 system info',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: null,
             colour: 200,
@@ -340,7 +345,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_system_shutdown',
             message0: '%1 system shutdown',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             previousStatement: null,
             nextStatement: null,
@@ -357,10 +362,10 @@ async function ensureBlocklyLoaded() {
             message4: '↳ axle track %1',
             args0: [],
             args1: [
-              { type: 'input_value', name: 'LEFT' }
+              { type: 'input_value', name: 'LEFT', check: 'Motor' }
             ],
             args2: [
-              { type: 'input_value', name: 'RIGHT' }
+              { type: 'input_value', name: 'RIGHT', check: 'Motor' }
             ],
             args3: [
               { type: 'input_value', name: 'WHEEL', check: 'Number' }
@@ -368,7 +373,7 @@ async function ensureBlocklyLoaded() {
             args4: [
               { type: 'input_value', name: 'AXLE', check: 'Number' }
             ],
-            output: null,
+            output: 'DriveBase',
             colour: 20,
             tooltip: 'Create a DriveBase with two motors and geometry.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html'
@@ -377,7 +382,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_straight',
             message0: '%1 drive straight %2 millimeters',
             args0: [
-              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DB', check: 'DriveBase' },
               { type: 'input_value', name: 'DIST', check: 'Number' }
             ],
             inputsInline: true,
@@ -391,7 +396,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_turn',
             message0: '%1 turn %2 degrees',
             args0: [
-              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DB', check: 'DriveBase' },
               { type: 'input_value', name: 'ANGLE', check: 'Number' }
             ],
             inputsInline: true,
@@ -405,7 +410,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_drive',
             message0: '%1 drive speed %2 turn %3',
             args0: [
-              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DB', check: 'DriveBase' },
               { type: 'input_value', name: 'SPEED', check: 'Number' },
               { type: 'input_value', name: 'TURN', check: 'Number' }
             ],
@@ -420,7 +425,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_drive_time',
             message0: '%1 drive speed %2 turn %3 for %4 seconds',
             args0: [
-              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DB', check: 'DriveBase' },
               { type: 'input_value', name: 'SPEED', check: 'Number' },
               { type: 'input_value', name: 'TURN', check: 'Number' },
               { type: 'input_value', name: 'TIME', check: 'Number' }
@@ -436,7 +441,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_drive_distance',
             message0: '%1 drive speed %2 turn %3 distance %4 mm',
             args0: [
-              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DB', check: 'DriveBase' },
               { type: 'input_value', name: 'SPEED', check: 'Number' },
               { type: 'input_value', name: 'TURN', check: 'Number' },
               { type: 'input_value', name: 'DIST', check: 'Number' }
@@ -452,7 +457,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_curve',
             message0: '%1 curve distance %2 angle %3',
             args0: [
-              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DB', check: 'DriveBase' },
               { type: 'input_value', name: 'DIST', check: 'Number' },
               { type: 'input_value', name: 'ANGLE', check: 'Number' }
             ],
@@ -467,7 +472,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_stop',
             message0: '%1 stop with %2',
             args0: [
-              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DB', check: 'DriveBase' },
               {
                 type: 'field_dropdown',
                 name: 'STOP',
@@ -493,7 +498,7 @@ async function ensureBlocklyLoaded() {
             message3: '↳ turn rate %1',
             message4: '↳ turn accel %1',
             args0: [
-              { type: 'input_value', name: 'DB' }
+              { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
             args1: [
               { type: 'input_value', name: 'SPEED', check: 'Number' }
@@ -518,9 +523,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_distance_value',
             message0: '%1 distance traveled (mm)',
             args0: [
-              { type: 'input_value', name: 'DB' }
+              { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
-            output: null,
+            output: 'Number',
             colour: 20,
             tooltip: 'Get the distance traveled in millimeters.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.distance'
@@ -529,9 +534,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_angle_value',
             message0: '%1 rotation (deg)',
             args0: [
-              { type: 'input_value', name: 'DB' }
+              { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
-            output: null,
+            output: 'Number',
             colour: 20,
             tooltip: 'Get the angle turned in degrees.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.angle'
@@ -540,7 +545,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_reset',
             message0: '%1 reset distance and angle',
             args0: [
-              { type: 'input_value', name: 'DB' }
+              { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
             previousStatement: null,
             nextStatement: null,
@@ -552,7 +557,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_use_gyro',
             message0: '%1 use gyro %2',
             args0: [
-              { type: 'input_value', name: 'DB' },
+              { type: 'input_value', name: 'DB', check: 'DriveBase' },
               {
                 type: 'field_dropdown',
                 name: 'USE',
@@ -572,7 +577,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_drivebase_state',
             message0: '%1 state (distance, angle)',
             args0: [
-              { type: 'input_value', name: 'DB' }
+              { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
             output: null,
             colour: 20,
@@ -586,16 +591,16 @@ async function ensureBlocklyLoaded() {
             message2: '↳ drive motor %1',
             message3: '↳ torque limit (%) %1',
             args1: [
-              { type: 'input_value', name: 'STEER' },
+              { type: 'input_value', name: 'STEER', check: 'Motor' },
             ],
             args2: [
-              { type: 'input_value', name: 'DRIVE' }
+              { type: 'input_value', name: 'DRIVE', check: 'Motor' }
             ],
             args3: [
               { type: 'input_value', name: 'TORQUE', check: 'Number' }
             ],
             inputsInline: false,
-            output: null,
+            output: 'Car',
             colour: 20,
             tooltip: 'Create a Car with steer and drive motors.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car'
@@ -604,7 +609,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_car_steer',
             message0: '%1 steer %2 %',
             args0: [
-              { type: 'input_value', name: 'CAR' },
+              { type: 'input_value', name: 'CAR', check: 'Car' },
               { type: 'input_value', name: 'AMOUNT', check: 'Number' }
             ],
             inputsInline: true,
@@ -618,7 +623,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_car_drive_power',
             message0: '%1 drive (power) %2 %',
             args0: [
-              { type: 'input_value', name: 'CAR' },
+              { type: 'input_value', name: 'CAR', check: 'Car' },
               { type: 'input_value', name: 'POWER', check: 'Number' }
             ],
             inputsInline: true,
@@ -632,7 +637,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_car_drive_speed',
             message0: '%1 drive (speed) %2 deg/s',
             args0: [
-              { type: 'input_value', name: 'CAR' },
+              { type: 'input_value', name: 'CAR', check: 'Car' },
               { type: 'input_value', name: 'SPEED', check: 'Number' }
             ],
             inputsInline: true,
@@ -646,10 +651,10 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_color_sensor_init',
             message0: 'ColorSensor on %1',
             args0: [
-              { type: 'input_value', name: 'PORT' }
+              { type: 'input_value', name: 'PORT', check: 'Port' }
             ],
             inputsInline: true,
-            output: null,
+            output: 'ColorSensor',
             colour: 280,
             tooltip: 'Create a ColorSensor on a given port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/colorsensor.html'
@@ -658,9 +663,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_color_sensor_color',
             message0: '%1 get color',
             args0: [
-              { type: 'input_value', name: 'SENSOR' }
+              { type: 'input_value', name: 'SENSOR', check: 'ColorSensor' }
             ],
-            output: null,
+            output: ['Color', 'String'],
             colour: 280,
             tooltip: 'Read the detected color from a ColorSensor.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/colorsensor.html#pybricks.pupdevices.ColorSensor.color'
@@ -669,10 +674,10 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_ultrasonic_sensor_init',
             message0: 'UltrasonicSensor on %1',
             args0: [
-              { type: 'input_value', name: 'PORT' }
+              { type: 'input_value', name: 'PORT', check: 'Port' }
             ],
             inputsInline: true,
-            output: null,
+            output: 'UltrasonicSensor',
             colour: 300,
             tooltip: 'Create an UltrasonicSensor on a given port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html'
@@ -681,9 +686,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_ultrasonic_sensor_distance',
             message0: '%1 distance (mm)',
             args0: [
-              { type: 'input_value', name: 'SENSOR' }
+              { type: 'input_value', name: 'SENSOR', check: 'UltrasonicSensor' }
             ],
-            output: null,
+            output: 'Number',
             colour: 300,
             tooltip: 'Measure distance in millimeters using an UltrasonicSensor.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html#pybricks.pupdevices.UltrasonicSensor.distance'
@@ -692,7 +697,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_tilt',
             message0: '%1 tilt %2 (degrees)',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               {
                 type: 'field_dropdown',
                 name: 'AXIS',
@@ -702,7 +707,7 @@ async function ensureBlocklyLoaded() {
                 ]
               }
             ],
-            output: null,
+            output: 'Number',
             colour: 320,
             tooltip: 'Read the pitch or roll from a hub IMU.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.imu'
@@ -711,7 +716,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_ready',
             message0: '%1 IMU ready?',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: 'Boolean',
             colour: 320,
@@ -722,7 +727,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_stationary',
             message0: '%1 stationary?',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: 'Boolean',
             colour: 320,
@@ -733,9 +738,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_up',
             message0: '%1 up',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
-            output: null,
+            output: ['Side', 'String'],
             colour: 320,
             tooltip: 'Get the side which is up reported by the hub IMU.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.imu'
@@ -744,7 +749,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_acceleration',
             message0: '%1 acceleration axis %2',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               {
                 type: 'field_dropdown',
                 name: 'AXIS',
@@ -755,7 +760,7 @@ async function ensureBlocklyLoaded() {
                 ]
               }
             ],
-            output: null,
+            output: 'Number',
             colour: 320,
             tooltip: 'Get linear acceleration in mm/s² along an axis.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.acceleration'
@@ -764,7 +769,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_angular_velocity',
             message0: '%1 angular velocity axis %2',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               {
                 type: 'field_dropdown',
                 name: 'AXIS',
@@ -775,7 +780,7 @@ async function ensureBlocklyLoaded() {
                 ]
               }
             ],
-            output: null,
+            output: 'Number',
             colour: 320,
             tooltip: 'Get angular velocity in deg/s along an axis.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.angular_velocity'
@@ -784,9 +789,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_heading',
             message0: '%1 heading',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
-            output: null,
+            output: 'Number',
             colour: 320,
             tooltip: 'Get the current heading in degrees.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.heading'
@@ -795,7 +800,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_reset_heading',
             message0: '%1 reset heading to %2 deg',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               { type: 'input_value', name: 'ANGLE', check: 'Number' }
             ],
             previousStatement: null,
@@ -808,7 +813,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_rotation',
             message0: '%1 rotation axis %2 (deg)',
             args0: [
-              { type: 'input_value', name: 'HUB' },
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' },
               {
                 type: 'field_dropdown',
                 name: 'AXIS',
@@ -819,7 +824,7 @@ async function ensureBlocklyLoaded() {
                 ]
               }
             ],
-            output: null,
+            output: 'Number',
             colour: 320,
             tooltip: 'Get the rotation angle around an axis.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.rotation'
@@ -828,7 +833,7 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_hub_imu_orientation',
             message0: '%1 orientation matrix',
             args0: [
-              { type: 'input_value', name: 'HUB' }
+              { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: null,
             colour: 320,
@@ -839,10 +844,10 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_touch_sensor_init',
             message0: 'TouchSensor on %1',
             args0: [
-              { type: 'input_value', name: 'PORT' }
+              { type: 'input_value', name: 'PORT', check: 'Port' }
             ],
             inputsInline: true,
-            output: null,
+            output: 'TouchSensor',
             colour: 340,
             tooltip: 'Create a TouchSensor on a given port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/touchsensor.html'
@@ -851,9 +856,9 @@ async function ensureBlocklyLoaded() {
             type: 'pybricks_touch_sensor_pressed',
             message0: '%1 pressed?',
             args0: [
-              { type: 'input_value', name: 'SENSOR' }
+              { type: 'input_value', name: 'SENSOR', check: 'TouchSensor' }
             ],
-            output: null,
+            output: 'Boolean',
             colour: 340,
             tooltip: 'Check if the TouchSensor is pressed.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/touchsensor.html#pybricks.pupdevices.TouchSensor.pressed'

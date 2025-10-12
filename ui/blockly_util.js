@@ -1403,27 +1403,6 @@ export const FULL_TOOLBOX = {
       ]
     },
     {
-      kind: 'category', name: 'Loops', colour: '#5CA65C',
-      contents: [
-        {
-          kind: 'block', type: 'controls_repeat_ext',
-          inputs: {
-            TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } }
-          }
-        },
-        { kind: 'block', type: 'controls_whileUntil' },
-        { kind: 'block', type: 'controls_for',
-          inputs: {
-            FROM: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
-            TO:   { shadow: { type: 'math_number', fields: { NUM: 10 } } },
-            BY:   { shadow: { type: 'math_number', fields: { NUM: 1 } } }
-          }
-        },
-        { kind: 'block', type: 'controls_forEach' },
-        { kind: 'block', type: 'controls_flow_statements' }
-      ]
-    },
-    {
       kind: 'category', name: 'Math', colour: '#5C68A6',
       contents: [
         { kind: 'block', type: 'math_number', fields: { NUM: 0 } },
@@ -1450,9 +1429,77 @@ export const FULL_TOOLBOX = {
         { kind: 'block', type: 'math_random_float' }
       ]
     },
+    {
+      kind: 'category', name: 'Text', colour: '#5CA68D',
+      contents: [
+        { kind: 'block', type: 'text' },
+        { kind: 'block', type: 'text_join' },
+        { kind: 'block', type: 'text_append' },
+        { kind: 'block', type: 'text_length' },
+        { kind: 'block', type: 'text_isEmpty' },
+        { kind: 'block', type: 'text_indexOf' },
+        { kind: 'block', type: 'text_charAt' },
+        { kind: 'block', type: 'text_getSubstring' },
+        { kind: 'block', type: 'text_changeCase' },
+        { kind: 'block', type: 'text_trim' },
+        { kind: 'block', type: 'text_print',
+          inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'Hello' } } } }
+        },
+        { kind: 'block', type: 'text_prompt_ext',
+          inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'Enter value:' } } } }
+        }
+      ]
+    },
+    {
+      kind: 'category', name: 'Variables', colour: '#A65C81', custom: 'VARIABLE'
+    },
     { kind: 'sep', gap: 12 },
     {
-      kind: 'category', name: 'Hub', colour: '#C66A21',
+      kind: 'category', name: 'Loops', colour: '#5CA65C',
+      contents: [
+        {
+          kind: 'block', type: 'controls_repeat_ext',
+          inputs: {
+            TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } }
+          }
+        },
+        { kind: 'block', type: 'controls_whileUntil' },
+        { kind: 'block', type: 'controls_for',
+          inputs: {
+            FROM: { shadow: { type: 'math_number', fields: { NUM: 1 } } },
+            TO:   { shadow: { type: 'math_number', fields: { NUM: 10 } } },
+            BY:   { shadow: { type: 'math_number', fields: { NUM: 1 } } }
+          }
+        },
+        { kind: 'block', type: 'controls_forEach' },
+        { kind: 'block', type: 'controls_flow_statements' }
+      ]
+    },
+    {
+      kind: 'category', name: 'Lists', colour: '#745CA6',
+      contents: [
+        { kind: 'block', type: 'lists_create_with' },
+        { kind: 'block', type: 'lists_repeat',
+          inputs: {
+            NUM:  { shadow: { type: 'math_number', fields: { NUM: 5 } } }
+          }
+        },
+        { kind: 'block', type: 'lists_length' },
+        { kind: 'block', type: 'lists_isEmpty' },
+        { kind: 'block', type: 'lists_indexOf' },
+        { kind: 'block', type: 'lists_getIndex' },
+        { kind: 'block', type: 'lists_setIndex' },
+        { kind: 'block', type: 'lists_getSublist' },
+        { kind: 'block', type: 'lists_sort' },
+        { kind: 'block', type: 'lists_split' }
+      ]
+    },
+    {
+      kind: 'category', name: 'Functions', colour: '#9A5CA6', custom: 'PROCEDURE'
+    },
+    { kind: 'sep', gap: 12 },
+    {
+      kind: 'category', name: 'Spike Hub', colour: '#C66A21',
       contents: [
         {
           kind: 'block',
@@ -1638,54 +1685,6 @@ export const FULL_TOOLBOX = {
         }
       ]
     },
-    {
-      kind: 'category', name: 'Text', colour: '#5CA68D',
-      contents: [
-        { kind: 'block', type: 'text' },
-        { kind: 'block', type: 'text_join' },
-        { kind: 'block', type: 'text_append' },
-        { kind: 'block', type: 'text_length' },
-        { kind: 'block', type: 'text_isEmpty' },
-        { kind: 'block', type: 'text_indexOf' },
-        { kind: 'block', type: 'text_charAt' },
-        { kind: 'block', type: 'text_getSubstring' },
-        { kind: 'block', type: 'text_changeCase' },
-        { kind: 'block', type: 'text_trim' },
-        { kind: 'block', type: 'text_print',
-          inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'Hello' } } } }
-        },
-        { kind: 'block', type: 'text_prompt_ext',
-          inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: 'Enter value:' } } } }
-        }
-      ]
-    },
-    /*{
-      kind: 'category', name: 'Lists', colour: '#745CA6',
-      contents: [
-        { kind: 'block', type: 'lists_create_with' },
-        { kind: 'block', type: 'lists_repeat',
-          inputs: {
-            NUM:  { shadow: { type: 'math_number', fields: { NUM: 5 } } }
-          }
-        },
-        { kind: 'block', type: 'lists_length' },
-        { kind: 'block', type: 'lists_isEmpty' },
-        { kind: 'block', type: 'lists_indexOf' },
-        { kind: 'block', type: 'lists_getIndex' },
-        { kind: 'block', type: 'lists_setIndex' },
-        { kind: 'block', type: 'lists_getSublist' },
-        { kind: 'block', type: 'lists_sort' },
-        { kind: 'block', type: 'lists_split' }
-      ]
-    },//*/
-    // Dynamic categories (auto-manage their contents)
-    { kind: 'sep', gap: 12 },
-    {
-      kind: 'category', name: 'Variables', colour: '#A65C81', custom: 'VARIABLE'
-    },
-    {
-      kind: 'category', name: 'Functions', colour: '#9A5CA6', custom: 'PROCEDURE'
-    }
 
   ]
 };

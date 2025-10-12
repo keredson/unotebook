@@ -69,7 +69,15 @@ export class Pybricks extends EventTarget {
       } else console.log('unknown event: ', v)
     });
 
-    this.cmdEvt.startNotifications()
+    try {
+      await this.cmdEvt.startNotifications();
+    } catch (err) {
+      if (err?.name === 'NotSupportedError') {
+        console.warn('Pybricks: notifications already active; continuing', err);
+      } else {
+        throw err;
+      }
+    }
     this.connected = true;
     await this.sendCmd(0x02); // START_REPL
     this.dispatchEvent(new Event('connect'));

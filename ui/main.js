@@ -275,7 +275,10 @@ function App() {
   useGuardHashLinks(isDirtyRef);
 
   useEffect(() => {
-    if (backend==null) return;
+    if (!backend) {
+      setConnected(false);
+      return;
+    }
     const onConnect = () => setConnected(true);
     const onDisconnect = () => setConnected(false);
     const onData = (e) => {
@@ -285,6 +288,7 @@ function App() {
     backend.addEventListener('connect', onConnect);
     backend.addEventListener('disconnect', onDisconnect);
     backend.addEventListener('stdout', onData);
+    setConnected(!!backend.connected);
     return () => {
       backend.removeEventListener('connect', onConnect);
       backend.removeEventListener('disconnect', onDisconnect);

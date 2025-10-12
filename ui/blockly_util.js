@@ -862,6 +862,18 @@ async function ensureBlocklyLoaded() {
             colour: 340,
             tooltip: 'Check if the TouchSensor is pressed.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/touchsensor.html#pybricks.pupdevices.TouchSensor.pressed'
+          },
+          {
+            type: 'pybricks_wait',
+            message0: 'wait %1 seconds',
+            args0: [
+              { type: 'input_value', name: 'TIME', check: 'Number' }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 50,
+            tooltip: 'Pause execution for the given number of seconds.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/tools.html#pybricks.tools.wait'
           }
         ]);
       }
@@ -896,6 +908,11 @@ async function ensureBlocklyLoaded() {
       function ensureAxisImport() {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_axis'] = 'from pybricks.parameters import Axis';
+      }
+
+      function ensureWaitImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_wait'] = 'from pybricks.tools import wait';
       }
 
       function getMotorCode(block, generator) {
@@ -1330,6 +1347,13 @@ async function ensureBlocklyLoaded() {
         return [`${sensorVar}.pressed()`, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
+      pythonGenerator.forBlock['pybricks_wait'] = function(block, generator) {
+        ensureWaitImport();
+        const seconds = generator.valueToCode(block, 'TIME', pythonGenerator.ORDER_NONE) || '0';
+        const msExpr = `(${seconds}) * 1000`;
+        return `wait(${msExpr})\n`;
+      };
+
       pythonGenerator.scrubNakedValue = function(line) { return line + '\n'; };
 
       pythonGenerator.forBlock['procedures_defnoreturn'] = function(block, generator) {
@@ -1600,6 +1624,18 @@ export const FULL_TOOLBOX = {
         { kind: 'block', type: 'pybricks_ultrasonic_sensor_distance' },
         { kind: 'block', type: 'pybricks_touch_sensor_init' },
         { kind: 'block', type: 'pybricks_touch_sensor_pressed' },
+      ]
+    },
+    {
+      kind: 'category', name: 'Timing', colour: '#F39C12',
+      contents: [
+        {
+          kind: 'block',
+          type: 'pybricks_wait',
+          inputs: {
+            TIME: { shadow: { type: 'math_number', fields: { NUM: 1 } } }
+          }
+        }
       ]
     },
     {

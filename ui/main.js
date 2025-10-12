@@ -171,6 +171,51 @@ const css = `
     color: #4f453a;
   }
 
+  .code-editor {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .code-editor__preview {
+    margin: 0;
+    padding: 0.75em;
+    pointer-events: none;
+  }
+
+  pre.blockly-python.code-editor__preview {
+    background: #f8f6f1;
+    border-radius: 3px;
+  }
+
+  .code-editor__textarea {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0.5em;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    background: transparent;
+    color: transparent;
+    caret-color: #2b1e10;
+    resize: none;
+    box-sizing: border-box;
+    z-index: 1;
+  }
+
+  .code-editor__textarea:focus {
+    outline: none;
+  }
+
+  .code-editor__textarea::placeholder {
+    color: #8a8273;
+  }
+
+  .code-editor__textarea::selection {
+    background: rgba(217, 164, 65, 0.35);
+  }
+
   `;
 
 const BASE = location.pathname.startsWith('/code/')

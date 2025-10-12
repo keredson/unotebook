@@ -191,10 +191,12 @@ export const Cell = forwardRef((props, ref) => {
   const [cellMetadata, set_cellMetadata] = useState(() => props.cell?.metadata ? {...props.cell.metadata} : {});
 
   const is_blockly = Boolean(cellMetadata?.blockly);
-  const blocklyHighlighted = useMemo(
-    () => (is_blockly ? highlightPython(source || '') : ''),
-    [is_blockly, source]
+  const highlightedSource = useMemo(() => highlightPython(source || ''), [source]);
+  const lineCount = useMemo(
+    () => Math.max(1, (source.match(/\n/g)?.length ?? 0) + 1),
+    [source]
   );
+  const editorHeight = useMemo(() => `${lineCount * 1.45 + 1}em`, [lineCount]);
   const borderColor = BORDER_COLORS[runState] || BORDER_COLORS.idle;
   const isRunning = runState === 'running';
   const handleStdout = useCallback((value) => {
@@ -655,25 +657,28 @@ export const Cell = forwardRef((props, ref) => {
         <div style='display:flex; gap:.5rem; align-items:flex-start;'>
           <div style='flex:1; min-width:0;'>
             ${is_blockly ? html`
-              <pre class='blockly-python language-python' style="width:100%; box-sizing:border-box;">
-                <code class='language-python' dangerouslySetInnerHTML=${{ __html: blocklyHighlighted }}></code>
+              <pre class='blockly-python language-python' style=${{ width: '100%', boxSizing: 'border-box', minHeight: editorHeight }}>
+                <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
               </pre>
             ` : html`
-              <textarea 
-                class='python-textarea'
-                spellcheck=${false}
-                autocapitalize=${'off'}
-                autocorrect=${'off'}
-                autocomplete=${'off'}
-                style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:100%; box-sizing:border-box;"
-                placeholder=${placeholder()}
-                rows=${source.split('\n').length || 1}
-                value=${source}
-                onInput=${e => {set_source(e.target.value); if (!is_blockly) props.changed()}}
-                onKeyDown=${handleKeyDown}
-                onFocus=${()=>set_focused(true)}
-                onBlur=${()=>set_focused(false)}
-              />
+              <div class='code-editor' style=${{ minHeight: editorHeight }}>
+                <pre class='blockly-python language-python code-editor__preview' style=${{ minHeight: editorHeight }}>
+                  <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
+                </pre>
+                <textarea 
+                  class='python-textarea code-editor__textarea'
+                  spellcheck=${false}
+                  autocapitalize=${'off'}
+                  autocorrect=${'off'}
+                  autocomplete=${'off'}
+                  placeholder=${placeholder()}
+                  value=${source}
+                  onInput=${e => {set_source(e.target.value); if (!is_blockly) props.changed()}}
+                  onKeyDown=${handleKeyDown}
+                  onFocus=${()=>set_focused(true)}
+                  onBlur=${()=>set_focused(false)}
+                />
+              </div>
             `}
           </div>
           <div style='flex:0 0 auto;'>

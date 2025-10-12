@@ -265,6 +265,7 @@ function App() {
   const [http_warning, set_http_warning] = useState(false);
   const [https_warning, set_https_warning] = useState(false);
   const [active_backend, set_active_backend] = useState(null);
+  const [connecting, set_connecting] = useState(null); // 'pybricks' | 'webrepl' | null
   const sinkRef = useRef({ id: 0, cb: null });
   const backend = active_backend==='pybricks' ? pybricks : (active_backend==='webrepl' ? webrepl : null);
 
@@ -318,18 +319,26 @@ function App() {
       set_https_warning(true)
       return
     }
-    set_active_backend('webrepl')
-    var connection_url = prompt("WebREPL url? (ws://ip[:port])", await storage.getNotebook('__webrepl_last_url__') || 'ws://')
-    if (!connection_url.startsWith('ws://') && !connection_url.startsWith('wss://')) {
-      connection_url = 'ws://'+connection_url
-    }
-    set_connected_text('🔗︎ '+connection_url)
+    set_connecting('webrepl');
     try {
-      const ws = await webrepl.connect(connection_url)
+      const lastUrl = await storage.getNotebook('__webrepl_last_url__');
+      let connection_url = prompt("WebREPL url? (ws://ip[:port])", lastUrl || 'ws://');
+      if (connection_url == null) return;
+      if (!connection_url.startsWith('ws://') && !connection_url.startsWith('wss://')) {
+        connection_url = 'ws://'+connection_url
+      }
+      try {
+        await webrepl.connect(connection_url)
+      } catch(e) {
+        console.log({e})
+        alert(prettyError(e))
+        return;
+      }
       await storage.saveNotebook('__webrepl_last_url__', connection_url)
-    } catch(e) {
-      console.log({e})
-      alert(prettyError(e))
+      set_active_backend('webrepl')
+      set_connected_text('🔗︎ '+connection_url)
+    } finally {
+      set_connecting(null);
     }
   }
 
@@ -339,9 +348,14 @@ function App() {
       set_http_warning(true)
       return
     }
-    set_active_backend('pybricks')
-    const name = await pybricks.connect()
-    set_connected_text('🔗︎ '+name)
+    set_connecting('pybricks');
+    try {
+      const name = await pybricks.connect()
+      set_active_backend('pybricks')
+      set_connected_text('🔗︎ '+name)
+    } finally {
+      set_connecting(null);
+    }
   }
 
   return html`
@@ -360,12 +374,14 @@ function App() {
                 )}`
             : null
         }</span>
-        <div style='text-align:right;'>
-          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()} style='white-space:nowrap;'>🔗︎ Pybricks</button>` }
-          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()} style='white-space:nowrap; margin-left:.5em;'>🔗︎ WebREPL</button>` }
+        <div style='text-align:right; display:flex; flex-wrap:wrap; gap:0.75rem; justify-content:flex-end;'>
+          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()} style='white-space:nowrap;' disabled=${connecting==='pybricks'}>${connecting==='pybricks' ? 'Connecting…' : '🔗︎ Pybricks'}</button>` }
+          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()} style='white-space:nowrap;' disabled=${connecting==='webrepl'}>${connecting==='webrepl' ? 'Connecting…' : '🔗︎ WebREPL'}</button>` }
           ${ connected ? html`
-            <code style='font-size:smaller; line-height:1;'>${connected_text}</code>
-            <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}} style='margin-left:.5em;'>Disconnect</button>
+            <span style='display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; justify-content:flex-end;'>
+              <code style='font-size:smaller; line-height:1; white-space:nowrap;'>${connected_text}</code>
+              <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}} style='white-space:nowrap;'>Disconnect</button>
+            </span>
           ` : null }
         </div>
       </div>

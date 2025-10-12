@@ -5,9 +5,13 @@ An Juypter Notebook like tool for Pybricks and other Micropython devices.
 
 ## About
 This started as a way for my kid to program an ESP32-based robot we built.  I've since
-added support for [PyBricks](https://pybricks.com/) since he joined [FLL](https://www.firstlegoleague.org/).
+added support for [Pybricks](https://pybricks.com/) (since he joined [FLL](https://www.firstlegoleague.org/)).
 
 It supports notebook-style programming in a *mixture* of Python and visual block-style cells.
+
+It connects to Pybrick devices (like the [Spike Prime Hub](https://education.lego.com/en-us/products/lego-technic-large-hub-for-spike-prime-/45601/)
+and [Mindstorms Inventor Hub](https://www.lego.com/en-lt/product/large-hub-88016)) via Bluetooth and [Micropython](https://micropython.org/) devices
+via [WebREPL](https://docs.micropython.org/en/latest/esp32/quickref.html#webrepl-web-browser-interactive-prompt).
 
 ## Why Notebook-Style Programming for Robotics?
 

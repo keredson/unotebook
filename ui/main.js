@@ -363,7 +363,10 @@ function App() {
         <div style='text-align:right;'>
           ${ connected ? null : html`<button onClick=${e=>connect_pybricks()} style='white-space:nowrap;'>🔗︎ Pybricks</button>` }
           ${ connected ? null : html`<button onClick=${e=>connect_webrepl()} style='white-space:nowrap; margin-left:.5em;'>🔗︎ WebREPL</button>` }
-          ${ connected ? html`<code style='font-size:smaller; line-height:1;'>${connected_text}</code> <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}} style='margin-left:.5em;'>Disconnect</button>` : null }
+          ${ connected ? html`
+            <code style='font-size:smaller; line-height:1;'>${connected_text}</code>
+            <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}} style='margin-left:.5em;'>Disconnect</button>
+          ` : null }
         </div>
       </div>
       ${ http_warning ? html`<div class='warning'>

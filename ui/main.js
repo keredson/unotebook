@@ -105,6 +105,70 @@ const css = `
     font-family: system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif !important;
   }
 
+  pre.blockly-python {
+    background-color: #f8f6f1;
+    border: 1px solid silver;
+    border-radius: 3px;
+    padding: 0.5em;
+    margin: 0;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.75em;
+    line-height: 1.2;
+    color: #2b1e10;
+  }
+
+  textarea.python-textarea {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.75em !important;
+    line-height: 1.2 !important;
+    padding: 0.5em !important;
+  }
+
+  pre.blockly-python code {
+    display: block;
+    white-space: pre;
+  }
+
+  code[class*="language-"] {
+    font-family: inherit;
+  }
+
+  code[class*="language-"] .token.comment {
+    color: #8a7e6b;
+    font-style: italic;
+  }
+
+  code[class*="language-"] .token.keyword {
+    color: #2c5aa0;
+    font-weight: 600;
+  }
+
+  code[class*="language-"] .token.boolean,
+  code[class*="language-"] .token.number {
+    color: #8b3f8c;
+  }
+
+  code[class*="language-"] .token.string {
+    color: #b35625;
+  }
+
+  code[class*="language-"] .token.builtin {
+    color: #6753b5;
+  }
+
+  code[class*="language-"] .token.decorator {
+    color: #3e7a29;
+  }
+
+  code[class*="language-"] .token.operator {
+    color: #005c7a;
+  }
+
+  code[class*="language-"] .token.punctuation {
+    color: #4f453a;
+  }
+
   `;
 
 const BASE = location.pathname.startsWith('/code/')

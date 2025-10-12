@@ -19,6 +19,7 @@
     "blockly": "^12.3.1",
     "preact-hooks": "^0.0.0-0.0.0",
     "preact-router": "^4.1.2",
+    "prismjs": "^1.30.0",
     "snarkdown": "^2.0.0"
   }
 }

@@ -5,6 +5,7 @@ import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
 import { render_ansi } from './render_ansi.js'
 import { FULL_TOOLBOX, loadBlockly, BLOCKLY_CSS } from './blockly_util.js'
+import { highlightPython } from './prism-lite.js';
 
 const registeredNotebookFunctionBlocks = new Set();
 
@@ -183,6 +184,10 @@ export const Cell = forwardRef((props, ref) => {
   const [cellMetadata, set_cellMetadata] = useState(() => props.cell?.metadata ? {...props.cell.metadata} : {});
 
   const is_blockly = Boolean(cellMetadata?.blockly);
+  const blocklyHighlighted = useMemo(
+    () => (is_blockly ? highlightPython(source || '') : ''),
+    [is_blockly, source]
+  );
 
   useImperativeHandle(ref, () => ({
     getValue: () => {
@@ -627,15 +632,20 @@ export const Cell = forwardRef((props, ref) => {
     </div>
     <div style="border-radius: 3px; border-left: 5px solid ${running ? '#df651eff' : '#ded2ba'} !important; padding: .5em; background-color:#f0ebe1;">
       ${show_source ? html`
-        <table style='width: 100%;'>
-          <tr>
-            <td>
+        <div style='display:flex; gap:.5rem; align-items:flex-start;'>
+          <div style='flex:1; min-width:0;'>
+            ${is_blockly ? html`
+              <pre class='blockly-python language-python' style="width:100%; box-sizing:border-box;">
+                <code class='language-python' dangerouslySetInnerHTML=${{ __html: blocklyHighlighted }}></code>
+              </pre>
+            ` : html`
               <textarea 
+                class='python-textarea'
                 spellcheck=${false}
                 autocapitalize=${'off'}
                 autocorrect=${'off'}
                 autocomplete=${'off'}
-                style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:calc(100% - 1.5em)"
+                style="padding: .5em; border:1px solid silver; outline:none; background-color:#f8f6f1; width:100%; box-sizing:border-box;"
                 placeholder=${placeholder()}
                 rows=${source.split('\n').length || 1}
                 value=${source}
@@ -643,18 +653,17 @@ export const Cell = forwardRef((props, ref) => {
                 onKeyDown=${handleKeyDown}
                 onFocus=${()=>set_focused(true)}
                 onBlur=${()=>set_focused(false)}
-                readOnly=${is_blockly}
               />
-            </td>
-            <td width='4em' valign='top'>
-              <div style='opacity:line-height:1.1'>
-                <div style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>running ? stop() : run()}>${running ? '◼' : '▶'}</div>
-                ${is_blockly ? html`<div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${openBlockly}>🖉</div>` : null }
-                <div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${()=>props.delete_cell()}>🗙</div>
-              </div>
-            </td>
-          </tr>
-        </table>` : null }
+            `}
+          </div>
+          <div style='flex:0 0 auto;'>
+            <div style='line-height:1.1'>
+              <div style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>running ? stop() : run()}>${running ? '◼' : '▶'}</div>
+              ${is_blockly ? html`<div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${openBlockly}>🖉</div>` : null }
+              <div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${()=>props.delete_cell()}>🗙</div>
+            </div>
+          </div>
+        </div>` : null }
       ${stdout ? html`<pre class='output' style='margin:0;'><code>${render_ansi(stdout)}</code></pre>` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}

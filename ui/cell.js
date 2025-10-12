@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { useState, useEffect, useImperativeHandle, useRef, useMemo } from 'preact/hooks';
+import { useState, useEffect, useImperativeHandle, useRef, useMemo, useCallback } from 'preact/hooks';
 import htm from 'htm';
 import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
@@ -8,6 +8,13 @@ import { FULL_TOOLBOX, loadBlockly, BLOCKLY_CSS } from './blockly_util.js'
 import { highlightPython } from './prism-lite.js';
 
 const registeredNotebookFunctionBlocks = new Set();
+
+const BORDER_COLORS = {
+  idle: '#ded2ba',
+  running: '#d9a441',
+  success: '#6f9b7a',
+  error: '#df651e',
+};
 
 function extractNotebookSymbols(codeSnippets) {
   const variableNames = new Set();
@@ -170,7 +177,7 @@ export const Cell = forwardRef((props, ref) => {
   const [source, set_source] = useState(props.cell?.source?.join('') || '');
   const [stdout, set_stdout] = useState(null);
   const [error, set_error] = useState(null);
-  const [running, set_running] = useState(false);
+  const [runState, set_runState] = useState('idle');
   const [show_source, set_show_source] = useState(true);
   const [jpeg, set_jpeg] = useState(null);
   const [png, set_png] = useState(null);
@@ -188,6 +195,14 @@ export const Cell = forwardRef((props, ref) => {
     () => (is_blockly ? highlightPython(source || '') : ''),
     [is_blockly, source]
   );
+  const borderColor = BORDER_COLORS[runState] || BORDER_COLORS.idle;
+  const isRunning = runState === 'running';
+  const handleStdout = useCallback((value) => {
+    set_stdout(value);
+    if (typeof value === 'string' && value.includes('Traceback (most recent call last)')) {
+      set_runState('error');
+    }
+  }, []);
 
   useImperativeHandle(ref, () => ({
     getValue: () => {
@@ -347,10 +362,10 @@ export const Cell = forwardRef((props, ref) => {
     }, [is_blockly, blocklyVisible, blockly_id, props.getNotebookContext, props.idx]);
 
     useEffect(() => {
-      if (!props.connected) {
-        set_running(false)
+      if (!props.connected && runState === 'running') {
+        set_runState('idle');
       }
-    }, [props.connected]);
+    }, [props.connected, runState]);
 
   function placeholder() {
     if (is_blockly) return '# click 🖉 to edit  -->'
@@ -365,10 +380,12 @@ export const Cell = forwardRef((props, ref) => {
     set_png(null)
     set_html(null)
     set_show_source(true)
+    set_runState('idle')
   }
 
   async function stop() {
     set_error(await props.backend.abort())
+    set_runState('error')
   }
 
   function setSourceAndRestoreSelection(nextValue, el, start, end = start) {
@@ -592,6 +609,9 @@ export const Cell = forwardRef((props, ref) => {
     set_png(null)
     set_html(null)
     set_error(null)
+    if (props.cell?.cell_type === 'code') {
+      set_runState('running');
+    }
     console.log('props.cell?.cell_type', props.cell?.cell_type)
     if (props.cell?.cell_type=='markdown') {
       const html_ = snarkdown(source);
@@ -604,6 +624,7 @@ export const Cell = forwardRef((props, ref) => {
   }
 
   async function run_code() {
+    set_runState('running');
     if (!props.connected) {
       alert('Not Connected')
       throw new Error("Not Connected")
@@ -615,12 +636,11 @@ export const Cell = forwardRef((props, ref) => {
     // start a new run; keep data in this cell only
     try {
       console.log('props.run_cell',props.run_cell)
-      set_running(true)
-      await props.run_cell(source, set_stdout, { timeoutMs: 10000, newline: true });
+      await props.run_cell(source, handleStdout, { timeoutMs: 10000, newline: true });
+      set_runState(prev => (prev === 'error' ? 'error' : 'success'));
     } catch (e) {
       set_error(`⚠️ ${e}`);
-    } finally {
-      set_running(false)
+      set_runState('error');
     }
   }
 
@@ -630,7 +650,7 @@ export const Cell = forwardRef((props, ref) => {
       <span title="Insert Blockly..." style="cursor:pointer;" onClick=${()=>props.insert_before('blockly')}>+blocks</span>
       <span title="Insert Documentation..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+doc</span>
     </div>
-    <div style="border-radius: 3px; border-left: 5px solid ${running ? '#df651eff' : '#ded2ba'} !important; padding: .5em; background-color:#f0ebe1;">
+    <div style="border-radius: 3px; border-left: 5px solid ${borderColor} !important; padding: .5em; background-color:#f0ebe1;">
       ${show_source ? html`
         <div style='display:flex; gap:.5rem; align-items:flex-start;'>
           <div style='flex:1; min-width:0;'>
@@ -658,7 +678,7 @@ export const Cell = forwardRef((props, ref) => {
           </div>
           <div style='flex:0 0 auto;'>
             <div style='line-height:1.1'>
-              <div style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>running ? stop() : run()}>${running ? '◼' : '▶'}</div>
+              <div style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>isRunning ? stop() : run()}>${isRunning ? '◼' : '▶'}</div>
               ${is_blockly ? html`<div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${openBlockly}>🖉</div>` : null }
               <div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${()=>props.delete_cell()}>🗙</div>
             </div>

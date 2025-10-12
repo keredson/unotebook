@@ -1103,9 +1103,9 @@ async function ensureBlocklyLoaded() {
         ensureCarImport();
         const steer = generator.valueToCode(block, 'STEER', pythonGenerator.ORDER_NONE) || 'steer_motor';
         const drive = generator.valueToCode(block, 'DRIVE', pythonGenerator.ORDER_NONE) || 'drive_motor';
-        const torque = generator.valueToCode(block, 'TORQUE', pythonGenerator.ORDER_NONE);
-        const args = torque ? `${steer}, ${drive}, torque_limit=${torque}` : `${steer}, ${drive}`;
-        return [`Car(${args})`, pythonGenerator.ORDER_FUNCTION_CALL];
+        const rawTorque = generator.valueToCode(block, 'TORQUE', pythonGenerator.ORDER_NONE);
+        const torque = rawTorque && rawTorque.trim().length ? rawTorque : '100';
+        return [`Car(${steer}, ${drive}, torque_limit=${torque})`, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
       pythonGenerator.forBlock['pybricks_car_steer'] = function(block, generator) {
@@ -1574,7 +1574,13 @@ export const FULL_TOOLBOX = {
     {
       kind: 'category', name: 'Car Bot', colour: '#7A4FBF',
       contents: [
-        { kind: 'block', type: 'pybricks_car_init' },
+        { 
+          kind: 'block', 
+          type: 'pybricks_car_init',
+          inputs: {
+            TORQUE: { shadow: { type: 'math_number', fields: { NUM: 100 } } },
+          }
+        },
         { kind: 'block', type: 'pybricks_car_steer' },
         { kind: 'block', type: 'pybricks_car_drive_power' },
         { kind: 'block', type: 'pybricks_car_drive_speed' }

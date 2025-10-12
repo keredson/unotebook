@@ -56,7 +56,7 @@ jobs:
           CSS
 
           # Convert README.md (GitHub-Flavored Markdown) to a standalone HTML5 page
-          cp screenshots dist/
+          cp -R screenshots dist/
           pandoc README.md \
             -f gfm \
             -t html5 \

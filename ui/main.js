@@ -264,6 +264,16 @@ const mount = document.getElementById('app');
 mount.textContent = '';
 render(html`<${App}/>`, mount);
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    const base = `${window.location.origin}${import.meta.env.BASE_URL}`;
+    const swUrl = new URL('service-worker.js', base).toString();
+    navigator.serviceWorker.register(swUrl).catch((error) => {
+      console.warn('Service worker registration failed:', error);
+    });
+  });
+}
+
 
 async function copy_link(e) {
   e.preventDefault()

@@ -1,0 +1,17 @@
+{
+  "name": "µNotebook",
+  "short_name": "µNotebook",
+  "start_url": "/code/",
+  "scope": "/code/",
+  "display": "standalone",
+  "background_color": "#f4f0e8",
+  "theme_color": "#f4f0e8",
+  "description": "Program Pybricks and WebREPL devices and run notebooks directly in your browser.",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

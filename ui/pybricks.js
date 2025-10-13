@@ -17,6 +17,7 @@ export class Pybricks extends EventTarget {
     this.ignore_bytes = 0
     this.status = null
     this.stdout = ''
+    this._needsReplStart = false;
   }
 
   async connect() {
@@ -79,7 +80,7 @@ export class Pybricks extends EventTarget {
       }
     }
     this.connected = true;
-    await this.sendCmd(0x02); // START_REPL
+    this._needsReplStart = true;
     this.dispatchEvent(new Event('connect'));
     return this.device.name
   }
@@ -144,6 +145,7 @@ export class Pybricks extends EventTarget {
   }
 
   async run(code) {
+    await this._ensureReplStarted();
     await this._send(code)
     while (this.running) await sleep(100);
   }
@@ -152,7 +154,7 @@ export class Pybricks extends EventTarget {
     console.log('resetting ble')
     await this.sendCmd(0x00);
     await sleep(150)
-    await this.sendCmd(0x02);
+    this._needsReplStart = true;
   }
 
   async abort() {
@@ -167,7 +169,16 @@ export class Pybricks extends EventTarget {
   _onDisconnect() {
     this.connected = false;
     this.rxChar = this.txChar = this.server = null;
+    this._needsReplStart = false;
     this.dispatchEvent(new Event('disconnect'));
+  }
+
+  async _ensureReplStarted() {
+    if (!this.connected) throw new Error('Not connected');
+    if (!this._needsReplStart) return;
+    await this.sendCmd(0x02); // START_REPL
+    await sleep(100);
+    this._needsReplStart = false;
   }
 }
 

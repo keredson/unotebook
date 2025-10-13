@@ -162,6 +162,23 @@ async function ensureBlocklyLoaded() {
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.stop'
           },
           {
+            type: 'pybricks_motor_brake',
+            message0: 'brake %1',
+            args0: [
+              {
+                type: 'input_value',
+                name: 'MOTOR',
+                check: 'Motor'
+              }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 30,
+            tooltip: 'Brake a Pybricks Motor.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.brake'
+          },
+          {
             type: 'pybricks_port',
             message0: 'Port %1',
             args0: [
@@ -497,25 +514,29 @@ async function ensureBlocklyLoaded() {
           },
           {
             type: 'pybricks_drivebase_stop',
-            message0: '%1 stop with %2',
+            message0: '%1 stop',
             args0: [
-              { type: 'input_value', name: 'DB', check: 'DriveBase' },
-              {
-                type: 'field_dropdown',
-                name: 'STOP',
-                options: [
-                  ['coast', 'Stop.COAST'],
-                  ['brake', 'Stop.BRAKE'],
-                  ['hold', 'Stop.HOLD']
-                ]
-              }
+              { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
             colour: 20,
-            tooltip: 'Stop the robot with a given stopping style.',
+            tooltip: 'Stop the robot.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.stop'
+          },
+          {
+            type: 'pybricks_drivebase_brake',
+            message0: '%1 brake',
+            args0: [
+              { type: 'input_value', name: 'DB', check: 'DriveBase' }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: 20,
+            tooltip: 'Brake the robot.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.brake'
           },
           {
             type: 'pybricks_drivebase_settings',
@@ -1012,6 +1033,13 @@ async function ensureBlocklyLoaded() {
         return `${call}\n`;
       };
 
+      pythonGenerator.forBlock['pybricks_motor_brake'] = function(block, generator) {
+        ensureMotorImports();
+        const motorVar = getMotorCode(block, generator);
+        const call = formatMethodCall(motorVar, 'brake');
+        return `${call}\n`;
+      };
+
       function ensureHubImport() {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_hub'] = 'from pybricks.hubs import PrimeHub';
@@ -1115,17 +1143,16 @@ async function ensureBlocklyLoaded() {
         return `${db}.curve(${dist}, ${angle})\n`;
       };
 
-      function ensureStopImport() {
-        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
-        pythonGenerator.definitions_['import_pybricks_stop'] = 'from pybricks.parameters import Stop';
-      }
-
       pythonGenerator.forBlock['pybricks_drivebase_stop'] = function(block, generator) {
         ensureDriveBaseImport();
-        ensureStopImport();
         const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
-        const stopType = block.getFieldValue('STOP') || 'Stop.COAST';
-        return `${db}.stop(${stopType})\n`;
+        return `${db}.stop()\n`;
+      };
+
+      pythonGenerator.forBlock['pybricks_drivebase_brake'] = function(block, generator) {
+        ensureDriveBaseImport();
+        const db = generator.valueToCode(block, 'DB', pythonGenerator.ORDER_NONE) || 'drivebase';
+        return `${db}.brake()\n`;
       };
 
       pythonGenerator.forBlock['pybricks_drivebase_settings'] = function(block, generator) {
@@ -1616,6 +1643,7 @@ export const FULL_TOOLBOX = {
           }
         },
         { kind: 'block', type: 'pybricks_motor_stop' },
+        { kind: 'block', type: 'pybricks_motor_brake' },
       ]
     },
     {
@@ -1678,6 +1706,7 @@ export const FULL_TOOLBOX = {
           }
         },
         { kind: 'block', type: 'pybricks_drivebase_stop' },
+        { kind: 'block', type: 'pybricks_drivebase_brake' },
         {
           kind: 'block',
           type: 'pybricks_drivebase_settings',

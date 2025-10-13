@@ -1,4 +1,4 @@
-import { cleaveLastStatement, is_safe_to_assign_to_var, stripPythonComment, appendWithCR } from './repl.js'
+import { cleaveLastStatement, is_safe_to_assign_to_var, stripPythonComment, appendWithCR, UNOTEBOOK_REPR_FUNCTION } from './repl.js'
 
 export class Pybricks extends EventTarget {
   static NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
@@ -18,6 +18,7 @@ export class Pybricks extends EventTarget {
     this.status = null
     this.stdout = ''
     this._needsReplStart = false;
+    this._reprInjected = false;
   }
 
   async connect() {
@@ -81,6 +82,7 @@ export class Pybricks extends EventTarget {
     }
     this.connected = true;
     this._needsReplStart = true;
+    this._reprInjected = false;
     this.dispatchEvent(new Event('connect'));
     return this.device.name
   }
@@ -111,28 +113,9 @@ export class Pybricks extends EventTarget {
     const enc = new TextEncoder();
 
     code = code.replaceAll('\r\n','\n')
-    const {head, tail} = cleaveLastStatement(code)
     this.running = true
     this.stdout = ''
-    console.log({head, tail})
 
-    const segments = []
-    if (head) segments.push(head)
-    if (tail) {
-      if (is_safe_to_assign_to_var(tail)) {
-        const expr = stripPythonComment(tail).trim()
-        if (expr.length) {
-          segments.push(`_ = (${expr})`)
-          segments.push('if _ is not None:\n    print(_)')
-        } else {
-          segments.push(tail)
-        }
-      } else {
-        segments.push(tail)
-      }
-    }
-    code = segments.join('\n')
-    console.log({code})
     const bytes = enc.encode(code.endsWith('\n') ? code : code + '\n');
     this.ignore_bytes = bytes.length + 'paste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== '.length + 5
 
@@ -146,6 +129,27 @@ export class Pybricks extends EventTarget {
 
   async run(code) {
     await this._ensureReplStarted();
+    await this._ensureReprFunction();
+
+    const {head, tail} = cleaveLastStatement(code)
+    console.log({head, tail})
+    const segments = []
+    if (head) segments.push(head)
+    if (tail) {
+      if (is_safe_to_assign_to_var(tail)) {
+        const expr = stripPythonComment(tail).trim()
+        if (expr.length) {
+          segments.push(`_ = (${expr})`)
+          segments.push('if _ is not None:\n    __unotebook_repr__(_)')
+        } else {
+          segments.push(tail)
+        }
+      } else {
+        segments.push(tail)
+      }
+    }
+    code = segments.join('\n')
+
     await this._send(code)
     while (this.running) await sleep(100);
   }
@@ -155,6 +159,7 @@ export class Pybricks extends EventTarget {
     await this.sendCmd(0x00);
     await sleep(150)
     this._needsReplStart = true;
+    this._reprInjected = false;
   }
 
   async abort() {
@@ -170,6 +175,7 @@ export class Pybricks extends EventTarget {
     this.connected = false;
     this.rxChar = this.txChar = this.server = null;
     this._needsReplStart = false;
+    this._reprInjected = false;
     this.dispatchEvent(new Event('disconnect'));
   }
 
@@ -179,6 +185,15 @@ export class Pybricks extends EventTarget {
     await this.sendCmd(0x02); // START_REPL
     await sleep(100);
     this._needsReplStart = false;
+  }
+
+  async _ensureReprFunction() {
+    console.log('_ensureReprFunction')
+    if (!this.connected || this._reprInjected) return;
+    console.log('_ensureReprFunction sending')
+    await this._send(UNOTEBOOK_REPR_FUNCTION);
+    while (this.running) await sleep(500);
+    this._reprInjected = true;
   }
 }
 

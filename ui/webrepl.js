@@ -1,4 +1,4 @@
-import { cleaveLastStatement, is_safe_to_assign_to_var, stripPythonComment, appendWithCR } from './repl.js'
+import { cleaveLastStatement, is_safe_to_assign_to_var, stripPythonComment, appendWithCR, UNOTEBOOK_REPR_FUNCTION } from './repl.js'
 import * as storage from './storage';
 
 export class WebRepl extends EventTarget {
@@ -17,6 +17,7 @@ export class WebRepl extends EventTarget {
     this.stdout = ''
     this.running_timer = null;
     this._abort = false
+    this._reprInjected = false;
   }
 
   async connect(url, onReady = null) {
@@ -36,6 +37,7 @@ export class WebRepl extends EventTarget {
 
     this.ws.onclose = () => {
       this.connected = false;
+      this._reprInjected = false;
       this.dispatchEvent(new Event('disconnect'));
     };
     this.ws.onmessage = async (ev) => {
@@ -107,13 +109,15 @@ export class WebRepl extends EventTarget {
     }
 
     this.connected = true;
-    //this.send(UNOTEBOOK_REPR_FUNCTION)
+    this._reprInjected = false;
     this.dispatchEvent(new Event('connect'));
   }
 
   async reset() {
     console.log('resetting webrepl')
     await this._send('import sys, gc; sys.modules.clear(); gc.collect(); locals().clear()')
+    while (this.running) await sleep(100);
+    this._reprInjected = false;
   }
 
   async _send(code, finished=null) {
@@ -134,7 +138,7 @@ export class WebRepl extends EventTarget {
         const expr = stripPythonComment(tail).trim()
         if (expr.length) {
           segments.push(`_ = (${expr})`)
-          segments.push('if _ is not None:\n    print(_)')
+          segments.push('if _ is not None:\n    __unotebook_repr__(_)')
         } else {
           segments.push(tail)
         }
@@ -170,6 +174,7 @@ export class WebRepl extends EventTarget {
   }
 
   async run(code) {
+      await this._ensureReprFunction();
       await this._send(code)
       while (this.running) await sleep(100);
   }
@@ -182,6 +187,13 @@ export class WebRepl extends EventTarget {
     this._abort = true
     console.log('abort requested')
     return "Abort requested.  If WebREPL stuck in infinite loop, manually reboot device."
+  }
+
+  async _ensureReprFunction() {
+    if (!this.connected || this._reprInjected) return;
+    await this._send(UNOTEBOOK_REPR_FUNCTION);
+    while (this.running) await sleep(100);
+    this._reprInjected = true;
   }
 }
 

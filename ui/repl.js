@@ -189,14 +189,14 @@ def __unotebook_repr__(o):
   if hasattr(o, '_repr_mimebundle_'): print(json.dumps(o._repr_mimebundle_()), end='')
   else:
     print('{', end='')
-    if hasattr(o, '_repr_html_'): print(json.dumps({'text/html':o._repr_html_()}), end=',')
-    if hasattr(o, '_repr_markdown_'): print(json.dumps({'text/markdown':o._repr_html_()}), end=',')
-    if hasattr(o, '_repr_svg_'): print(json.dumps({'image/svg+xml':o._repr_svg_()}), end=',')
-    if hasattr(o, '_repr_png_'): print(json.dumps({'image/png':o._repr_png_()}), end=',')
-    if hasattr(o, '_repr_jpeg_'): print(json.dumps({'image/jpeg':o._repr_jpeg_()}), end=',')
-    if hasattr(o, '_repr_latex_'): print(json.dumps({'text/latex':o._repr_latex_()}), end=',')
-    if hasattr(o, '_repr_javascript_'): print(json.dumps({'application/javascript':o._repr_javascript_()}), end=',')
-    print(json.dumps({'text/plain':repr(o)}), end='}\n')
+    if hasattr(o, '_repr_html_'):       print('"text/html":', json.dumps(o._repr_html_()), end=',')
+    if hasattr(o, '_repr_markdown_'):   print('"text/markdown":', json.dumps(o._repr_html_()), end=',')
+    if hasattr(o, '_repr_svg_'):        print('"image/svg+xml":', json.dumps(o._repr_svg_()), end=',')
+    if hasattr(o, '_repr_png_'):        print('"image/png":', json.dumps(o._repr_png_()), end=',')
+    if hasattr(o, '_repr_jpeg_'):       print('"image/jpeg":', json.dumps(o._repr_jpeg_()), end=',')
+    if hasattr(o, '_repr_latex_'):      print('"text/latex":', json.dumps(o._repr_latex_()), end=',')
+    if hasattr(o, '_repr_javascript_'): print('"application/javascript":', json.dumps(o._repr_javascript_()), end=',')
+    print('"text/plain":', json.dumps(repr(o)), end='}\\n')
 `
 
 export function stripPythonComment(line) {

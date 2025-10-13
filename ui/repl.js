@@ -182,44 +182,21 @@ export function is_safe_to_assign_to_var(line) {
   return true;
 }
 
-const UNOTEBOOK_REPR_FUNCTION = `import sys
+export const UNOTEBOOK_REPR_FUNCTION = `
+try: import json
+except: import ujson as json
 def __unotebook_repr__(o):
-  s = sys.stdout
-  if o is None: return
-  try:
-    buf = memoryview(o)
-    if buf[:2] == b'\xff\xd8':
-      s.send('{"image/jpeg":"')
-      stream_b64(buf, s)
-      s.send('"}')
-      return
-    elif buf[:8] == b'\x89PNG\r\n\x1a\n':
-      s.send('{"image/png":"')
-      stream_b64(buf, s)
-      s.send('"}')
-      return
-  except TypeError:
-    pass # not a buffer
-  ret = {}
-  if hasattr(o, '_repr_mimebundle_'):
-    ret = o._repr_mimebundle_()
-  elif hasattr(o, '_repr_html_'):
-    ret['text/html'] = o._repr_html_()
-  elif hasattr(o, '_repr_markdown_'):
-    ret['text/htmarkdownml'] = o._repr_markdown_()
-  elif hasattr(o, '_repr_svg_'):
-    ret['image/svg+xml'] = o._repr_svg_()
-  elif hasattr(o, '_repr_png_'):
-    ret['image/png'] = o._repr_png_()
-  elif hasattr(o, '_repr_jpeg_'):
-    ret['image/jpeg'] = o._repr_jpeg_()
-  elif hasattr(o, '_repr_latex_'):
-    ret['text/latex'] = o._repr_latex_()
-  elif hasattr(o, '_repr_javascript_'):
-    ret['application/javascript'] = o._repr_javascript_()
+  if hasattr(o, '_repr_mimebundle_'): print(json.dumps(o._repr_mimebundle_()), end='')
   else:
-    ret = repr(o)
-  json.dump(ret, s)
+    print('{', end='')
+    if hasattr(o, '_repr_html_'): print(json.dumps({'text/html':o._repr_html_()}), end=',')
+    if hasattr(o, '_repr_markdown_'): print(json.dumps({'text/markdown':o._repr_html_()}), end=',')
+    if hasattr(o, '_repr_svg_'): print(json.dumps({'image/svg+xml':o._repr_svg_()}), end=',')
+    if hasattr(o, '_repr_png_'): print(json.dumps({'image/png':o._repr_png_()}), end=',')
+    if hasattr(o, '_repr_jpeg_'): print(json.dumps({'image/jpeg':o._repr_jpeg_()}), end=',')
+    if hasattr(o, '_repr_latex_'): print(json.dumps({'text/latex':o._repr_latex_()}), end=',')
+    if hasattr(o, '_repr_javascript_'): print(json.dumps({'application/javascript':o._repr_javascript_()}), end=',')
+    print(json.dumps({'text/plain':repr(o)}), end='}\n')
 `
 
 export function stripPythonComment(line) {

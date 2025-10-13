@@ -6,6 +6,7 @@ import snarkdown from 'snarkdown';
 import { render_ansi } from './render_ansi.js'
 import { FULL_TOOLBOX, loadBlockly, BLOCKLY_CSS } from './blockly_util.js'
 import { highlightPython } from './prism-lite.js';
+import { AlertTriangle, Edit2, FileText, Play, Square, Trash2, X as XIcon } from 'react-feather';
 
 const registeredNotebookFunctionBlocks = new Set();
 
@@ -199,6 +200,7 @@ export const Cell = forwardRef((props, ref) => {
   const editorHeight = useMemo(() => `${lineCount * 1.1 + 1}em`, [lineCount]);
   const borderColor = BORDER_COLORS[runState] || BORDER_COLORS.idle;
   const isRunning = runState === 'running';
+  const actionButtonStyle = 'background:none; border:none; padding:0; margin:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;';
   const handleStdout = useCallback((value) => {
     set_stdout(value);
     if (typeof value === 'string' && value.includes('Traceback (most recent call last)')) {
@@ -370,7 +372,7 @@ export const Cell = forwardRef((props, ref) => {
     }, [props.connected, runState]);
 
   function placeholder() {
-    if (is_blockly) return '# click 🖉 to edit  -->'
+    if (is_blockly) return '# click the edit button to modify  -->'
     if (props.cell.cell_type=='code') return 'print("Hello world!")'
     if (props.cell.cell_type=='markdown') return '# Hello world!'
   }
@@ -577,7 +579,10 @@ export const Cell = forwardRef((props, ref) => {
     <div class='blockly-modal__overlay'>
       <div class='blockly-modal__content'>
         <div class='blockly-modal__header'>
-          <button class='blockly-modal__close' onClick=${closeBlockly}>✕ Close</button>
+          <button class='blockly-modal__close' onClick=${closeBlockly} style='display:inline-flex; align-items:center; gap:0.3rem;'>
+            <${XIcon} size=${14} aria-hidden=${true} />
+            Close
+          </button>
         </div>
         <div id=${blockly_id} style=${{ flex: '1', minHeight: 0, position: 'relative' }}></div>
       </div>
@@ -620,7 +625,7 @@ export const Cell = forwardRef((props, ref) => {
       await props.run_cell(source, handleStdout, { timeoutMs: 10000, newline: true });
       set_runState(prev => (prev === 'error' ? 'error' : 'success'));
     } catch (e) {
-      set_error(`⚠️ ${e}`);
+      set_error(e instanceof Error ? e.message : String(e));
       set_runState('error');
     }
   }
@@ -662,10 +667,33 @@ export const Cell = forwardRef((props, ref) => {
             `}
           </div>
           <div style='flex:0 0 auto;'>
-            <div style='line-height:1.1'>
-              <div style="cursor:pointer; color:#888;" title="Run (Ctrl-Enter)" onClick=${e=>isRunning ? stop() : run()}>${isRunning ? '◼' : '▶'}</div>
-              ${is_blockly ? html`<div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${openBlockly}>🖉</div>` : null }
-              <div style='cursor:pointer; color:#888;' title="Delete Cell" onClick=${()=>props.delete_cell()}>🗙</div>
+            <div style='line-height:1.1; display:flex; flex-direction:column; gap:0.4rem;'>
+              <button
+                type='button'
+                style=${actionButtonStyle}
+                title=${isRunning ? 'Stop (Ctrl-Enter)' : 'Run (Ctrl-Enter)'}
+                aria-label=${isRunning ? 'Stop (Ctrl-Enter)' : 'Run (Ctrl-Enter)'}
+                onClick=${()=>isRunning ? stop() : run()}>
+                ${isRunning
+                  ? html`<${Square} size=${16} aria-hidden=${true} />`
+                  : html`<${Play} size=${16} aria-hidden=${true} />`}
+              </button>
+              ${is_blockly ? html`<button
+                type='button'
+                style=${actionButtonStyle}
+                title="Edit in Blockly"
+                aria-label="Edit in Blockly"
+                onClick=${openBlockly}>
+                <${Edit2} size=${16} aria-hidden=${true} />
+              </button>` : null }
+              <button
+                type='button'
+                style=${actionButtonStyle}
+                title="Delete Cell"
+                aria-label="Delete Cell"
+                onClick=${()=>props.delete_cell()}>
+                <${Trash2} size=${16} aria-hidden=${true} />
+              </button>
             </div>
           </div>
         </div>` : null }
@@ -674,9 +702,19 @@ export const Cell = forwardRef((props, ref) => {
       ${png ? html`<img class='output' src=${png} />` : null}
       ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>
         <div style='display:inline-block;' dangerouslySetInnerHTML=${{ __html: html_ }} />
-        <span style='margin-left:1em; cursor:pointer;' onClick=${()=>set_show_source(true)}>📝</span>
+        <button
+          type='button'
+          style='margin-left:1em; background:none; border:none; padding:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;'
+          title="Show Source"
+          aria-label="Show Source"
+          onClick=${()=>set_show_source(true)}>
+          <${FileText} size=${16} aria-hidden=${true} />
+        </button>
       </div>` : null}
-      ${error ? html`<pre class='output' style='margin:0; background-color:#ffdddd;'><code>${error}</code></pre>` : null}
+      ${error ? html`<div class='output' style='margin:0; background-color:#ffdddd; display:flex; gap:0.5rem; align-items:flex-start;'>
+        <span style='flex:0 0 auto; margin-top:0.15em;'><${AlertTriangle} size=${16} aria-hidden=${true} /></span>
+        <code style='white-space:pre-wrap;'>${error}</code>
+      </div>` : null}
     </div>
     ${blocklyOverlay}
   </div>`;

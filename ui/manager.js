@@ -6,10 +6,12 @@ import htm from 'htm';
 const html = htm.bind(h);
 
 import * as storage from './storage';
+import { Cloud, Copy as CopyIcon, Download as DownloadIcon, Edit2, Globe, Settings, Trash2 } from 'react-feather';
 
 export function Manager() {
   const [files, setFiles] = useState([]);
   const [reload, set_reload] = useState(0);
+  const iconButtonStyle = 'background:none; border:none; padding:0; margin:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;';
   useEffect(() => {
     storage.listNotebooks().then(files=>setFiles(files))
   }, [reload]);
@@ -89,10 +91,18 @@ export function Manager() {
         <td style='color:#444;'>${humanize_bytes(f.size)}</td>
         <td>
           <div style='padding-left:1em; display:inline-flex; gap:.5rem;'>
-            <span title='Delete ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>delete_notebook(f.fn)}>❌︎</span>
-            <span title='Rename ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>rename_notebook(f.fn)}>✎</span>
-            <span title='Copy ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>copy_notebook(f.fn)}>🗐︎</span>
-            <span title='Download ${f.fn}' style='cursor:pointer; color:#888;' onClick=${()=>download_notebook(f.fn)}>📥︎</span>
+            <button type='button' title=${`Delete ${f.fn}`} aria-label=${`Delete ${f.fn}`} style=${iconButtonStyle} onClick=${()=>delete_notebook(f.fn)}>
+              <${Trash2} size=${16} aria-hidden=${true} />
+            </button>
+            <button type='button' title=${`Rename ${f.fn}`} aria-label=${`Rename ${f.fn}`} style=${iconButtonStyle} onClick=${()=>rename_notebook(f.fn)}>
+              <${Edit2} size=${16} aria-hidden=${true} />
+            </button>
+            <button type='button' title=${`Copy ${f.fn}`} aria-label=${`Copy ${f.fn}`} style=${iconButtonStyle} onClick=${()=>copy_notebook(f.fn)}>
+              <${CopyIcon} size=${16} aria-hidden=${true} />
+            </button>
+            <button type='button' title=${`Download ${f.fn}`} aria-label=${`Download ${f.fn}`} style=${iconButtonStyle} onClick=${()=>download_notebook(f.fn)}>
+              <${DownloadIcon} size=${16} aria-hidden=${true} />
+            </button>
           </div>
         </td>
       </tr>`)}
@@ -122,9 +132,12 @@ function rstrip(str, suffix) {
 
 function iconForSource(source) {
   switch (source) {
-    case 'local':   return html`<span style='cursor:default' title="Local Storage">🌐︎</span>`; // browser-local or 🌐
-    case 'device':  return '⚙︎'; // esp32 / pybricks or ⚙️
-    case 'cloud':   return '☁︎'; // or ☁️
+    case 'local':
+      return html`<span style='cursor:default; display:inline-flex; align-items:center;' title="Local Storage"><${Globe} size=${14} aria-hidden=${true} /></span>`;
+    case 'device':
+      return html`<span style='display:inline-flex; align-items:center;' title="Device"><${Settings} size=${14} aria-hidden=${true} /></span>`;
+    case 'cloud':
+      return html`<span style='display:inline-flex; align-items:center;' title="Cloud"><${Cloud} size=${14} aria-hidden=${true} /></span>`;
     default:        return '';
   }
 }

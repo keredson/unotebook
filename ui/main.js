@@ -8,6 +8,7 @@ import { Pybricks } from './pybricks';
 import { WebRepl } from './webrepl';
 import { useGuardHashLinks } from './useGuardHashLinks.js';
 import * as storage from './storage';
+import { AlertTriangle, Globe, Link as LinkIcon, X as XIcon } from 'react-feather';
 //import '../style.css';
 //import 'preact/debug';
 
@@ -77,14 +78,37 @@ const css = `
     margin: 0.5em 0;
     font-family: system-ui, sans-serif;
     font-size: 0.9rem;
-    white-space: pre-wrap;            /* wrap long lines */
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 
-  .warning::before {
-    content: "⚠️ ";
-    font-size: 1rem;
+  .warning.warning--log {
+    float: right;
+    max-width: 280px;
+  }
+
+  .warning__icon {
+    flex: 0 0 auto;
+    margin-top: 0.1em;
+  }
+
+  .warning__text {
+    flex: 1 1 auto;
+    white-space: pre-wrap;
+  }
+
+  .warning__close {
+    flex: 0 0 auto;
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    line-height: 0;
   }
 
   .blocklyMainBackground {
@@ -340,7 +364,7 @@ function App() {
       }
       await storage.saveNotebook('__webrepl_last_url__', connection_url)
       set_active_backend('webrepl')
-      set_connected_text('🔗︎ '+connection_url)
+      set_connected_text(connection_url)
     } finally {
       set_connecting(null);
     }
@@ -356,7 +380,7 @@ function App() {
     try {
       const name = await pybricks.connect()
       set_active_backend('pybricks')
-      set_connected_text('🔗︎ '+name)
+      set_connected_text(name)
     } finally {
       set_connecting(null);
     }
@@ -373,31 +397,61 @@ function App() {
                 .split('/')
                 .map((s, i) =>
                   i === 0 && s === 'local'
-                    ? html` » <span style='cursor:default' title="Local Storage">🌐︎</span>`
+                    ? html` » <span style='cursor:default; display:inline-flex; align-items:center;' title="Local Storage"><${Globe} size=${12} aria-hidden=${true} /></span>`
                     : html` » ${decodeURIComponent(s)}`
                 )}`
             : null
         }</span>
         <div style='text-align:right; display:flex; flex-wrap:wrap; gap:0.75rem; justify-content:flex-end;'>
-          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()} style='white-space:nowrap;' disabled=${connecting==='pybricks'}>${connecting==='pybricks' ? 'Connecting…' : '🔗︎ Pybricks'}</button>` }
-          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()} style='white-space:nowrap;' disabled=${connecting==='webrepl'}>${connecting==='webrepl' ? 'Connecting…' : '🔗︎ WebREPL'}</button>` }
+          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()} style='white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem;' disabled=${connecting==='pybricks'}>
+            ${connecting==='pybricks'
+              ? html`<span>Connecting…</span>`
+              : html`<span style='display:inline-flex; align-items:center; gap:0.3rem;'>
+                  <${LinkIcon} size=${14} aria-hidden=${true} />
+                  <span>Pybricks</span>
+                </span>`}
+          </button>` }
+          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()} style='white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem;' disabled=${connecting==='webrepl'}>
+            ${connecting==='webrepl'
+              ? html`<span>Connecting…</span>`
+              : html`<span style='display:inline-flex; align-items:center; gap:0.3rem;'>
+                  <${LinkIcon} size=${14} aria-hidden=${true} />
+                  <span>WebREPL</span>
+                </span>`}
+          </button>` }
           ${ connected ? html`
             <span style='display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; justify-content:flex-end;'>
-              <code style='font-size:smaller; line-height:1; white-space:nowrap;'>${connected_text}</code>
+              ${connected_text ? html`<code style='font-size:smaller; line-height:1; white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem;'>
+                <${LinkIcon} size=${14} aria-hidden=${true} />
+                <span>${connected_text}</span>
+              </code>` : null}
               <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}} style='white-space:nowrap;'>Disconnect</button>
             </span>
           ` : null }
         </div>
       </div>
       ${ http_warning ? html`<div class='warning'>
-        Bluetooth not available over HTTP. Goto: <a href="https://unotebook.org/">https://unotebook.org/</a>
-        <span onClick=${()=>set_http_warning(false)} style='cursor:pointer; float:right; margin-top:.1em'>❌︎</span>
+        <span class='warning__icon'><${AlertTriangle} size=${16} aria-hidden=${true} /></span>
+        <span class='warning__text'>
+          Bluetooth not available over HTTP. Goto: <a href="https://unotebook.org/">https://unotebook.org/</a>
+        </span>
+        <button class='warning__close' onClick=${()=>set_http_warning(false)} aria-label="Dismiss warning">
+          <${XIcon} size=${14} aria-hidden=${true} />
+        </button>
       </div>` : null }
       ${ https_warning ? html`<div class='warning'>
-        WebREPL not available over HTTPS. Copy <a href='http://unotebook.org' onClick=${copy_link}>http://unotebook.org</u> into the address bar.
-        <span onClick=${()=>set_https_warning(false)} style='cursor:pointer; float:right; margin-top:.1em'>❌︎</span>
+        <span class='warning__icon'><${AlertTriangle} size=${16} aria-hidden=${true} /></span>
+        <span class='warning__text'>
+          WebREPL not available over HTTPS. Copy <a href='http://unotebook.org' onClick=${copy_link}>http://unotebook.org</a> into the address bar.
+        </span>
+        <button class='warning__close' onClick=${()=>set_https_warning(false)} aria-label="Dismiss warning">
+          <${XIcon} size=${14} aria-hidden=${true} />
+        </button>
       </div>` : null }
-      ${ warning ? html`<pre class='warning' style='max-width: 280px; float: right;'><code>${warning}</code></pre>` : null }
+      ${ warning ? html`<div class='warning warning--log'>
+        <span class='warning__icon'><${AlertTriangle} size=${16} aria-hidden=${true} /></span>
+        <span class='warning__text'>${warning}</span>
+      </div>` : null }
       <${Router} url=${url} key=${url} onChange=${e => console.log('url:', e.url)}>
         <${Manager} path="/" />
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='local' path="/local/:fn" onDirtyChange=${setDirty} />

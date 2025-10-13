@@ -214,6 +214,7 @@ const css = `
     margin: 0;
     padding: 0.75em;
     pointer-events: none;
+    overflow: hidden;
   }
 
   pre.blockly-python.code-editor__preview {
@@ -233,6 +234,9 @@ const css = `
     color: transparent;
     caret-color: #2b1e10;
     resize: none;
+    overflow-y: hidden;
+    overflow-x: auto;
+    white-space: pre;
     box-sizing: border-box;
     z-index: 1;
   }

@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { useState, useEffect, useImperativeHandle, useRef, useMemo, useCallback } from 'preact/hooks';
+import { useState, useEffect, useImperativeHandle, useRef, useMemo, useCallback, useLayoutEffect } from 'preact/hooks';
 import htm from 'htm';
 import { forwardRef } from 'preact/compat';
 import snarkdown from 'snarkdown';
@@ -190,6 +190,9 @@ export const Cell = forwardRef((props, ref) => {
   const blocklyStateRef = useRef(props.cell?.metadata?.blockly?.state || null);
   const blocklyContextRef = useRef(null);
   const [cellMetadata, set_cellMetadata] = useState(() => props.cell?.metadata ? {...props.cell.metadata} : {});
+  const textareaRef = useRef(null);
+  const previewRef = useRef(null);
+  const [textareaHeight, set_textareaHeight] = useState(null);
 
   const is_blockly = Boolean(cellMetadata?.blockly);
   const highlightedSource = useMemo(() => highlightPython(source || ''), [source]);
@@ -198,6 +201,12 @@ export const Cell = forwardRef((props, ref) => {
     [source]
   );
   const editorHeight = useMemo(() => `${Math.max(lineCount * 1.1 + 1, 4.5)}em`, [lineCount]);
+  const baseEditorHeight = useMemo(() => {
+    const numeric = parseFloat(editorHeight);
+    if (!Number.isFinite(numeric) || numeric <= 0) return '4.5em';
+    return `${(numeric * 1.45) / 1.1}em`;
+  }, [editorHeight]);
+  const textareaHeightStyle = textareaHeight ? `${textareaHeight}px` : baseEditorHeight;
   const borderColor = BORDER_COLORS[runState] || BORDER_COLORS.idle;
   const isRunning = runState === 'running';
   const actionButtonStyle = 'background:none; border:none; padding:0; margin:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;';
@@ -207,6 +216,29 @@ export const Cell = forwardRef((props, ref) => {
       set_runState('error');
     }
   }, []);
+
+  useLayoutEffect(() => {
+    if (is_blockly || !show_source) return;
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    const next = el.scrollHeight;
+    set_textareaHeight(next);
+  }, [source, show_source, is_blockly]);
+
+  useLayoutEffect(() => {
+    if (is_blockly || !show_source) return;
+    const textarea = textareaRef.current;
+    const preview = previewRef.current;
+    if (!textarea || !preview) return;
+    const syncScroll = () => {
+      const x = textarea.scrollLeft || 0;
+      preview.scrollLeft = x;
+    };
+    syncScroll();
+    textarea.addEventListener('scroll', syncScroll);
+    return () => textarea.removeEventListener('scroll', syncScroll);
+  }, [show_source, is_blockly]);
 
   useImperativeHandle(ref, () => ({
     getValue: () => {
@@ -655,12 +687,18 @@ export const Cell = forwardRef((props, ref) => {
                 </pre>
               </div>
             ` : html`
-              <div class='code-editor' style=${{ minHeight: editorHeight*1.45/1.1 }}>
-                <pre class='blockly-python language-python code-editor__preview' style=${{ minHeight: editorHeight }}>
+              <div class='code-editor' style=${{ minHeight: baseEditorHeight, height: textareaHeightStyle }}>
+                <pre
+                  ref=${previewRef}
+                  class='blockly-python language-python code-editor__preview'
+                  style=${{ minHeight: baseEditorHeight, height: textareaHeightStyle, overflow: 'hidden' }}
+                >
                   <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
                 </pre>
                 <textarea 
-                  sstyle=${{ height: editorHeight }}
+                  wrap="off"
+                  ref=${textareaRef}
+                  style=${{ minHeight: baseEditorHeight, height: textareaHeightStyle }}
                   class='python-textarea code-editor__textarea'
                   spellcheck=${false}
                   autocapitalize=${'off'}

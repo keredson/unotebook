@@ -677,7 +677,7 @@ export const Cell = forwardRef((props, ref) => {
             `}
           </div>
           <div style='flex:0 0 auto;'>
-            <div style='line-height:1.1; display:flex; flex-direction:column; gap:0.4rem;'>
+            <div style='line-height:1.1; display:flex; flex-direction:column; align-items:center; gap:0.8rem;'>
               <button
                 type='button'
                 style=${actionButtonStyle}
@@ -685,8 +685,8 @@ export const Cell = forwardRef((props, ref) => {
                 aria-label=${isRunning ? 'Stop (Ctrl-Enter)' : 'Run (Ctrl-Enter)'}
                 onClick=${()=>isRunning ? stop() : run()}>
                 ${isRunning
-                  ? html`<${Square} size=${16} aria-hidden=${true} />`
-                  : html`<${Play} size=${16} aria-hidden=${true} />`}
+                  ? html`<${Square} size=${24} aria-hidden=${true} />`
+                  : html`<${Play} size=${24} aria-hidden=${true} />`}
               </button>
               <button
                 type='button'

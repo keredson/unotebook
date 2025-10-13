@@ -6,7 +6,7 @@ import snarkdown from 'snarkdown';
 import { render_ansi } from './render_ansi.js'
 import { FULL_TOOLBOX, loadBlockly, BLOCKLY_CSS } from './blockly_util.js'
 import { highlightPython } from './prism-lite.js';
-import { AlertTriangle, Edit2, FileText, Play, Square, Trash2, X as XIcon } from 'react-feather';
+import { AlertTriangle, FileText, Play, Square, Trash2, X as XIcon } from 'react-feather';
 
 const registeredNotebookFunctionBlocks = new Set();
 
@@ -639,11 +639,21 @@ export const Cell = forwardRef((props, ref) => {
     <div style="border-radius: 3px; border-left: 5px solid ${borderColor} !important; padding: .5em; background-color:#f0ebe1;">
       ${show_source ? html`
         <div style='display:flex; gap:.5rem; align-items:flex-start;'>
-          <div style='flex:1; min-width:0;'>
+          <div style='flex:1; min-width:0; position:relative;'>
             ${is_blockly ? html`
-              <pre class='blockly-python language-python' style=${{ width: '100%', boxSizing: 'border-box', minHeight: editorHeight }}>
-                <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
-              </pre>
+              <div style='position:relative;'>
+                <button
+                  type='button'
+                  title="Edit Blocks"
+                  aria-label="Edit Blocks"
+                  style='position:absolute; top:0.5rem; right:0.5rem; z-index:1;'
+                  onClick=${openBlockly}>
+                  Edit
+                </button>
+                <pre class='blockly-python language-python' style=${{ width: '100%', boxSizing: 'border-box', minHeight: editorHeight, paddingRight: '3.5rem' }}>
+                  <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
+                </pre>
+              </div>
             ` : html`
               <div class='code-editor' style=${{ minHeight: editorHeight*1.45/1.1 }}>
                 <pre class='blockly-python language-python code-editor__preview' style=${{ minHeight: editorHeight }}>
@@ -678,14 +688,6 @@ export const Cell = forwardRef((props, ref) => {
                   ? html`<${Square} size=${16} aria-hidden=${true} />`
                   : html`<${Play} size=${16} aria-hidden=${true} />`}
               </button>
-              ${is_blockly ? html`<button
-                type='button'
-                style=${actionButtonStyle}
-                title="Edit in Blockly"
-                aria-label="Edit in Blockly"
-                onClick=${openBlockly}>
-                <${Edit2} size=${16} aria-hidden=${true} />
-              </button>` : null }
               <button
                 type='button'
                 style=${actionButtonStyle}

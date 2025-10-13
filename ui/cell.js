@@ -197,7 +197,7 @@ export const Cell = forwardRef((props, ref) => {
     () => Math.max(1, (source.match(/\n/g)?.length ?? 0) + 1),
     [source]
   );
-  const editorHeight = useMemo(() => `${lineCount * 1.1 + 1}em`, [lineCount]);
+  const editorHeight = useMemo(() => `${Math.max(lineCount * 1.1 + 1, 4.5)}em`, [lineCount]);
   const borderColor = BORDER_COLORS[runState] || BORDER_COLORS.idle;
   const isRunning = runState === 'running';
   const actionButtonStyle = 'background:none; border:none; padding:0; margin:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;';

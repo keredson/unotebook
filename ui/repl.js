@@ -188,7 +188,7 @@ except: import ujson as json
 def __unotebook_repr__(o):
   if hasattr(o, '_repr_mimebundle_'): print(json.dumps(o._repr_mimebundle_()), end='')
   else:
-    print('{', end='')
+    print('{"__unotebook_repr__":{', end='')
     if hasattr(o, '_repr_html_'):       print('"text/html":', json.dumps(o._repr_html_()), end=',')
     if hasattr(o, '_repr_markdown_'):   print('"text/markdown":', json.dumps(o._repr_html_()), end=',')
     if hasattr(o, '_repr_svg_'):        print('"image/svg+xml":', json.dumps(o._repr_svg_()), end=',')
@@ -196,7 +196,7 @@ def __unotebook_repr__(o):
     if hasattr(o, '_repr_jpeg_'):       print('"image/jpeg":', json.dumps(o._repr_jpeg_()), end=',')
     if hasattr(o, '_repr_latex_'):      print('"text/latex":', json.dumps(o._repr_latex_()), end=',')
     if hasattr(o, '_repr_javascript_'): print('"application/javascript":', json.dumps(o._repr_javascript_()), end=',')
-    print('"text/plain":', json.dumps(repr(o)), end='}\\n')
+    print('"text/plain":', json.dumps(repr(o)), end='}}\\n')
 `
 
 export function stripPythonComment(line) {

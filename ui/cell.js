@@ -177,6 +177,7 @@ export const Cell = forwardRef((props, ref) => {
   const blockly_id = useMemo(() => 'blockly-'+Math.random().toString(36).slice(2, 9), []);
   const [source, set_source] = useState(props.cell?.source?.join('') || '');
   const [stdout, set_stdout] = useState(null);
+  const [richOutput, set_richOutput] = useState(null);
   const [error, set_error] = useState(null);
   const [runState, set_runState] = useState('idle');
   const [show_source, set_show_source] = useState(true);
@@ -212,8 +213,27 @@ export const Cell = forwardRef((props, ref) => {
   const actionButtonStyle = 'background:none; border:none; padding:0; margin:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;';
   const handleStdout = useCallback((value) => {
     set_stdout(value);
-    if (typeof value === 'string' && value.includes('Traceback (most recent call last)')) {
-      set_runState('error');
+    if (typeof value === 'string') {
+      if (value.includes('Traceback (most recent call last)')) {
+        set_runState('error');
+      } else {
+        try {
+          const lines = value.trimEnd().split('\n');
+          const last = lines[lines.length - 1];
+          const parsed = JSON.parse(last);
+          if (parsed && parsed.__unotebook_repr__) {
+            set_richOutput(parsed.__unotebook_repr__);
+            //const remaining = lines.slice(0, -1).join('\n');
+            //set_stdout(remaining ? `${remaining}\n` : '');
+            return;
+          }
+        } catch (err) {
+          // ignore parse errors
+          set_richOutput(null);
+        }
+      }
+    } else {
+      set_richOutput(null);
     }
   }, []);
 
@@ -623,6 +643,7 @@ export const Cell = forwardRef((props, ref) => {
 
   async function run() {
     set_stdout(null)
+    set_richOutput(null)
     set_jpeg(null)
     set_png(null)
     set_html(null)
@@ -737,7 +758,12 @@ export const Cell = forwardRef((props, ref) => {
             </div>
           </div>
         </div>` : null }
-      ${stdout ? html`<pre class='output' style='margin:0;'><code>${render_ansi(stdout)}</code></pre>` : null}
+      ${stdout ? html`<pre class='output' style='margin:0;'><code>${render_ansi(strip_repr(stdout))}</code></pre>` : null}
+      ${richOutput ? html`
+        <div class='output' style='margin:0; padding-top:0;'>
+          ${renderRichOutput(richOutput)}
+        </div>
+      ` : null}
       ${jpeg ? html`<img class='output' src=${jpeg} />` : null}
       ${png ? html`<img class='output' src=${png} />` : null}
       ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>
@@ -769,4 +795,43 @@ function scrollIntoViewIfNeeded(el, options = { behavior: 'smooth', block: 'cent
   if (!isVisible) {
     el.scrollIntoView(options);
   }
+}
+
+function renderRichOutput(bundle) {
+  if (!bundle || typeof bundle !== 'object') return null;
+
+  if (bundle['text/html']) {
+    return html`<div dangerouslySetInnerHTML=${{ __html: bundle['text/html'] }} />`;
+  }
+
+  if (bundle['image/png']) {
+    return html`<img src=${`data:image/png;base64,${bundle['image/png']}`} />`;
+  }
+
+  if (bundle['image/jpeg']) {
+    return html`<img src=${`data:image/jpeg;base64,${bundle['image/jpeg']}`} />`;
+  }
+
+  if (bundle['text/plain']) {
+    return html`<pre style='margin:0;'><code>${bundle['text/plain']}</code></pre>`;
+  }
+
+  const first = Object.keys(bundle)[0];
+  if (!first) return null;
+  return html`<pre style='margin:0;'><code>${bundle[first]}</code></pre>`;
+}
+
+
+function strip_repr(s) {
+  var lines = s.trimEnd().split('\n');
+  const last = lines[lines.length - 1];
+  try {
+  const parsed = JSON.parse(last);
+    if (parsed && parsed.__unotebook_repr__) {
+      lines.pop()
+    }
+  } catch(err) {
+    // not json
+  }
+  return lines.join('\n')
 }

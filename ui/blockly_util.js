@@ -2,6 +2,33 @@ import { h } from 'preact';
 import htm from 'htm';
 const html = htm.bind(h);
 
+const MAX_CALL_LINE_LENGTH = 88;
+
+export function formatCallExpression(name, args = [], maxLength = MAX_CALL_LINE_LENGTH) {
+  const cleanedArgs = (args || []).filter(arg => arg !== null && arg !== undefined && String(arg).trim() !== '');
+  if (cleanedArgs.length === 0) {
+    return `${name}()`;
+  }
+  const inline = `${name}(${cleanedArgs.join(', ')})`;
+  const hasMultiline = cleanedArgs.some(arg => String(arg).includes('\n'));
+  if (!hasMultiline && inline.length <= maxLength) {
+    return inline;
+  }
+  const formatted = cleanedArgs.map(arg => {
+    const lines = String(arg).split('\n');
+    const indented = lines.map(line => '  ' + line.replace(/\s+$/g, ''));
+    const lastIndex = indented.length - 1;
+    indented[lastIndex] = indented[lastIndex].replace(/,+\s*$/, '');
+    indented[lastIndex] += ',';
+    return indented.join('\n');
+  });
+  return `${name}(\n${formatted.join('\n')}\n)`;
+}
+
+export function formatMethodCall(target, method, args = [], maxLength = MAX_CALL_LINE_LENGTH) {
+  return formatCallExpression(`${target}.${method}`, args, maxLength);
+}
+
 let blocklyLoader;
 
 async function ensureBlocklyLoaded() {
@@ -934,7 +961,10 @@ async function ensureBlocklyLoaded() {
         ensureMotorImports(true, true);
         const port = getPortCode(block, generator);
         const direction = getDirectionCode(block);
-        const code = `Motor(${port}, positive_direction=${direction})`;
+        const code = formatCallExpression('Motor', [
+          port,
+          `positive_direction=${direction}`,
+        ]);
         return [code, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 
@@ -942,7 +972,8 @@ async function ensureBlocklyLoaded() {
         ensureMotorImports();
         const motorVar = getMotorCode(block, generator);
         const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
-        return `${motorVar}.run(${speed})\n`;
+        const call = formatMethodCall(motorVar, 'run', [speed]);
+        return `${call}\n`;
       };
 
       pythonGenerator.forBlock['pybricks_motor_run_time'] = function(block, generator) {
@@ -952,7 +983,12 @@ async function ensureBlocklyLoaded() {
         const duration = generator.valueToCode(block, 'TIME', pythonGenerator.ORDER_NONE) || '0';
         const wait = block.getFieldValue('WAIT') === 'TRUE' ? 'True' : 'False';
         const timeExpr = `(${duration}) * 1000`;
-        return `${motorVar}.run_time(${speed}, ${timeExpr}, wait=${wait})\n`;
+        const call = formatMethodCall(motorVar, 'run_time', [
+          speed,
+          timeExpr,
+          `wait=${wait}`,
+        ]);
+        return `${call}\n`;
       };
 
       pythonGenerator.forBlock['pybricks_motor_run_angle'] = function(block, generator) {
@@ -961,13 +997,19 @@ async function ensureBlocklyLoaded() {
         const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
         const angle = generator.valueToCode(block, 'ANGLE', pythonGenerator.ORDER_NONE) || '0';
         const wait = block.getFieldValue('WAIT') === 'TRUE' ? 'True' : 'False';
-        return `${motorVar}.run_angle(${speed}, ${angle}, wait=${wait})\n`;
+        const call = formatMethodCall(motorVar, 'run_angle', [
+          speed,
+          angle,
+          `wait=${wait}`,
+        ]);
+        return `${call}\n`;
       };
 
       pythonGenerator.forBlock['pybricks_motor_stop'] = function(block, generator) {
         ensureMotorImports();
         const motorVar = getMotorCode(block, generator);
-        return `${motorVar}.stop()\n`;
+        const call = formatMethodCall(motorVar, 'stop');
+        return `${call}\n`;
       };
 
       function ensureHubImport() {
@@ -1005,7 +1047,8 @@ async function ensureBlocklyLoaded() {
         ensureHubImport();
         const hub = generator.valueToCode(block, 'HUB', pythonGenerator.ORDER_NONE) || 'hub';
         const text = generator.valueToCode(block, 'TEXT', pythonGenerator.ORDER_NONE) || "''";
-        return `${hub}.display.text(${text})\n`;
+        const call = formatCallExpression(`${hub}.display.text`, [text]);
+        return `${call}\n`;
       };
 
       pythonGenerator.forBlock['pybricks_drivebase_init'] = function(block, generator) {
@@ -1014,7 +1057,12 @@ async function ensureBlocklyLoaded() {
         const right = generator.valueToCode(block, 'RIGHT', pythonGenerator.ORDER_NONE) || 'right_motor';
         const wheel = generator.valueToCode(block, 'WHEEL', pythonGenerator.ORDER_NONE) || '56';
         const axle = generator.valueToCode(block, 'AXLE', pythonGenerator.ORDER_NONE) || '120';
-        const code = `DriveBase(${left}, ${right}, ${wheel}, ${axle})`;
+        const code = formatCallExpression('DriveBase', [
+          left,
+          right,
+          wheel,
+          axle,
+        ]);
         return [code, pythonGenerator.ORDER_FUNCTION_CALL];
       };
 

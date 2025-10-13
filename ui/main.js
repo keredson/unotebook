@@ -421,7 +421,7 @@ function App() {
           </button>` }
           ${ connected ? html`
             <span style='display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; justify-content:flex-end;'>
-              ${connected_text ? html`<code style='font-size:smaller; line-height:1; white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem;'>
+              ${connected_text ? html`<code style='font-size:smaller; line-height:1; white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem; padding:0; border:none; background:none;'>
                 <${LinkIcon} size=${14} aria-hidden=${true} />
                 <span>${connected_text}</span>
               </code>` : null}

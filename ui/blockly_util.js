@@ -115,7 +115,7 @@ async function ensureBlocklyLoaded() {
             ],
             inputsInline: true,
             output: 'Motor',
-            colour: 30,
+            colour: '#5C68A6',
             tooltip: 'Create a Pybricks Motor attached to the selected port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html'
           },
@@ -133,7 +133,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 30,
+            colour: '#5C68A6',
             tooltip: 'Run a Pybricks Motor at the given speed in degrees per second.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run'
           },
@@ -160,7 +160,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 30,
+            colour: '#5C68A6',
             tooltip: 'Run a Pybricks Motor at speed for a duration in seconds.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run_time'
           },
@@ -187,7 +187,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 30,
+            colour: '#5C68A6',
             tooltip: 'Rotate a Pybricks Motor through a target angle.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run_angle'
           },
@@ -204,7 +204,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 30,
+            colour: '#5C68A6',
             tooltip: 'Stop a Pybricks Motor.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.stop'
           },
@@ -221,7 +221,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 30,
+            colour: '#5C68A6',
             tooltip: 'Brake a Pybricks Motor.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.brake'
           },
@@ -750,7 +750,7 @@ async function ensureBlocklyLoaded() {
             ],
             inputsInline: true,
             output: 'ColorSensor',
-            colour: 280,
+            colour: 340,
             tooltip: 'Create a ColorSensor on a given port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/colorsensor.html'
           },
@@ -761,7 +761,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'SENSOR', check: 'ColorSensor' }
             ],
             output: ['Color', 'String'],
-            colour: 280,
+            colour: 340,
             tooltip: 'Read the detected color from a ColorSensor.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/colorsensor.html#pybricks.pupdevices.ColorSensor.color'
           },
@@ -773,7 +773,7 @@ async function ensureBlocklyLoaded() {
             ],
             inputsInline: true,
             output: 'UltrasonicSensor',
-            colour: 300,
+            colour: 340,
             tooltip: 'Create an UltrasonicSensor on a given port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html'
           },
@@ -784,7 +784,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'SENSOR', check: 'UltrasonicSensor' }
             ],
             output: 'Number',
-            colour: 300,
+            colour: 340,
             tooltip: 'Measure distance in millimeters using an UltrasonicSensor.',
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/ultrasonicsensor.html#pybricks.pupdevices.UltrasonicSensor.distance'
           },
@@ -931,7 +931,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: null,
-            colour: 320,
+            colour: 340,
             tooltip: 'Get the orientation matrix from the IMU.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.IMU.orientation'
           },
@@ -1788,7 +1788,7 @@ export const FULL_TOOLBOX = {
       ]
     },
     {
-      kind: 'category', name: 'Sensors', colour: '#7A4FBF',
+      kind: 'category', name: 'Sensors', colour: 340,
       contents: [
         { kind: 'block', type: 'pybricks_color_sensor_init' },
         { kind: 'block', type: 'pybricks_color_sensor_color' },

@@ -90,6 +90,19 @@ async function ensureBlocklyLoaded() {
         });
       }
 
+      Blockly.defineBlocksWithJsonArray([
+        {
+          type: 'variables_is_defined',
+          message0: '%1 is set?',
+          args0: [
+            { type: 'field_variable', name: 'VAR', variable: 'item' }
+          ],
+          output: 'Boolean',
+          colour: '#5C81A6',
+        },
+      ]);
+
+
       if (!Blockly.Blocks['pybricks_motor_init']) {
         Blockly.defineBlocksWithJsonArray([
           {
@@ -1280,6 +1293,16 @@ async function ensureBlocklyLoaded() {
         pythonGenerator.definitions_['import_pybricks_touch'] = 'from pybricks.pupdevices import TouchSensor';
       }
 
+      pythonGenerator.forBlock['variables_is_defined'] = function(block, generator) {
+        const varModel = block.getField('VAR').getVariable();
+        const varName = pythonGenerator.nameDB_.getName(
+          varModel.getId(),
+          Blockly.Names.NameType.VARIABLE
+        );
+        const code = `(('${varName}' in locals()) or ('${varName}' in globals()))`;
+        return [code, pythonGenerator.ORDER_ATOMIC];
+      };
+
       pythonGenerator.forBlock['pybricks_color_sensor_init'] = function(block, generator) {
         ensureSensorImports();
         const port = getPortCode(block, generator);
@@ -1522,7 +1545,8 @@ export const FULL_TOOLBOX = {
         { kind: 'block', type: 'logic_negate' },
         { kind: 'block', type: 'logic_boolean' },
         { kind: 'block', type: 'logic_null' },
-        { kind: 'block', type: 'logic_ternary' }
+        { kind: 'block', type: 'logic_ternary' },
+        { kind: 'block', type: 'variables_is_defined' }
       ]
     },
     {

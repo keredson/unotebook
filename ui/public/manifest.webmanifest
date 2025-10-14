@@ -1,6 +1,6 @@
 {
   "name": "µNotebook",
-  "short_name": "µNotebook",
+  "short_name": "uNotebook",
   "start_url": "/code/",
   "scope": "/code/",
   "display": "standalone",

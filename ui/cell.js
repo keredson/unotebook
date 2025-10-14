@@ -322,13 +322,14 @@ export const Cell = forwardRef((props, ref) => {
         const codeContext = props.getNotebookContext ? props.getNotebookContext(props.idx) : [];
         const symbolInfo = extractNotebookSymbols(codeContext);
 
-        const { Blockly, pythonGenerator } = await loadBlockly();
+        const { Blockly, pythonGenerator, theme } = await loadBlockly();
         if (cancelled) return;
 
         const workspace = Blockly.inject(blockly_id, {
           toolbox: FULL_TOOLBOX,
           renderer: 'thrasos',
           trashcan: true,
+          theme: theme || undefined,
         });
 
         const functionBlocks = registerNotebookFunctionBlocks(Blockly, pythonGenerator, symbolInfo.functions);

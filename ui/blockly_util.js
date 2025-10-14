@@ -30,6 +30,7 @@ export function formatMethodCall(target, method, args = [], maxLength = MAX_CALL
 }
 
 let blocklyLoader;
+let unoBlocklyTheme;
 
 async function ensureBlocklyLoaded() {
   if (!blocklyLoader) {
@@ -42,6 +43,52 @@ async function ensureBlocklyLoaded() {
       await import('blockly/blocks');
       const pythonModule = await import('blockly/python');
       const pythonGenerator = pythonModule.pythonGenerator;
+
+      if (!unoBlocklyTheme && Blockly.Theme && Blockly.Themes) {
+        const classic = Blockly.Themes.Classic;
+        const primary = '#F19C38';
+        const secondary = '#DB8A33';
+        const tertiary = '#B36A27';
+        const blockStyles = {};
+        const categoryStyles = {};
+
+        const baseVariableStyle = classic && classic.blockStyles
+          ? classic.blockStyles.variable_blocks
+          : null;
+        const baseVariableDynamicStyle = classic && classic.blockStyles
+          ? classic.blockStyles.variable_dynamic_blocks
+          : null;
+        const baseVariableCategory = classic && classic.categoryStyles
+          ? classic.categoryStyles.variable_category
+          : null;
+        const baseVariableDynamicCategory = classic && classic.categoryStyles
+          ? classic.categoryStyles.variable_dynamic_category
+          : null;
+
+        blockStyles.variable_blocks = Object.assign({}, baseVariableStyle || {}, {
+          colourPrimary: primary,
+          colourSecondary: secondary,
+          colourTertiary: tertiary
+        });
+        blockStyles.variable_dynamic_blocks = Object.assign({}, baseVariableDynamicStyle || {}, {
+          colourPrimary: primary,
+          colourSecondary: secondary,
+          colourTertiary: tertiary
+        });
+
+        categoryStyles.variable_category = Object.assign({}, baseVariableCategory || {}, {
+          colour: primary
+        });
+        categoryStyles.variable_dynamic_category = Object.assign({}, baseVariableDynamicCategory || {}, {
+          colour: primary
+        });
+
+        unoBlocklyTheme = Blockly.Theme.defineTheme('unotebookTheme', {
+          base: classic,
+          blockStyles,
+          categoryStyles
+        });
+      }
 
       if (!Blockly.Blocks['pybricks_motor_init']) {
         Blockly.defineBlocksWithJsonArray([
@@ -196,7 +243,7 @@ async function ensureBlocklyLoaded() {
               }
             ],
             output: 'Port',
-            colour: 30,
+            colour: '#fac80a',
             tooltip: 'Select a Pybricks port.',
             helpUrl: 'https://docs.pybricks.com/en/latest/parameters.html#pybricks.parameters.Port'
           },
@@ -205,7 +252,7 @@ async function ensureBlocklyLoaded() {
             message0: 'PrimeHub',
             args0: [],
             output: 'PrimeHub',
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Create a PrimeHub instance.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html'
           },
@@ -219,7 +266,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Show text on the PrimeHub display.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.display'
           },
@@ -233,7 +280,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Show a single character on the display.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.char'
           },
@@ -247,7 +294,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Show a number on the display.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.number'
           },
@@ -263,7 +310,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Set a pixel on the display (brightness 0-100).',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.pixel'
           },
@@ -275,7 +322,7 @@ async function ensureBlocklyLoaded() {
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Turn off the display.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.off'
           },
@@ -299,7 +346,7 @@ async function ensureBlocklyLoaded() {
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Set which side of the hub faces up.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Display.orientation'
           },
@@ -325,7 +372,7 @@ async function ensureBlocklyLoaded() {
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Turn the hub light on with a color.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Lights.on'
           },
@@ -337,7 +384,7 @@ async function ensureBlocklyLoaded() {
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Turn the hub light off.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Lights.off'
           },
@@ -348,7 +395,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: 'Boolean',
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Check if the charger is connected.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.PrimeHub.charger'
           },
@@ -359,7 +406,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: 'Number',
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Get charger current draw in mA.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Charger.current'
           },
@@ -370,7 +417,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: 'Number',
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Get numeric charger status.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.Charger.status'
           },
@@ -381,7 +428,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'HUB', check: 'PrimeHub' }
             ],
             output: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Get system information dictionary.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.System.info'
           },
@@ -393,7 +440,7 @@ async function ensureBlocklyLoaded() {
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 200,
+            colour: '#fac80a',
             tooltip: 'Shut down the hub system.',
             helpUrl: 'https://docs.pybricks.com/en/latest/hubs/primehub.html#pybricks.hubs.System.shutdown'
           },
@@ -418,7 +465,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'AXLE', check: 'Number' }
             ],
             output: 'DriveBase',
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Create a DriveBase with two motors and geometry.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html'
           },
@@ -432,7 +479,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Drive a DriveBase straight for a distance in millimeters.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.straight'
           },
@@ -446,7 +493,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Turn a DriveBase by a given angle in degrees.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.turn'
           },
@@ -461,7 +508,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Drive the robot with speed (mm/s) and turn rate (deg/s).',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.drive'
           },
@@ -477,7 +524,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Drive with speed and turn rate for a duration (seconds).',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.drive_time'
           },
@@ -493,7 +540,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Drive with speed and turn rate for a distance in millimeters.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.drive_distance'
           },
@@ -508,7 +555,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Move along a curve with given distance and angle.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.curve'
           },
@@ -521,7 +568,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Stop the robot.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.stop'
           },
@@ -534,7 +581,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Brake the robot.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.brake'
           },
@@ -563,7 +610,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: false,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Configure straight and turning speed/acceleration settings.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.settings'
           },
@@ -574,7 +621,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
             output: 'Number',
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Get the distance traveled in millimeters.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.distance'
           },
@@ -585,7 +632,7 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
             output: 'Number',
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Get the angle turned in degrees.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.angle'
           },
@@ -597,7 +644,7 @@ async function ensureBlocklyLoaded() {
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Reset the odometry values.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.reset'
           },
@@ -617,7 +664,7 @@ async function ensureBlocklyLoaded() {
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Enable or disable the built-in gyro for driving.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.use_gyro'
           },
@@ -628,13 +675,13 @@ async function ensureBlocklyLoaded() {
               { type: 'input_value', name: 'DB', check: 'DriveBase' }
             ],
             output: null,
-            colour: 20,
+            colour: 'rgb(76, 151, 255)',
             tooltip: 'Get both distance and angle as a tuple.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics/drivebase.html#pybricks.robotics.DriveBase.state'
           },
           {
             type: 'pybricks_car_init',
-            message0: 'Car Robot',
+            message0: 'Ackermann Steering',
             message1: '↳ steer motor %1',
             message2: '↳ drive motor %1',
             message3: '↳ torque limit (%) %1',
@@ -649,7 +696,7 @@ async function ensureBlocklyLoaded() {
             ],
             inputsInline: false,
             output: 'Car',
-            colour: 20,
+            colour: 'rgb(92, 177, 214)',
             tooltip: 'Create a Car with steer and drive motors.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car'
           },
@@ -663,7 +710,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(92, 177, 214)',
             tooltip: 'Steer the front wheels as a percentage.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car.steer'
           },
@@ -677,7 +724,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(92, 177, 214)',
             tooltip: 'Drive the car with a power percentage.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car.drive_power'
           },
@@ -691,7 +738,7 @@ async function ensureBlocklyLoaded() {
             inputsInline: true,
             previousStatement: null,
             nextStatement: null,
-            colour: 20,
+            colour: 'rgb(92, 177, 214)',
             tooltip: 'Drive the car at motor speed.',
             helpUrl: 'https://docs.pybricks.com/en/latest/robotics.html#pybricks.robotics.Car.drive_speed'
           },
@@ -919,7 +966,7 @@ async function ensureBlocklyLoaded() {
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 50,
+            colour: '#F39C12',
             tooltip: 'Pause execution for the given number of seconds.',
             helpUrl: 'https://docs.pybricks.com/en/latest/tools.html#pybricks.tools.wait'
           }
@@ -1450,7 +1497,8 @@ async function ensureBlocklyLoaded() {
         };
       }
 
-      return { Blockly, pythonGenerator };
+      const theme = unoBlocklyTheme || (Blockly.Themes ? Blockly.Themes.Classic : undefined);
+      return { Blockly, pythonGenerator, theme };
     })();
   }
   return blocklyLoader;
@@ -1526,7 +1574,7 @@ export const FULL_TOOLBOX = {
       ]
     },
     {
-      kind: 'category', name: 'Variables', colour: '#A65C81', custom: 'VARIABLE'
+      kind: 'category', name: 'Variables', colour: '#F19C38', custom: 'VARIABLE'
     },
     { kind: 'sep', gap: 12 },
     {
@@ -1574,7 +1622,7 @@ export const FULL_TOOLBOX = {
     },
     { kind: 'sep', gap: 12 },
     {
-      kind: 'category', name: 'Spike Hub', colour: '#C66A21',
+      kind: 'category', name: 'Spike Hub', colour: '#fac80a',
       contents: [
         {
           kind: 'block',
@@ -1647,7 +1695,7 @@ export const FULL_TOOLBOX = {
       ]
     },
     {
-      kind: 'category', name: 'Diff Bot', colour: '#7A4FBF',
+      kind: 'category', name: 'Differential', colour: 'rgb(76, 151, 255)',
       contents: [
         {
           kind: 'block',
@@ -1725,7 +1773,7 @@ export const FULL_TOOLBOX = {
       ]
     },
     {
-      kind: 'category', name: 'Car Bot', colour: '#7A4FBF',
+      kind: 'category', name: 'Ackermann', colour: 'rgb(92, 177, 214)',
       contents: [
         { 
           kind: 'block', 

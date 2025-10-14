@@ -193,21 +193,15 @@ export const Cell = forwardRef((props, ref) => {
   const [cellMetadata, set_cellMetadata] = useState(() => props.cell?.metadata ? {...props.cell.metadata} : {});
   const textareaRef = useRef(null);
   const previewRef = useRef(null);
-  const [textareaHeight, set_textareaHeight] = useState(null);
 
   const is_blockly = Boolean(cellMetadata?.blockly);
   const highlightedSource = useMemo(() => highlightPython(source || ''), [source]);
   const lineCount = useMemo(
-    () => Math.max(1, (source.match(/\n/g)?.length ?? 0) + 1),
+    () => Math.max(1, (source.match(/\n/g)?.length ?? 0)),
     [source]
   );
-  const editorHeight = useMemo(() => `${Math.max(lineCount * 1.1 + 1, 4.5)}em`, [lineCount]);
-  const baseEditorHeight = useMemo(() => {
-    const numeric = parseFloat(editorHeight);
-    if (!Number.isFinite(numeric) || numeric <= 0) return '4.5em';
-    return `${(numeric * 1.45) / 1.1}em`;
-  }, [editorHeight]);
-  const textareaHeightStyle = textareaHeight ? `${textareaHeight}px` : baseEditorHeight;
+  const editorHeight = useMemo(() => `${(lineCount+1) * 1.2}em`, [lineCount]);
+  const textEditorHeight = useMemo(() => `${(lineCount+2) * 1.2}em`, [lineCount]);
   const borderColor = BORDER_COLORS[runState] || BORDER_COLORS.idle;
   const isRunning = runState === 'running';
   const actionButtonStyle = 'background:none; border:none; padding:0; margin:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;';
@@ -236,15 +230,6 @@ export const Cell = forwardRef((props, ref) => {
       set_richOutput(null);
     }
   }, []);
-
-  useLayoutEffect(() => {
-    if (is_blockly || !show_source) return;
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    const next = el.scrollHeight;
-    set_textareaHeight(next);
-  }, [source, show_source, is_blockly]);
 
   useLayoutEffect(() => {
     if (is_blockly || !show_source) return;
@@ -709,18 +694,18 @@ export const Cell = forwardRef((props, ref) => {
                 </pre>
               </div>
             ` : html`
-              <div class='code-editor' style=${{ minHeight: baseEditorHeight, height: textareaHeightStyle }}>
+              <div class='code-editor' style=${{ minHeight: editorHeight }}>
                 <pre
                   ref=${previewRef}
                   class='blockly-python language-python code-editor__preview'
-                  style=${{ minHeight: baseEditorHeight, height: textareaHeightStyle, overflow: 'hidden' }}
+                  style=${{ height: editorHeight, overflow: 'hidden' }}
                 >
                   <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
                 </pre>
                 <textarea 
                   wrap="off"
                   ref=${textareaRef}
-                  style=${{ minHeight: baseEditorHeight, height: textareaHeightStyle }}
+                  style=${{ height: textEditorHeight }}
                   class='python-textarea code-editor__textarea'
                   spellcheck=${false}
                   autocapitalize=${'off'}
@@ -737,7 +722,7 @@ export const Cell = forwardRef((props, ref) => {
             `}
           </div>
           <div style='flex:0 0 auto;'>
-            <div style='line-height:1.1; display:flex; flex-direction:column; align-items:center; gap:0.8rem;'>
+            <div style='line-height:1.2; display:flex; flex-direction:column; align-items:center; gap:0.8rem;'>
               <button
                 type='button'
                 style=${actionButtonStyle}

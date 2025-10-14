@@ -60,7 +60,7 @@ const css = `
   }
   .output {
     display: block;
-    max-height: calc(1.1em * 30);  /* ≈ 40 lines */
+    max-height: calc(1.2em * 30);  /* ≈ 40 lines */
     overflow-y: auto;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     font-size: 0.75em;
@@ -211,6 +211,7 @@ const css = `
   }
 
   .code-editor__preview {
+    border: 1px solid green !important;
     margin: 0;
     padding: 0.75em;
     pointer-events: none;
@@ -227,11 +228,11 @@ const css = `
     inset: 0;
     width: 100%;
     height: 100%;
-    padding: 0.5em;
-    border: 1px solid transparent;
+    padding: 0.75em;
+    border: 1px solid red;
     border-radius: 3px;
     background: transparent;
-    color: transparent;
+    color: gray;
     caret-color: #2b1e10;
     resize: none;
     overflow-y: hidden;

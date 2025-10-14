@@ -193,6 +193,7 @@ export const Cell = forwardRef((props, ref) => {
   const [cellMetadata, set_cellMetadata] = useState(() => props.cell?.metadata ? {...props.cell.metadata} : {});
   const textareaRef = useRef(null);
   const previewRef = useRef(null);
+  const [hasHorizontalScrollbar, setHasHorizontalScrollbar] = useState(false);
 
   const is_blockly = Boolean(cellMetadata?.blockly);
   const highlightedSource = useMemo(() => highlightPython(source || ''), [source]);
@@ -202,6 +203,10 @@ export const Cell = forwardRef((props, ref) => {
   );
   const editorHeight = useMemo(() => `${(lineCount+1) * 1.2}em`, [lineCount]);
   const textEditorHeight = useMemo(() => `${(lineCount+2) * 1.2}em`, [lineCount]);
+  // Reserve extra room so a horizontal scrollbar never hides the final line
+  const scrollbarCompensation = hasHorizontalScrollbar ? '.4rem' : null;
+  const editorMinHeight = scrollbarCompensation ? `calc(${editorHeight} + ${scrollbarCompensation})` : editorHeight;
+  const textareaHeightValue = scrollbarCompensation ? `calc(${textEditorHeight} + ${scrollbarCompensation})` : textEditorHeight;
   const borderColor = BORDER_COLORS[runState] || BORDER_COLORS.idle;
   const isRunning = runState === 'running';
   const actionButtonStyle = 'background:none; border:none; padding:0; margin:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;';
@@ -244,6 +249,38 @@ export const Cell = forwardRef((props, ref) => {
     textarea.addEventListener('scroll', syncScroll);
     return () => textarea.removeEventListener('scroll', syncScroll);
   }, [show_source, is_blockly]);
+
+  const updateHorizontalScrollbarState = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (is_blockly || !show_source || !textarea) {
+      setHasHorizontalScrollbar(prev => (prev ? false : prev));
+      return;
+    }
+    const hasOverflow = textarea.scrollWidth > textarea.clientWidth;
+    setHasHorizontalScrollbar(prev => (prev === hasOverflow ? prev : hasOverflow));
+  }, [is_blockly, show_source]);
+
+  useLayoutEffect(() => {
+    updateHorizontalScrollbarState();
+  }, [source, updateHorizontalScrollbarState]);
+
+  useLayoutEffect(() => {
+    if (is_blockly || !show_source) return;
+    const handleResize = () => updateHorizontalScrollbarState();
+    window.addEventListener('resize', handleResize);
+
+    const textarea = textareaRef.current;
+    let resizeObserver;
+    if (typeof ResizeObserver !== 'undefined' && textarea) {
+      resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(textarea);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [is_blockly, show_source, updateHorizontalScrollbarState]);
 
   useImperativeHandle(ref, () => ({
     getValue: () => {
@@ -694,18 +731,18 @@ export const Cell = forwardRef((props, ref) => {
                 </pre>
               </div>
             ` : html`
-              <div class='code-editor' style=${{ minHeight: editorHeight }}>
+              <div class='code-editor' style=${{ minHeight: editorMinHeight }}>
                 <pre
                   ref=${previewRef}
                   class='blockly-python language-python code-editor__preview'
-                  style=${{ height: editorHeight, overflow: 'hidden' }}
+                  style=${{ height: editorMinHeight, overflow: 'hidden' }}
                 >
                   <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>
                 </pre>
                 <textarea 
                   wrap="off"
                   ref=${textareaRef}
-                  style=${{ height: textEditorHeight }}
+                  style=${{ height: textareaHeightValue }}
                   class='python-textarea code-editor__textarea'
                   spellcheck=${false}
                   autocapitalize=${'off'}

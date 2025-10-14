@@ -63,10 +63,14 @@ const css = `
     max-height: calc(1.2em * 30);  /* ≈ 40 lines */
     overflow-y: auto;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.75em;
+    font-size: 10pt !important;
     line-height: 1.2;
     padding: 0.5em;
     padding-top: 1em;
+  }
+
+  .output > code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;  
   }
 
   .warning {
@@ -148,14 +152,13 @@ const css = `
     margin: 0;
     overflow-x: auto;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.75em;
+    font-size: 10pt;
     line-height: 1.2;
     color: #2b1e10;
   }
 
   textarea.python-textarea {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.75em !important;
     line-height: 1.2 !important;
     padding: 0.5em !important;
   }
@@ -208,19 +211,23 @@ const css = `
     position: relative;
     width: 100%;
     box-sizing: border-box;
+    line-height: 1.2;
+    font-size: 0.75em;
   }
 
   .code-editor__preview {
-    border: 1px solid green !important;
+    border: 1px solid silver !important;
     margin: 0;
     padding: 0.75em;
     pointer-events: none;
     overflow: hidden;
+    font-size: 10pt;
   }
 
   pre.blockly-python.code-editor__preview {
     background: #f8f6f1;
     border-radius: 3px;
+    font-size: 10pt;
   }
 
   .code-editor__textarea {
@@ -229,10 +236,10 @@ const css = `
     width: 100%;
     height: 100%;
     padding: 0.75em;
-    border: 1px solid red;
+    border: 1px solid transparent;
     border-radius: 3px;
     background: transparent;
-    color: gray;
+    color: transparent;
     caret-color: #2b1e10;
     resize: none;
     overflow-y: hidden;
@@ -240,6 +247,9 @@ const css = `
     white-space: pre;
     box-sizing: border-box;
     z-index: 1;
+    line-height: 1.2;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    font-size: 10pt;
   }
 
   .code-editor__textarea:focus {

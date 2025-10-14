@@ -38,21 +38,19 @@ export function Notebook(props) {
     return () => window.removeEventListener("beforeunload", handler);
   }, []);
 
-  const refs = useRef(new Map());
-  const getRef = id => {
-    let r = refs.current.get(id);
-    if (!r) {
-      r = { current: null };
-      refs.current.set(id, r);
+  const refs = useRef(new Array());
+  const getRef = i => {
+    while (i >= refs.current.length) {
+      refs.current.push(new Map())
     }
-    return r;
+    return refs.current[i]
   };
 
   useEffect(() => {
     storage.getNotebook(props['fn']).then(doc=>{
-      if (!doc) doc = {cells:[{cell_type:'code'}]}
+      if (!doc) doc = {cells:[{id:random_id(), cell_type:'code'}]}
       set_doc(doc)
-      set_cells(doc.cells.map((cell) => ({cell_type:'code', id:random_id(), ...cell})))
+      set_cells(doc.cells.map((cell) => ({id:random_id(), cell_type:'code', id:random_id(), ...cell})))
       set_metadata(doc.metadata)
       if (props.connected) props.backend.reset()
     })
@@ -61,7 +59,7 @@ export function Notebook(props) {
   function insert_before(i, cell_type) {
     console.log('insert_before', i, cell_type)
     const next = cells.slice()
-    if (cell_type=='blockly') next.splice(i, 0, {source:[], cell_type:'code', metadata:{blockly:{version:1}}})
+    if (cell_type=='blockly') next.splice(i, 0, {id:random_id(), source:[], cell_type:'code', metadata:{blockly:{version:1}}})
     else next.splice(i, 0, {cell_type, source:[]})
     set_cells(next)
 
@@ -78,7 +76,7 @@ export function Notebook(props) {
 
   function add_cell(cell_type='code') {
     const next = cells.slice()
-    if (cell_type=='blockly') next.push({source:[], cell_type:'code', metadata:{blockly:{version:1}}})
+    if (cell_type=='blockly') next.push({id:random_id(), source:[], cell_type:'code', metadata:{blockly:{version:1}}})
     else next.push({source:[], cell_type})
     set_cells(next)
   }
@@ -86,7 +84,7 @@ export function Notebook(props) {
   const getNotebookContext = useCallback((idx) => {
     const context = [];
     for (let j = 0; j < idx; j++) {
-      const ref = refs.current.get(cells[j].id)?.current;
+      const ref = refs.current[j]?.current;
       let cell = cells[j];
       let source = '';
       if (ref?.getValue) {
@@ -111,8 +109,8 @@ export function Notebook(props) {
       fn = prompt("Enter notebook name:")
       if (!fn.endsWith('.ipynb')) fn = fn+'.ipynb'
     }
-    for (const c of cells) {
-      const api = refs.current.get(c.id)?.current;
+    cells.forEach((c, i) => {
+      const api = refs.current[i]?.current;
       const original = api.getValue().source;
       const hasTrailingNewline = original.endsWith('\n');
       const sourceLines = original.split('\n').map((line) => line + '\n');
@@ -124,7 +122,7 @@ export function Notebook(props) {
       // avoid adding an extra \n if already empty at end
       if (source[source.length - 1] === '\n') source.pop();
       cells_.push({...cell, source})
-    }
+    })
     const payload = {cells:cells_, metadata}
     await storage.saveNotebook(fn, payload)
     set_saving(false)
@@ -188,7 +186,7 @@ export function Notebook(props) {
         cell=${cell}
         idx=${i}
         fn=${props.fn}
-        ref=${getRef(cell.id)} 
+        ref=${getRef(i)} 
         getNotebookContext=${getNotebookContext}
         insert_before=${(cell_type) => insert_before(i, cell_type)}
         delete_cell=${() => delete_cell(i)}

@@ -1,5 +1,6 @@
 import { h } from 'preact';
 import htm from 'htm';
+import {setup_blockly_display_icon} from './blockly_icon'
 const html = htm.bind(h);
 
 const MAX_CALL_LINE_LENGTH = 88;
@@ -89,6 +90,8 @@ async function ensureBlocklyLoaded() {
           categoryStyles
         });
       }
+
+      setup_blockly_display_icon(Blockly, pythonGenerator)
 
       Blockly.defineBlocksWithJsonArray([
         {
@@ -1676,6 +1679,7 @@ export const FULL_TOOLBOX = {
             BRIGHTNESS: { shadow: { type: 'math_number', fields: { NUM: 100 } } }
           }
         },
+        { kind: 'block', type: 'pybricks_hub_display_icon' },
         { kind: 'block', type: 'pybricks_hub_display_off' },
         { kind: 'block', type: 'pybricks_hub_display_orientation' },
         { kind: 'block', type: 'pybricks_hub_light_on' },

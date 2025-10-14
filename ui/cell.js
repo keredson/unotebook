@@ -198,7 +198,7 @@ export const Cell = forwardRef((props, ref) => {
   const is_blockly = Boolean(cellMetadata?.blockly);
   const highlightedSource = useMemo(() => highlightPython(source || ''), [source]);
   const lineCount = useMemo(
-    () => Math.max(1, (source.match(/\n/g)?.length ?? 0)),
+    () => Math.max(2, (source.match(/\n/g)?.length ?? 0)),
     [source]
   );
   const editorHeight = useMemo(() => `${(lineCount+1) * 1.2}em`, [lineCount]);

@@ -7,6 +7,7 @@ import { render_ansi } from './render_ansi.js'
 import { FULL_TOOLBOX, loadBlockly, BLOCKLY_CSS } from './blockly_util.js'
 import { highlightPython } from './prism-lite.js';
 import { AlertTriangle, FileText, Play, Square, Trash2, X as XIcon } from 'react-feather';
+import {TOUCH_ENV} from './util.js'
 
 const registeredNotebookFunctionBlocks = new Set();
 
@@ -707,7 +708,7 @@ export const Cell = forwardRef((props, ref) => {
   }
 
   return html`<div>
-    <div ref=${cellRef} class='add-cell' style='padding-left:1em; display:inline-flex; gap:.4rem; color:#444'>
+    <div ref=${cellRef} class='add-cell' style=${{paddingLeft:'1em', display:'inline-flex', gap:'.4rem', color:'#444', opacity:TOUCH_ENV ? 1 : null}}>
       <span title="Insert Code..." style="cursor:pointer;" onClick=${()=>props.insert_before('code')}>+code</span>
       <span title="Insert Blockly..." style="cursor:pointer;" onClick=${()=>props.insert_before('blockly')}>+blocks</span>
       <span title="Insert Documentation..." style="cursor:pointer;" onClick=${()=>props.insert_before('markdown')}>+doc</span>

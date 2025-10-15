@@ -236,19 +236,19 @@ export function Notebook(props) {
     <div style=${bottom_button_bar_style}>
       <button onClick=${e=>add_cell()} class='button_with_icon'>
         <span style=${bottom_button_bar_span_style}>
-          <${Code} size=${14} aria-hidden=${true} />
+          <${Code} size=${cells.length ? 14 : 24} aria-hidden=${true} />
           <span>Add Python</span>
         </span>
       </button>
       <button onClick=${e=>add_cell('blockly')} class='button_with_icon'>
         <span style=${bottom_button_bar_span_style}>
-          <${Package} size=${14} aria-hidden=${true} />
+          <${Package} size=${cells.length ? 14 : 24} aria-hidden=${true} />
           <span>Add Blocks</span>
         </span>
       </button>
       <button onClick=${e=>add_cell('markdown')} class='button_with_icon' style=${cells.length ? {border:0, backgroundColor:'transparent', color:'#444;'} : null}>
         <span style=${bottom_button_bar_span_style}>
-          <${FileText} size=${14} aria-hidden=${true} />
+          <${FileText} size=${cells.length ? 14 : 24} aria-hidden=${true} />
           <span>Add Doc</span>
         </span>
       </button>

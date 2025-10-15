@@ -3,6 +3,7 @@ import { h } from 'preact';
 import htm from 'htm';
 //import 'preact/debug'
 import { stringify, } from './util';
+import {FileText, Upload} from 'react-feather'
 
 const html = htm.bind(h);
 
@@ -79,9 +80,24 @@ export function Manager() {
     }
   }
 
+  const bottom_button_bar_style = files.length ? {
+    display:'flex', 
+    gap:'.5rem', 
+    marginTop:'.5em', 
+    justifyContent:'center'
+  } : {
+    display:'flex', 
+    gap:'2rem', 
+    marginTop:'2.5em', 
+    margin:'2em', 
+    justifyContent:'center'
+  }
+
+  const bottom_button_bar_span_style = files.length ? null : {flexDirection: 'column', margin:'.5em'}
+
   return html`<div style='text-align:center;'>
     <h1 style='margin-top:0'>µNotebook</h1>
-    <table style='margin:0 auto; text-align:left;'>
+    <table style=${{margin:'0 auto', textAlign:'left', display:files.length ? null : 'none'}}>
       <tr><th></th><th>Notebook</th><th>Size</th></tr>
       ${files.map(f => html`<tr>
         <td style='color:#444;'>${iconForSource(f.source)}</td>
@@ -106,14 +122,22 @@ export function Manager() {
           </div>
         </td>
       </tr>`)}
-      <tr><td colspan='3'>
-        <div style='display:inline-flex; gap:.5rem; margin-top:.5em'>
-          <button onClick=${()=>new_notebook()}>New Notebook</button>
-          <input id='upload_notebook' type="file" accept=".ipynb" style='display:none;' onChange=${()=>upload_notebook()} />
-          <button onClick=${()=>document.getElementById('upload_notebook').click()}>Upload Notebook...</button>
-        </div>
-      </td></tr>
     </table>
+    <div style=${bottom_button_bar_style}>
+      <button onClick=${()=>new_notebook()} class='button_with_icon'>
+        <span style=${bottom_button_bar_span_style}>
+        <${FileText} size=${files.length ? 14 : 24} aria-hidden=${true} />
+        Create Notebook
+        </span>
+      </button>
+      <input id='upload_notebook' type="file" accept=".ipynb" style='display:none;' onChange=${()=>upload_notebook()} />
+      <button onClick=${()=>document.getElementById('upload_notebook').click()} class='button_with_icon'>
+        <span style=${bottom_button_bar_span_style}>
+        <${Upload} size=${files.length ? 14 : 24} aria-hidden=${true} />
+        Upload Notebook...
+        </span>
+      </button>
+    </div>
   </div>`;
 }
 

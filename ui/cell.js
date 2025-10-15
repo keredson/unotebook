@@ -796,14 +796,16 @@ export const Cell = forwardRef((props, ref) => {
       ${png ? html`<img class='output' src=${png} />` : null}
       ${html_ ? html`<div style='display:flex; alignItems:top;' class='markdown'>
         <div style='display:inline-block;' dangerouslySetInnerHTML=${{ __html: html_ }} />
-        <button
-          type='button'
-          style='margin-left:1em; background:none; border:none; padding:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;'
-          title="Show Source"
-          aria-label="Show Source"
-          onClick=${()=>set_show_source(true)}>
-          <${FileText} size=${16} aria-hidden=${true} />
-        </button>
+        ${show_source ? null : html`
+          <button
+            type='button'
+            style='margin-left:1em; background:none; border:none; padding:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;'
+            title="Show Source"
+            aria-label="Show Source"
+            onClick=${()=>set_show_source(true)}>
+            <${Edit} size=${16} aria-hidden=${true} />
+          </button>
+        `}
       </div>` : null}
       ${error ? html`<div class='output' style='margin:0; background-color:#ffdddd; display:flex; gap:0.5rem; align-items:flex-start;'>
         <span style='flex:0 0 auto; margin-top:0.15em;'><${AlertTriangle} size=${16} aria-hidden=${true} /></span>

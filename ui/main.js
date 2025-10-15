@@ -47,7 +47,7 @@ const css = `
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     margin: 1em;
   }
-  @media (max-width: 600px) {
+  @media (max-width: 800px) {
     body #app_container {
       margin: 0;
       border-radius: 0;
@@ -476,7 +476,7 @@ function App() {
         <${Notebook} backend=${backend} connected=${connected} sinkRef=${sinkRef} source='device' path="/device/:fn" onDirtyChange=${setDirty} />
       </${Router}>
     </div>
-    <div style='text-align:center; margin-top:1em; color: #444; font-size:smaller;'>
+    <div style='text-align:center; margin:1em; color: #444; font-size:smaller;'>
       <a style='color: #444;' href='//unotebook.org' target='_unotebook_org'>µNotebook</a> v${VERSION} © 2025 - <a style='color: #444;' href='https://github.com/keredson/unotebook' target='_unotebook_github'>source code</a> - <a style='color: #444;' href='https://github.com/keredson/unotebook/issues/new' target='_unotebook_github'>report a bug</a>
     </div>
   `;

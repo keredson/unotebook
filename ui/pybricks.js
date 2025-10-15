@@ -19,6 +19,7 @@ export class Pybricks extends EventTarget {
     this.stdout = ''
     this._needsReplStart = false;
     this._reprInjected = false;
+    this._stop_re = null
   }
 
   async connect() {
@@ -49,19 +50,9 @@ export class Pybricks extends EventTarget {
         }
         this.stdout = appendWithCR(this.stdout, text)
 
-        if (this.stdout.endsWith('>>> ')) {
-          clearTimeout(this.running_timer);
-          this.running_timer = setTimeout(() => {
-            if (this.stdout.endsWith('>>> ')) {
-              this.running = false;
-              this.stdout = this.stdout.replace(/>>> $/, '')
-              this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
-              console.log("Timed out — REPL idle");
-            }
-          }, 500);
-          return
-        } else {
-          clearTimeout(this.running_timer);
+        if (this._stop_re?.test(this.stdout)) {
+          this.running = false;
+          this.stdout = this.stdout.replace(this._stop_re, '$1')
         }
 
         this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
@@ -112,7 +103,8 @@ export class Pybricks extends EventTarget {
 
     const enc = new TextEncoder();
 
-    code = code.replaceAll('\r\n','\n')
+    //console.log('sending code:')
+    //console.log(code)
     this.running = true
     this.stdout = ''
 
@@ -127,9 +119,13 @@ export class Pybricks extends EventTarget {
     await this.sendCmd(0x06, new Uint8Array([0x04]));
   }
 
-  async run(code) {
+  async run(code, ensureRepr=true) {
+    code = code.replaceAll('\r\n','\n')
     await this._ensureReplStarted();
-    await this._ensureReprFunction();
+    if (ensureRepr) await this._ensureReprFunction();
+    console.log('dfsgjhdsagfhdfagsldasfhldsafghdsafghdasjhkjhkdsl')
+    const stop_word = 'STOP_' + Math.random().toString(36).slice(2)
+    this._stop_re = new RegExp(stop_word + '(Traceback \\(most recent call last\\):.*)?>>> $','s')
 
     const {head, tail} = cleaveLastStatement(code)
     console.log({head, tail})
@@ -140,7 +136,7 @@ export class Pybricks extends EventTarget {
         const expr = stripPythonComment(tail).trim()
         if (expr.length) {
           segments.push(`_ = (${expr})`)
-          segments.push('if _ is not None:\n    __unotebook_repr__(_)')
+          if (ensureRepr) segments.push('__unotebook_repr__(_)')
         } else {
           segments.push(tail)
         }
@@ -149,6 +145,8 @@ export class Pybricks extends EventTarget {
       }
     }
     code = segments.join('\n')
+    code = 'try:\n  ' + code.split('\n').join('\n  ') +'\nfinally: print("'+stop_word+'", end="")'
+  
 
     await this._send(code)
     while (this.running) await sleep(100);
@@ -191,9 +189,9 @@ export class Pybricks extends EventTarget {
     console.log('_ensureReprFunction')
     if (!this.connected || this._reprInjected) return;
     console.log('_ensureReprFunction sending')
-    await this._send(UNOTEBOOK_REPR_FUNCTION);
-    while (this.running) await sleep(500);
+    await this.run(UNOTEBOOK_REPR_FUNCTION, false);
     this._reprInjected = true;
+    console.log('_ensureReprFunction done')
   }
 }
 

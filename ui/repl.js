@@ -186,6 +186,7 @@ export const UNOTEBOOK_REPR_FUNCTION = `
 try: import json
 except: import ujson as json
 def __unotebook_repr__(o):
+  if o is None: return
   if hasattr(o, '_repr_mimebundle_'): print(json.dumps(o._repr_mimebundle_()), end='')
   else:
     print('{"__unotebook_repr__":{', end='')

@@ -134,8 +134,8 @@ export function Notebook(props) {
 
   async function run_all() {
     // Run sequentially
-    for (const c of cells) {
-      const api = refs.current.get(c.id)?.current;
+    for (var i=0; i<cells.length; ++i) {
+      const api = refs.current[i]?.current;
       try {
         const result = await api.getValue().run();
         await sleep(100)

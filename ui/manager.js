@@ -2,6 +2,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
 import htm from 'htm';
 //import 'preact/debug'
+import stringify from 'fast-json-stable-stringify';
 
 const html = htm.bind(h);
 
@@ -51,7 +52,7 @@ export function Manager() {
       throw new Error(`Notebook not found: ${fn}`);
     }
     // stringify (pretty) and make a JSON blob
-    const json = JSON.stringify(obj, null, 2);
+    const json = stringify(obj, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

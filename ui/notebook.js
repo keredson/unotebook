@@ -2,8 +2,8 @@ import { h } from 'preact';
 import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
 import htm from 'htm';
 import { Cell } from './cell';
-import { route } from 'preact-router';
 import * as storage from './storage';
+
 
 const html = htm.bind(h);
 

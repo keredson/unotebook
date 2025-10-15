@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "blockly": "^12.3.1",
+    "fast-json-stable-stringify": "^2.1.0",
     "preact-hooks": "^0.0.0-0.0.0",
     "preact-router": "^4.1.2",
     "prismjs": "^1.30.0",

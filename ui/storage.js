@@ -1,6 +1,8 @@
 const DB_NAME = 'unotebook';
 const DB_VER = 1;
 const STORE = 'notebooks';
+import stringify from 'fast-json-stable-stringify';
+
 
 /** Open (or create) the DB */
 function openDB() {
@@ -23,7 +25,7 @@ export async function saveNotebook(fn, obj) {
   const db = await openDB();
 
   // Serialize to JSON
-  const json = JSON.stringify(obj);
+  const json = stringify(obj);
   const blob = new Blob([json], { type: 'application/json' });
 
   return new Promise((resolve, reject) => {

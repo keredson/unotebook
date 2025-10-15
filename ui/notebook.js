@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
 import htm from 'htm';
 import { Cell } from './cell';
 import * as storage from './storage';
+import { Package, Code, FileText, Save, Play, RefreshCcw } from 'react-feather';
 
 
 const html = htm.bind(h);
@@ -177,9 +178,24 @@ export function Notebook(props) {
   return html`<div>
     <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn.replace(/.ipynb$/, '')}</h1>
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
-      <button onClick=${e=>run_all()}>Run All</button>
-      <button onClick=${e=>reset()}>Reset</button>
-      <button disabled=${props['fn']!='__new__.ipynb' && !changes} onClick=${e=>save()}>${props['fn']=='__new__.ipynb' ? 'Save as...' : 'Save'}</button>
+      <button onClick=${e=>run_all()} class='button_with_icon' disabled=${!connected}>
+        <span>
+          <${Play} size=${14} aria-hidden=${true} />
+          Run All
+        </span>
+      </button>
+      <button onClick=${e=>reset()} class='button_with_icon' disabled=${!connected}>
+        <span>
+        <${RefreshCcw} size=${14} aria-hidden=${true} />
+        Reset
+        </span>
+      </button>
+      <button disabled=${props['fn']!='__new__.ipynb' && !changes} onClick=${e=>save()} class='button_with_icon'>
+        <span>
+        <${Save} size=${14} aria-hidden=${true} />
+        ${props['fn']=='__new__.ipynb' ? 'Save as...' : 'Save'}
+        </span>
+      </button>
     </div>
     ${cells.map((cell, i) => html`<${Cell} 
         key=${cell.id}
@@ -197,9 +213,24 @@ export function Notebook(props) {
         run_cell=${run_cell}
     />`)}
     <div style='display:flex; gap:.5rem; margin-top:.5em;'>
-      <button onClick=${e=>add_cell()}>Add Python</button>
-      <button onClick=${e=>add_cell('blockly')}>Add Blocks</button>
-      <button onClick=${e=>add_cell('markdown')} style='border: 0; background-color: transparent; color: #444;'>Add Doc</button>
+      <button onClick=${e=>add_cell()} class='button_with_icon'>
+        <span>
+          <${Code} size=${14} aria-hidden=${true} />
+          <span>Add Python</span>
+        </span>
+      </button>
+      <button onClick=${e=>add_cell('blockly')} class='button_with_icon'>
+        <span>
+          <${Package} size=${14} aria-hidden=${true} />
+          <span>Add Blocks</span>
+        </span>
+      </button>
+      <button onClick=${e=>add_cell('markdown')} class='button_with_icon' style='border: 0; background-color: transparent; color: #444;'>
+        <span>
+          <${FileText} size=${14} aria-hidden=${true} />
+          <span>Add Doc</span>
+        </span>
+      </button>
     </div>
   </div>`;
 }

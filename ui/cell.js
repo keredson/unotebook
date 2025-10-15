@@ -6,7 +6,7 @@ import snarkdown from 'snarkdown';
 import { render_ansi } from './render_ansi.js'
 import { FULL_TOOLBOX, loadBlockly, BLOCKLY_CSS } from './blockly_util.js'
 import { highlightPython } from './prism-lite.js';
-import { AlertTriangle, FileText, Play, Square, Trash2, X as XIcon } from 'react-feather';
+import { AlertTriangle, FileText, Play, Square, Trash2, X as XIcon, Edit } from 'react-feather';
 import {TOUCH_ENV} from './util.js'
 
 const registeredNotebookFunctionBlocks = new Set();
@@ -724,8 +724,12 @@ export const Cell = forwardRef((props, ref) => {
                   title="Edit Blocks"
                   aria-label="Edit Blocks"
                   style='position:absolute; top:0.5rem; right:0.5rem; z-index:1;'
+                  class='button_with_icon'
                   onClick=${openBlockly}>
-                  Edit
+                    <span>
+                      <${Edit} size=${14} aria-hidden=${true} />
+                      Edit
+                    </span>
                 </button>
                 <pre class='blockly-python language-python' style=${{ width: '100%', boxSizing: 'border-box', minHeight: editorHeight, paddingRight: '3.5rem' }}>
                   <code class='language-python' dangerouslySetInnerHTML=${{ __html: highlightedSource || '&nbsp;' }}></code>

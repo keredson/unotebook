@@ -264,6 +264,16 @@ const css = `
     background: rgba(217, 164, 65, 0.35);
   }
 
+  button.button_with_icon {
+    white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem;
+  }
+
+  button.button_with_icon > span {
+    display:inline-flex;
+    align-items:center;
+    gap:0.3rem;
+  }
+
   `;
 
 const BASE = location.pathname.startsWith('/code/')
@@ -421,18 +431,18 @@ function App() {
             : null
         }</span>
         <div style='text-align:right; display:flex; flex-wrap:wrap; gap:0.75rem; justify-content:flex-end;'>
-          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()} style='white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem;' disabled=${connecting==='pybricks'}>
+          ${ connected ? null : html`<button onClick=${e=>connect_pybricks()} class='button_with_icon' disabled=${connecting==='pybricks'}>
             ${connecting==='pybricks'
               ? html`<span>Connecting…</span>`
-              : html`<span style='display:inline-flex; align-items:center; gap:0.3rem;'>
+              : html`<span>
                   <${LinkIcon} size=${14} aria-hidden=${true} />
                   <span>Pybricks</span>
                 </span>`}
           </button>` }
-          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()} style='white-space:nowrap; display:inline-flex; align-items:center; gap:0.3rem;' disabled=${connecting==='webrepl'}>
+          ${ connected ? null : html`<button onClick=${e=>connect_webrepl()} class='button_with_icon' disabled=${connecting==='webrepl'}>
             ${connecting==='webrepl'
               ? html`<span>Connecting…</span>`
-              : html`<span style='display:inline-flex; align-items:center; gap:0.3rem;'>
+              : html`<span>
                   <${LinkIcon} size=${14} aria-hidden=${true} />
                   <span>WebREPL</span>
                 </span>`}

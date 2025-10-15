@@ -49,7 +49,7 @@ export function Notebook(props) {
 
   useEffect(() => {
     storage.getNotebook(props['fn']).then(doc=>{
-      if (!doc) doc = {cells:[{id:random_id(), cell_type:'code'}]}
+      if (!doc) doc = {cells:[]}
       set_doc(doc)
       set_cells(doc.cells.map((cell) => ({id:random_id(), cell_type:'code', id:random_id(), ...cell})))
       set_metadata(doc.metadata)
@@ -175,6 +175,20 @@ export function Notebook(props) {
     }
   }
 
+  const bottom_button_bar_style = cells.length ? {
+    display:'flex', 
+    gap:'.5rem', 
+    marginTop:'.5em', 
+  } : {
+    display:'flex', 
+    gap:'2rem', 
+    marginTop:'2.5em', 
+    margin:'2em', 
+    justifyContent:'center'
+  }
+
+  const bottom_button_bar_span_style = cells.length ? null : {flexDirection: 'column', margin:'.5em'}
+
   return html`<div>
     <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn.replace(/.ipynb$/, '')}</h1>
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
@@ -212,21 +226,21 @@ export function Notebook(props) {
         backend=${backend}
         run_cell=${run_cell}
     />`)}
-    <div style='display:flex; gap:.5rem; margin-top:.5em;'>
+    <div style=${bottom_button_bar_style}>
       <button onClick=${e=>add_cell()} class='button_with_icon'>
-        <span>
+        <span style=${bottom_button_bar_span_style}>
           <${Code} size=${14} aria-hidden=${true} />
           <span>Add Python</span>
         </span>
       </button>
       <button onClick=${e=>add_cell('blockly')} class='button_with_icon'>
-        <span>
+        <span style=${bottom_button_bar_span_style}>
           <${Package} size=${14} aria-hidden=${true} />
           <span>Add Blocks</span>
         </span>
       </button>
-      <button onClick=${e=>add_cell('markdown')} class='button_with_icon' style='border: 0; background-color: transparent; color: #444;'>
-        <span>
+      <button onClick=${e=>add_cell('markdown')} class='button_with_icon' style=${cells.length ? {border:0, backgroundColor:'transparent', color:'#444;'} : null}>
+        <span style=${bottom_button_bar_span_style}>
           <${FileText} size=${14} aria-hidden=${true} />
           <span>Add Doc</span>
         </span>

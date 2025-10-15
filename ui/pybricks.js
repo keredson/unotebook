@@ -103,7 +103,6 @@ export class Pybricks extends EventTarget {
 
     const enc = new TextEncoder();
 
-    //console.log('sending code:')
     //console.log(code)
     this.running = true
     this.stdout = ''

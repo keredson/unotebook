@@ -3,12 +3,12 @@
  * Returns { head, tail }.
  */
 export function cleaveLastStatement(src) {
-  const lines = src.trimEnd().replace(/\r\n?/g, "\n").split("\n");
+  const norm = src.replace(/\r\n?/g, "\n");
+  const lines = norm.trimEnd().split("\n");
   if (lines.length === 0) return { head: "", tail: "" };
 
   let inStr = false, quote = "", escape = false;
-  let depth = 0; // (), [], {}
-
+  let depth = 0;
   const body = lines.slice(0, -1).join("\n");
   for (let i = 0; i < body.length; i++) {
     const ch = body[i];
@@ -17,37 +17,46 @@ export function cleaveLastStatement(src) {
       escape = !escape && ch === "\\";
       continue;
     }
-    if (ch === '"' || ch === "'") {
-      inStr = true; quote = ch; escape = false;
-      continue;
-    }
+    if (ch === '"' || ch === "'") { inStr = true; quote = ch; escape = false; continue; }
     if ("([{".includes(ch)) depth++;
     if (")]}".includes(ch)) depth = Math.max(0, depth - 1);
   }
 
   const lastLine = lines[lines.length - 1];
-  const openBlock = /:\s*(#.*)?$/.test(lastLine);
-  const continued = /\\\s*(#.*)?$/.test(lastLine);
 
-  // check indentation
-  const lastIndent = lastLine.match(/^\s*/)[0].length;
-  const prevNonEmpty = [...lines]
-    .reverse()
-    .find(l => l.trim().length > 0 && l !== lastLine);
-  const prevIndent = prevNonEmpty ? prevNonEmpty.match(/^\s*/)[0].length : 0;
+  const leading = s => (s.match(/^\s*/)?.[0].length ?? 0);
+  const stripTrailingCommentForColon = line => line.replace(/\s+#.*$/, "");
+  const isBlockHeader = line => /:\s*$/.test(stripTrailingCommentForColon(line));
 
-  const indented = lastIndent > prevIndent;
+  const openBlockOnLast = isBlockHeader(lastLine);
+  const backslashOnLast = /\\\s*(#.*)?$/.test(lastLine);
+  const backslashOnPrev = lines.length >= 2 && /\\\s*(#.*)?$/.test(lines[lines.length - 2]);
+
+  const lastIndent = leading(lastLine);
+  let parentIdx = -1;
+  for (let i = lines.length - 2; i >= 0; i--) {
+    const l = lines[i];
+    if (!l.trim()) continue;
+    const ind = leading(l);
+    if (ind < lastIndent) { parentIdx = i; break; }
+  }
+  const insideParentBlock = parentIdx !== -1 && isBlockHeader(lines[parentIdx]);
 
   const canSplit =
     depth === 0 &&
     !inStr &&
-    !openBlock &&
-    !continued &&
-    !indented;
+    !openBlockOnLast &&
+    !backslashOnLast &&
+    !backslashOnPrev &&
+    !insideParentBlock;
 
-  return canSplit
-    ? { head: lines.slice(0, -1).join("\n"), tail: lastLine }
-    : { head: src, tail: "" };
+  if (!canSplit) return { head: src, tail: "" };
+
+  // Preserve a trailing newline from the original only if head doesn't already end with \n
+  const headBase = lines.slice(0, -1).join("\n");
+  const head = (/\n$/.test(norm) && !/\n$/.test(headBase)) ? headBase + "\n" : headBase;
+
+  return { head, tail: lastLine };
 }
 
 

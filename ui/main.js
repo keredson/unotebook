@@ -396,6 +396,9 @@ function App() {
       const name = await pybricks.connect()
       set_active_backend('pybricks')
       set_connected_text(name)
+    } catch(e) {
+      console.log({e})
+      alert(prettyError(e))
     } finally {
       set_connecting(null);
     }

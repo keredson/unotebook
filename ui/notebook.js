@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
 import htm from 'htm';
 import { Cell } from './cell';
 import * as storage from './storage';
-import { Package, Code, FileText, Save, Play, RefreshCcw } from 'react-feather';
+import { Package, Code, FileText, Save, Play, RefreshCcw, Copy } from 'react-feather';
 
 
 const html = htm.bind(h);
@@ -102,13 +102,14 @@ export function Notebook(props) {
     return context;
   }, [cells]);
 
-  async function save() {
+  async function save(fn) {
     set_saving(true)
     let cells_ = []
-    let fn = props['fn'];
-    if (fn=='__new__.ipynb') {
+    var new_fn = false
+    if (!fn || fn=='__new__.ipynb') {
       fn = prompt("Enter notebook name:")
       if (!fn.endsWith('.ipynb')) fn = fn+'.ipynb'
+      new_fn = true
     }
     cells.forEach((c, i) => {
       const api = refs.current[i]?.current;
@@ -128,7 +129,7 @@ export function Notebook(props) {
     await storage.saveNotebook(fn, payload)
     set_saving(false)
     set_changes(false)
-    if (props['fn']=='__new__.ipynb') {
+    if (new_fn) {
       document.location.hash = '#/local/'+fn
     }
   }
@@ -190,7 +191,7 @@ export function Notebook(props) {
   const bottom_button_bar_span_style = cells.length ? null : {flexDirection: 'column', margin:'.5em'}
 
   return html`<div>
-    <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn.replace(/.ipynb$/, '')}</h1>
+    <h1 style='margin-top:0; margin-bottom:0;'>${doc?.metadata?.name || props.fn.replace(/.ipynb$/, '').replace('__new__', '(Untitled)')}</h1>
     <div style='display:flex; gap:.5rem; margin-bottom:.5em;'>
       <button onClick=${e=>run_all()} class='button_with_icon' disabled=${!connected}>
         <span>
@@ -204,10 +205,16 @@ export function Notebook(props) {
         Reset
         </span>
       </button>
-      <button disabled=${props['fn']!='__new__.ipynb' && !changes} onClick=${e=>save()} class='button_with_icon'>
+      <button disabled=${props['fn']!='__new__.ipynb' && !changes} onClick=${e=>save(props['fn'])} class='button_with_icon' style=${props['fn']=='__new__.ipynb' ? {display:'none'} : null}>
         <span>
         <${Save} size=${14} aria-hidden=${true} />
-        ${props['fn']=='__new__.ipynb' ? 'Save as...' : 'Save'}
+        Save
+        </span>
+      </button>
+      <button onClick=${e=>save()} class='button_with_icon'>
+        <span>
+        <${props['fn']=='__new__.ipynb' ? Save : Copy} size=${14} aria-hidden=${true} />
+        Save as...
         </span>
       </button>
     </div>

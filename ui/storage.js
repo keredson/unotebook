@@ -1,8 +1,7 @@
 const DB_NAME = 'unotebook';
 const DB_VER = 1;
 const STORE = 'notebooks';
-import stringify from 'fast-json-stable-stringify';
-
+import { stringify, } from './util';
 
 /** Open (or create) the DB */
 function openDB() {

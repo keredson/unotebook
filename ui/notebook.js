@@ -3,7 +3,8 @@ import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
 import htm from 'htm';
 import { Cell } from './cell';
 import * as storage from './storage';
-import { Package, Code, FileText, Save, Play, RefreshCcw, Copy } from 'react-feather';
+import { stringify, } from './util';
+import { Package, Code, FileText, Save, Play, RefreshCcw, Copy, Download } from 'react-feather';
 
 
 const html = htm.bind(h);
@@ -104,13 +105,23 @@ export function Notebook(props) {
 
   async function save(fn) {
     set_saving(true)
-    let cells_ = []
     var new_fn = false
     if (!fn || fn=='__new__.ipynb') {
       fn = prompt("Enter notebook name:")
       if (!fn.endsWith('.ipynb')) fn = fn+'.ipynb'
       new_fn = true
     }
+    const payload = _build_notebook()
+    await storage.saveNotebook(fn, payload)
+    set_saving(false)
+    set_changes(false)
+    if (new_fn) {
+      document.location.hash = '#/local/'+fn
+    }
+  }
+
+  function _build_notebook() {
+    let cells_ = []
     cells.forEach((c, i) => {
       const api = refs.current[i]?.current;
       const original = api.getValue().source;
@@ -126,12 +137,7 @@ export function Notebook(props) {
       cells_.push({...cell, source})
     })
     const payload = {cells:cells_, metadata}
-    await storage.saveNotebook(fn, payload)
-    set_saving(false)
-    set_changes(false)
-    if (new_fn) {
-      document.location.hash = '#/local/'+fn
-    }
+    return payload
   }
 
   async function run_all() {
@@ -176,6 +182,20 @@ export function Notebook(props) {
     }
   }
 
+  async function download_notebook() {
+    const notebook = _build_notebook()
+    const json = stringify(notebook);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = props.fn;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   const bottom_button_bar_style = cells.length ? {
     display:'flex', 
     gap:'.5rem', 
@@ -215,6 +235,12 @@ export function Notebook(props) {
         <span>
         <${props['fn']=='__new__.ipynb' ? Save : Copy} size=${14} aria-hidden=${true} />
         Save as...
+        </span>
+      </button>
+      <button onClick=${e=>download_notebook()} class='button_with_icon'>
+        <span>
+        <${Download} size=${14} aria-hidden=${true} />
+        Download
         </span>
       </button>
     </div>

@@ -95,6 +95,26 @@ async function ensureBlocklyLoaded() {
 
       Blockly.defineBlocksWithJsonArray([
         {
+          type: 'code_comment',
+          message0: 'comment %1',
+          args0: [
+            {
+              type: 'field_input',
+              name: 'TEXT',
+              text: 'comment...'
+            }
+          ],
+          previousStatement: null,
+          nextStatement: null,
+          colour: '#AAAAAA',
+          tooltip: 'Add a Python comment line.',
+          helpUrl: ''
+        },
+      ]);
+
+
+      Blockly.defineBlocksWithJsonArray([
+        {
           type: 'variables_is_defined',
           message0: '%1 is set?',
           args0: [
@@ -1031,6 +1051,12 @@ async function ensureBlocklyLoaded() {
         return code;
       };
 
+      pythonGenerator.forBlock['code_comment'] = function(block) {
+        const text = block.getFieldValue('TEXT') || '';
+        const sanitized = text.replace(/\n/g, ' ');  // single-line only
+        return `# ${sanitized}\n`;
+      };
+
       function ensureMotorImports(needsPort = false, needsDirection = false) {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_motor'] = 'from pybricks.pupdevices import Motor';
@@ -1600,6 +1626,11 @@ export const FULL_TOOLBOX = {
     {
       kind: 'category', name: 'Logic', colour: '#5C81A6',
       contents: [
+        {
+          kind: 'block',
+          type: 'code_comment',
+          fields: { TEXT: 'comment...' }
+        },
         { kind: 'block', type: 'controls_if' },
         { kind: 'block', type: 'controls_if', extraState: { 'hasElse': true } },
         { kind: 'block', type: 'logic_compare' },

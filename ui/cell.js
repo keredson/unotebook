@@ -799,7 +799,7 @@ export const Cell = forwardRef((props, ref) => {
         ${show_source ? null : html`
           <button
             type='button'
-            style='margin-left:1em; background:none; border:none; padding:0; display:inline-flex; align-items:center; color:#888; cursor:pointer;'
+            style='margin-left:1em; background:none; border:none; padding:0; display:inline-flex; align-items:center; color:#888; cursor:pointer; align-self: flex-start;'
             title="Show Source"
             aria-label="Show Source"
             onClick=${()=>set_show_source(true)}>

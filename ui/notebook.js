@@ -175,10 +175,10 @@ export function Notebook(props) {
     if (confirm("Clear all output and reset all variables/code on the device?")) {
       sinkRef.current = { id: null, cb: null };
       await props.backend?.reset()
-      for (const c of cells) {
-        const api = refs.current.get(c.id)?.current;
+      cells.forEach((c, i) => {
+        const api = refs.current[i]?.current;
         api.getValue().clear();
-      }
+      })
     }
   }
 

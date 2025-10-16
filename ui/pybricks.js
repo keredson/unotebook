@@ -80,7 +80,7 @@ export class Pybricks extends EventTarget {
 
   // helper to send a command frame (cmd byte + payload), chunking if needed
   async sendCmd(cmd, payloadBytes = []) {
-    const MAX_CHUNK = 400; // keep well under 512-byte BLE write limit
+    const MAX_CHUNK = 180; // keep well under 512-byte BLE write limit
     if (payloadBytes.length <= MAX_CHUNK) {
       await this._writeCmdFrame(cmd, payloadBytes);
       return;
@@ -92,9 +92,9 @@ export class Pybricks extends EventTarget {
   }
 
   async _writeCmdFrame(cmd, payloadBytes) {
-    const frame = new Uint8Array(1 + payloadBytes.length);
+    const frame = new Uint8Array(1 + payloadBytes?.length || 0);
     frame[0] = cmd;
-    frame.set(payloadBytes, 1);
+    if (payloadBytes) frame.set(payloadBytes, 1);
     await this.cmdEvt.writeValueWithResponse(frame);
   }
 

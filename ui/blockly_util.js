@@ -208,6 +208,42 @@ async function ensureBlocklyLoaded() {
             helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run_angle'
           },
           {
+            type: 'pybricks_motor_run_target',
+            message0: 'run %1 at speed %2 deg/s to angle %3 then %4 wait %5',
+            args0: [
+              {
+                type: 'input_value',
+                name: 'MOTOR',
+                check: 'Motor'
+              },
+              { type: 'input_value', name: 'SPEED', check: 'Number' },
+              { type: 'input_value', name: 'TARGET', check: 'Number' },
+              {
+                type: 'field_dropdown',
+                name: 'THEN',
+                options: [
+                  ['hold', 'Stop.HOLD'],
+                  ['brake', 'Stop.BRAKE'],
+                  ['coast', 'Stop.COAST']
+                ]
+              },
+              {
+                type: 'field_dropdown',
+                name: 'WAIT',
+                options: [
+                  ['yes', 'TRUE'],
+                  ['no', 'FALSE']
+                ]
+              }
+            ],
+            inputsInline: true,
+            previousStatement: null,
+            nextStatement: null,
+            colour: '#5C68A6',
+            tooltip: 'Run a Pybricks Motor at speed until reaching the target angle.',
+            helpUrl: 'https://docs.pybricks.com/en/latest/pupdevices/motor.html#pybricks.pupdevices.Motor.run_target'
+          },
+          {
             type: 'pybricks_motor_stop',
             message0: 'stop %1',
             args0: [
@@ -1089,6 +1125,23 @@ async function ensureBlocklyLoaded() {
         return `${call}\n`;
       };
 
+      pythonGenerator.forBlock['pybricks_motor_run_target'] = function(block, generator) {
+        ensureMotorImports();
+        const motorVar = getMotorCode(block, generator);
+        const speed = generator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_NONE) || '0';
+        const target = generator.valueToCode(block, 'TARGET', pythonGenerator.ORDER_NONE) || '0';
+        const thenVal = block.getFieldValue('THEN') || 'Stop.HOLD';
+        const wait = block.getFieldValue('WAIT') === 'TRUE' ? 'True' : 'False';
+        ensureImport('from pybricks.parameters import Stop');
+        const call = formatMethodCall(motorVar, 'run_target', [
+          speed,
+          target,
+          `then=${thenVal}`,
+          `wait=${wait}`,
+        ]);
+        return `${call}\n`;
+      };
+
       pythonGenerator.forBlock['pybricks_motor_stop'] = function(block, generator) {
         ensureMotorImports();
         const motorVar = getMotorCode(block, generator);
@@ -1716,6 +1769,14 @@ export const FULL_TOOLBOX = {
           inputs: {
             SPEED: { shadow: { type: 'math_number', fields: { NUM: 360 } } },
             ANGLE: { shadow: { type: 'math_number', fields: { NUM: 180 } } }
+          }
+        },
+        {
+          kind: 'block',
+          type: 'pybricks_motor_run_target',
+          inputs: {
+            SPEED: { shadow: { type: 'math_number', fields: { NUM: 360 } } },
+            TARGET: { shadow: { type: 'math_number', fields: { NUM: 720 } } },
           }
         },
         { kind: 'block', type: 'pybricks_motor_stop' },

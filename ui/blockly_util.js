@@ -1042,6 +1042,12 @@ async function ensureBlocklyLoaded() {
         }
       }
 
+      function ensureStopImport() {
+        pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
+        pythonGenerator.definitions_['import_pybricks_stop_param'] =
+          'from pybricks.parameters import Stop';
+      }
+
       function ensureDirectionImport() {
         pythonGenerator.definitions_ = pythonGenerator.definitions_ || {};
         pythonGenerator.definitions_['import_pybricks_direction'] = 'from pybricks.parameters import Direction';
@@ -1132,7 +1138,7 @@ async function ensureBlocklyLoaded() {
         const target = generator.valueToCode(block, 'TARGET', pythonGenerator.ORDER_NONE) || '0';
         const thenVal = block.getFieldValue('THEN') || 'Stop.HOLD';
         const wait = block.getFieldValue('WAIT') === 'TRUE' ? 'True' : 'False';
-        ensureImport('from pybricks.parameters import Stop');
+        ensureStopImport();
         const call = formatMethodCall(motorVar, 'run_target', [
           speed,
           target,

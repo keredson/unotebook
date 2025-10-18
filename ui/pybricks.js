@@ -1,4 +1,5 @@
 import { cleaveLastStatement, is_safe_to_assign_to_var, stripPythonComment, appendWithCR, UNOTEBOOK_REPR_FUNCTION } from './repl.js'
+import {stringify} from './util.js'
 
 export class Pybricks extends EventTarget {
   static NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
@@ -22,6 +23,14 @@ export class Pybricks extends EventTarget {
     this._stop_re = null
   }
 
+  trim_stdout(stdout) {
+    const i = stdout.indexOf(this.finally_stmt)
+    if ( i==-1) return ''
+    stdout = stdout.slice(i+this.finally_stmt.length + 2)
+    stdout = stdout.replace(this._stop_re, '$1')
+    return stdout
+  }
+
   async connect() {
     if (this.connected) return;
     this.device = await navigator.bluetooth.requestDevice({
@@ -35,31 +44,30 @@ export class Pybricks extends EventTarget {
     this.cmdEvt = await service.getCharacteristic(Pybricks.PYB_CMD_EVT);
 
     this.cmdEvt.addEventListener("characteristicvaluechanged", (ev) => {
-      const v = new Uint8Array(ev.target.value.buffer);
-      if (v[0] === 0x01) { // WRITE_STDOUT
-        var text = new TextDecoder().decode(v.slice(1));
-        console.log("STDOUT:", text);
-        if (this.ignore_bytes) {
-          if (text.length <= this.ignore_bytes) {
-            this.ignore_bytes -= text.length
-            return
-          } else {
-            text = text.substring(this.ignore_bytes)
-            this.ignore_bytes = 0
-          }
-        }
+      const dv = ev.target.value; // DataView
+      const bytes = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+      if (bytes[0] === 0x01 || bytes[0] === 0x06) { // WRITE_STDOUT
+        var text = new TextDecoder().decode(bytes.slice(1));
         this.stdout = appendWithCR(this.stdout, text)
+        //console.log("latest STDOUT:", this.stdout, this._stop_re?.test(this.stdout));
 
+        this.dispatchEvent(new CustomEvent('stdout', { detail: this.trim_stdout(this.stdout) }));
         if (this._stop_re?.test(this.stdout)) {
           this.running = false;
-          this.stdout = this.stdout.replace(this._stop_re, '$1')
+          console.log('final stdout:', this.stdout)
+          this.stdout = ''
         }
 
-        this.dispatchEvent(new CustomEvent('stdout', { detail: this.stdout }));
-      } else if (v[0] === 0x00) { // STATUS_REPORT
-        this.status = parsePybricksStatus(v)
-        console.log("STATUS:", this.status);
-      } else console.log('unknown event: ', v)
+      } else if (bytes[0] === 0x00) { // STATUS_REPORT
+        const status = parsePybricksStatus(bytes)
+        if (stringify(status) != stringify(this.status)) {
+          this.status = status
+          console.log("STATUS:", this.status);
+        }
+      } else {
+        console.log('unknown event: ', bytes[0], bytes.length, bytes, 'hex=', [...bytes].map(b=>b.toString(16).padStart(2,'0')).join(' '), 'from:', ev.target.uuid)
+        console.log('decoded:', new TextDecoder().decode(bytes.slice(1)))
+      }
     });
 
     try {
@@ -74,6 +82,7 @@ export class Pybricks extends EventTarget {
     this.connected = true;
     this._needsReplStart = true;
     this._reprInjected = false;
+    await this._ensureReprFunction()
     this.dispatchEvent(new Event('connect'));
     return this.device.name
   }
@@ -83,11 +92,13 @@ export class Pybricks extends EventTarget {
     const MAX_CHUNK = 180; // keep well under 512-byte BLE write limit
     if (payloadBytes.length <= MAX_CHUNK) {
       await this._writeCmdFrame(cmd, payloadBytes);
+      await sleep(100)
       return;
     }
     for (let offset = 0; offset < payloadBytes.length; offset += MAX_CHUNK) {
       const chunk = payloadBytes.slice(offset, offset + MAX_CHUNK);
       await this._writeCmdFrame(cmd, chunk);
+      await sleep(100)
     }
   }
 
@@ -104,11 +115,10 @@ export class Pybricks extends EventTarget {
     const enc = new TextEncoder();
 
     //console.log(code)
-    this.running = true
     this.stdout = ''
 
     const bytes = enc.encode(code.endsWith('\n') ? code : code + '\n');
-    this.ignore_bytes = bytes.length + 'paste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== '.length + 5
+    this.ignore_bytes = bytes.length + 2
 
     // Ctrl-E to enter paste mode
     await this.sendCmd(0x06, new Uint8Array([0x05]));
@@ -118,12 +128,11 @@ export class Pybricks extends EventTarget {
     await this.sendCmd(0x06, new Uint8Array([0x04]));
   }
 
-  async run(code, ensureRepr=true) {
+  async run(code) {
+    while (this.running) await sleep(100);
     code = code.replaceAll('\r\n','\n')
-    await this._ensureReplStarted();
-    if (ensureRepr) await this._ensureReprFunction();
-    console.log('dfsgjhdsagfhdfagsldasfhldsafghdsafghdasjhkjhkdsl')
-    const stop_word = 'STOP_' + Math.random().toString(36).slice(2)
+    const stop_word = 'STOP_' + Math.random().toString(36).slice(2)+''
+    console.log({stop_word})
     this._stop_re = new RegExp(stop_word + '(Traceback \\(most recent call last\\):.*)?>>> $','s')
 
     const {head, tail} = cleaveLastStatement(code)
@@ -135,7 +144,7 @@ export class Pybricks extends EventTarget {
         const expr = stripPythonComment(tail).trim()
         if (expr.length) {
           segments.push(`_ = (${expr})`)
-          if (ensureRepr) segments.push('__unotebook_repr__(_)')
+          segments.push('__unotebook_repr__(_)')
         } else {
           segments.push(tail)
         }
@@ -144,9 +153,11 @@ export class Pybricks extends EventTarget {
       }
     }
     code = segments.join('\n')
-    code = 'try:\n  ' + code.split('\n').join('\n  ') +'\nfinally: print("'+stop_word+'", end="")'
+    this.finally_stmt = 'finally: print("'+stop_word.slice(0,8)+'"+"'+stop_word.slice(8)+'", end="")'
+    code = 'try:\n  ' + code.split('\n').join('\n  ') +'\n'+ this.finally_stmt
   
 
+    this.running = true
     await this._send(code)
     while (this.running) await sleep(100);
   }
@@ -157,6 +168,7 @@ export class Pybricks extends EventTarget {
     await sleep(150)
     this._needsReplStart = true;
     this._reprInjected = false;
+    await this._ensureReprFunction()
   }
 
   async abort() {
@@ -164,7 +176,8 @@ export class Pybricks extends EventTarget {
     return "Aborted"
   }
 
-  disconnect() {
+  async disconnect() {
+    await this.sendCmd(0x00);
     if (this.device?.gatt.connected) this.device.gatt.disconnect();
   }
 
@@ -185,10 +198,11 @@ export class Pybricks extends EventTarget {
   }
 
   async _ensureReprFunction() {
+    await this._ensureReplStarted()
     console.log('_ensureReprFunction')
     if (!this.connected || this._reprInjected) return;
     console.log('_ensureReprFunction sending')
-    await this.run(UNOTEBOOK_REPR_FUNCTION, false);
+    await this.run(UNOTEBOOK_REPR_FUNCTION);
     this._reprInjected = true;
     console.log('_ensureReprFunction done')
   }

@@ -414,6 +414,12 @@ function App() {
     }
   }
 
+  async function disconnect() {
+    if (confirm("Disconnect?")) {
+      active_backend=='pybricks' ? await pybricks.disconnect() : await webrepl.disconnect()
+    }
+  }
+
   return html`
     <div id='app_container'>
       <style>${css}</style>
@@ -453,7 +459,7 @@ function App() {
                 <${LinkIcon} size=${14} aria-hidden=${true} />
                 <span>${connected_text}</span>
               </code>` : null}
-              <button onClick=${e=>{if (confirm("Disconnect?")) {active_backend=='pybricks' ? pybricks.disconnect() : webrepl.disconnect()}}} style='white-space:nowrap;'>Disconnect</button>
+              <button onClick=${disconnect} style='white-space:nowrap;'>Disconnect</button>
             </span>
           ` : null }
         </div>

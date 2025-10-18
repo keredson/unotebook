@@ -194,6 +194,28 @@ export function is_safe_to_assign_to_var(line) {
 export const UNOTEBOOK_REPR_FUNCTION = `
 try: import json
 except: import ujson as json
+import usys
+
+def b64encode_stream(b):
+ t=b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+ w=usys.stdout.write
+ for i in range(0,len(b),3):
+  c=b[i:i+3];p=3-len(c);v=int.from_bytes(c,"big")<<(p*8)
+  for j in range(18,-1,-6):w(chr(t[(v>>j)&63]))
+  if p:w("="*p)
+
+def b64encode_stream(b):
+  t = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+  w = usys.stdout.write
+  for i in range(0, len(b), 3):
+    c = b[i:i+3]
+    p = 3 - len(c)
+    v = int.from_bytes(c, "big") << (p * 8)
+    quad = ''.join(chr(t[(v >> j) & 63]) for j in range(18, -1, -6))
+    if p:
+      quad = quad[:4 - p] + ('=' * p)
+    w(quad)
+
 def __unotebook_repr__(o):
   if o is None: return
   if hasattr(o, '_repr_mimebundle_'): print(json.dumps(o._repr_mimebundle_()), end='')
@@ -202,8 +224,14 @@ def __unotebook_repr__(o):
     if hasattr(o, '_repr_html_'):       print('"text/html":', json.dumps(o._repr_html_()), end=',')
     if hasattr(o, '_repr_markdown_'):   print('"text/markdown":', json.dumps(o._repr_html_()), end=',')
     if hasattr(o, '_repr_svg_'):        print('"image/svg+xml":', json.dumps(o._repr_svg_()), end=',')
-    if hasattr(o, '_repr_png_'):        print('"image/png":', json.dumps(o._repr_png_()), end=',')
-    if hasattr(o, '_repr_jpeg_'):       print('"image/jpeg":', json.dumps(o._repr_jpeg_()), end=',')
+    if hasattr(o, '_repr_png_'):
+      usys.stdout.write('"image/png":"')
+      b64encode_stream(o._repr_png_())
+      usys.stdout.write('",')
+    if hasattr(o, '_repr_jpeg_'):
+      usys.stdout.write('"image/jpeg":"')
+      b64encode_stream(o._repr_jpeg_())
+      usys.stdout.write('",')
     if hasattr(o, '_repr_latex_'):      print('"text/latex":', json.dumps(o._repr_latex_()), end=',')
     if hasattr(o, '_repr_javascript_'): print('"application/javascript":', json.dumps(o._repr_javascript_()), end=',')
     print('"text/plain":', json.dumps(repr(o)), end='}}\\n')
